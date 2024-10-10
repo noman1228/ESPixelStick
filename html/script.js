@@ -1,5 +1,4 @@
 var StatusRequestTimer = null;
-let ExpectedStartingFileIndex = 0;
 var DiagTimer = null;
 
 // global data
@@ -10,7 +9,7 @@ var System_Config = null;
 var Fseq_File_List = [];
 var selector = [];
 var target = document.location.host;
-// target = "192.168.10.233";
+// target = "192.168.10.188";
 
 var SdCardIsInstalled = false;
 var FseqFileTransferStartTime = new Date();
@@ -79,7 +78,7 @@ const ServerAccess = new Semaphore(1);
 
 // lets get started
 MonitorServerConnection();
-let RcfResponse = RequestConfigFile("admininfo.json");
+RequestConfigFile("admininfo.json");
 RequestDiagData();
 RequestStatusUpdate();  // start self filling status loop
 
@@ -102,7 +101,7 @@ $(function () {
         $('.navbar-toggle').attr('aria-expanded', 'false');
 
         // Firmware selection and upload
-        $('#efu').change(function () {
+        $('#efu').on("change" ,function () {
             let file = _('efu').files[0];
             let formdata = new FormData();
             formdata.append("file", file);
@@ -325,7 +324,7 @@ $(function () {
     SetServerTime();
 });
 
-function SetServerTime() 
+function SetServerTime()
 {
     // console.info("SetServerTime");
     let CurrentDate = Math.floor((new Date()).getTime() / 1000);
@@ -369,7 +368,7 @@ function MergeConfig(SourceData, TargetData, FileName, SectionName)
 
 } // MergeConfig
 
-function JsonObjectAccess(obj, Path, value, Action) 
+function JsonObjectAccess(obj, Path, value, Action)
 {
     try
     {
@@ -548,9 +547,9 @@ async function ProcessWindowChange(NextWindow) {
 
     else if (NextWindow === "#config") {
         await RequestListOfFiles();
-        RequestConfigFile("config.json");
-        RequestConfigFile("output_config.json");
-        RequestConfigFile("input_config.json");
+        await RequestConfigFile("config.json");
+        await RequestConfigFile("output_config.json");
+        await RequestConfigFile("input_config.json");
     }
 
     else if (NextWindow === "#filemanagement") {
@@ -577,14 +576,14 @@ function RequestDiagData()
                     mode: "cors", // no-cors, *cors, same-origin
                     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
                     credentials: "same-origin", // include, *same-origin, omit
-                    headers: 
+                    headers:
                     {
                         "Content-Type": "application/json",
                     },
                     redirect: "follow", // manual, *follow, error
                     referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
                 })
-                .then(async webResponse => 
+                .then(async webResponse =>
                 {
                     const data = await webResponse.blob();
                     // console.info("RequestDiagData:webResponse.status: " + webResponse.status);
@@ -604,7 +603,7 @@ function RequestDiagData()
                         drawStream(streamData);
                     }
                 })
-                .catch(async error => 
+                .catch(async error =>
                 {
                     console.error('SendCommand: Error: ', error);
                 });
@@ -631,11 +630,11 @@ async function RequestConfigFile(FileName)
 
 } // RequestConfigFile
 
-function RequestStatusUpdate() 
+function RequestStatusUpdate()
 {
     // console.log("RequestStatusUpdate Start: ");
     // is the timer running?
-    if (null === StatusRequestTimer) 
+    if (null === StatusRequestTimer)
     {
         // timer runs forever
         StatusRequestTimer = setTimeout(function ()
@@ -648,7 +647,7 @@ function RequestStatusUpdate()
         }, 1000);
     } // end timer was not running
 
-    if ($('#home').is(':visible')) 
+    if ($('#home').is(':visible'))
     {
         // ask for a status update from the server
         let FileName = "HTTP://" + target + "/XJ";
@@ -667,7 +666,7 @@ function RequestStatusUpdate()
 
 } // RequestStatusUpdate
 
-async function RequestListOfFiles() 
+async function RequestListOfFiles()
 {
     // console.info("ask for a file list from the server, starting at " + StartingFileIndex);
 
@@ -720,22 +719,25 @@ function BytesToMB(Value) {
 
 } // BytesToMB
 
-async function ProcessGetFileListResponse(JsonConfigData) {
+async function ProcessGetFileListResponse(JsonData) {
     // console.info("ProcessGetFileListResponse");
 
-    SdCardIsInstalled = JsonConfigData.SdCardPresent;
+    SdCardIsInstalled = JsonData.SdCardPresent;
+    // console.info("SdCardIsInstalled: " + SdCardIsInstalled);
 
-    if (false === SdCardIsInstalled) {
-        $("#li-filemanagement").addClass("hidden");
-    }
-    else{
+    if (true === SdCardIsInstalled)
+    {
         $("#li-filemanagement").removeClass("hidden");
     }
+    else
+    {
+        $("#li-filemanagement").addClass("hidden");
+    }
 
-    $("#totalBytes").val(BytesToMB(JsonConfigData.totalBytes));
-    $("#usedBytes").val(BytesToMB(JsonConfigData.usedBytes));
-    $("#remainingBytes").val(BytesToMB(JsonConfigData.totalBytes - JsonConfigData.usedBytes));
-    $("#filecount").val(JsonConfigData.numFiles);
+    $("#totalBytes").val(BytesToMB(JsonData.totalBytes));
+    $("#usedBytes").val(BytesToMB(JsonData.usedBytes));
+    $("#remainingBytes").val(BytesToMB(JsonData.totalBytes - JsonData.usedBytes));
+    $("#filecount").val(JsonData.numFiles);
 
     // console.info("totalBytes: " + JsonConfigData.totalBytes);
     // console.info("usedBytes: " + JsonConfigData.usedBytes);
@@ -746,12 +748,12 @@ async function ProcessGetFileListResponse(JsonConfigData) {
     // delete current entries
     $('#FileManagementTable').empty();
 
-    JsonConfigData.files.sort(function(a, b)
+    JsonData.files.sort(function(a, b)
     {
         return a.name.localeCompare(b.name);
     });
 
-    JsonConfigData.files.forEach(function (file) 
+    JsonData.files.forEach(function (file)
     {
         let CurrentRowId = $('#FileManagementTable > tr').length;
         let SelectedPattern = '<td><input  type="checkbox" id="FileSelected_' + (CurrentRowId) + '"></td>';
@@ -1137,6 +1139,18 @@ function ProcessModeConfigurationDataRelay(RelayConfig) {
 
 } // ProcessModeConfigurationDataRelay
 
+function ProcessModeConfigurationDataGrinch(GrinchConfig)
+{
+    // console.log("ProcessModeConfigurationDataGrinch");
+    // console.info("GrinchConfig: " + JSON.stringify(GrinchConfig));
+
+    $('#grinch #controller_count' ).val(GrinchConfig.count);
+    $('#grinch #cs_pin' ).val(GrinchConfig.dataspi.cs_pin);
+    $('#grinch #data_pin' ).val(GrinchConfig.dataspi.data_pin);
+    $('#grinch #clock_pin' ).val(GrinchConfig.dataspi.clock_pin);
+
+} // ProcessModeConfigurationDataGrinch
+
 function ProcessModeConfigurationDataServoPCA9685(ServoConfig) {
     // console.log("Servochannelconfigurationtable.rows.length = " + $('#servo_pca9685channelconfigurationtable tr').length);
 
@@ -1211,7 +1225,9 @@ function ProcessInputConfig() {
 
 function ProcessModeConfigurationData(channelId, ChannelType, JsonConfig) {
     // console.info("ProcessModeConfigurationData: Start");
-
+    // console.info("channelId: " + channelId);
+    // console.info("ChannelType: " + ChannelType);
+    // console.info("JsonConfig: " + JSON.stringify(JsonConfig));
     // determine the type of in/output that has been selected and populate the form
     let TypeOfChannelId = parseInt($('#' + ChannelType + channelId + " option:selected").val(), 10);
     let channelConfigSet = JsonConfig.channels[channelId];
@@ -1277,6 +1293,11 @@ function ProcessModeConfigurationData(channelId, ChannelType, JsonConfig) {
         ProcessModeConfigurationDataServoPCA9685(channelConfig);
     }
 
+    else if ("grinch" === ChannelTypeName) {
+        // console.info("ProcessModeConfigurationData: grinch");
+        ProcessModeConfigurationDataGrinch(channelConfig);
+    }
+
     UpdateAdvancedOptionsMode();
     UpdateChannelCounts();
 
@@ -1307,6 +1328,9 @@ function ProcessReceivedJsonConfigMessage(JsonConfigData) {
         // console.info("Got System Config: " + JSON.stringify(System_Config) );
 
         updateFromJSON(System_Config);
+        $('#ftpusername').val(System_Config.device.user);
+        $('#ftppassword').val(System_Config.device.password);
+        $('#ftp_enable').prop("checked", System_Config.device.enabled);
 
         if ({}.hasOwnProperty.call(System_Config.network, 'eth')) {
             $('#pg_network #network #eth').removeClass("hidden")
@@ -1537,7 +1561,10 @@ function submitNetworkConfig() {
     System_Config.device.mosi_pin = $('#config #device #mosi_pin').val();
     System_Config.device.clock_pin = $('#config #device #clock_pin').val();
     System_Config.device.cs_pin = $('#config #device #cs_pin').val();
-    
+    System_Config.device.user = $('#ftpusername').val();
+    System_Config.device.password = $('#ftppassword').val();
+    System_Config.device.enabled = $('#ftp_enable').prop('checked');
+
     if ({}.hasOwnProperty.call(System_Config, 'sensor')) {
         System_Config.sensor.units = parseInt($('#TemperatureSensorUnits').val());
     }
@@ -1690,6 +1717,13 @@ function ExtractChannelConfigFromHtmlPage(JsonConfig, SectionName) {
 
             ChannelConfig.MarqueeGroups = MarqueeGroups;
         }
+        else if(ChannelConfig.type === "Grinch")
+        {
+            ChannelConfig.count     = $('#grinch #controller_count' ).val();
+            ChannelConfig.dataspi.cs_pin    = $('#grinch #cs_pin' ).val();
+            ChannelConfig.dataspi.clock_pin = $('#grinch #clock_pin' ).val();
+            ChannelConfig.dataspi.data_pin  = $('#grinch #data_pin' ).val();
+        }
         else {
             ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
         }
@@ -1767,15 +1801,6 @@ function submitDeviceConfig() {
 
 } // submitDeviceConfig
 
-function convertUTCDateToLocalDate(date) {
-    date = new Date(date);
-    let localOffset = date.getTimezoneOffset() * 60000;
-    let localTime = date.getTime();
-    date = localTime - localOffset;
-
-    return date;
-} // convertUTCDateToLocalDate
-
 function int2ip(num) {
     let d = num % 256;
     for (let i = 3; i > 0; i--) {
@@ -1786,7 +1811,7 @@ function int2ip(num) {
 } // int2ip
 
 // Ping every 4sec
-function MonitorServerConnection() 
+function MonitorServerConnection()
 {
     // console.info("MonitorServerConnection");
     let MonitorTransactionRequestInProgress = false;
@@ -2014,6 +2039,7 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
         $('#an_pkts').text(InputStatus.Artnet.num_packets);
         $('#an_chanlim').text(InputStatus.Artnet.unichanlim);
         $('#an_perr').text(InputStatus.Artnet.packet_errors);
+        $('#an_PollCounter').text(InputStatus.Artnet.PollCounter);
         $('#an_clientip').text(InputStatus.Artnet.last_clientIP);
     }
     else {

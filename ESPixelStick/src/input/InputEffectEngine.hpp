@@ -86,7 +86,7 @@ public:
         CRGB    color;
     } MQTTConfiguration_s;
 
-    struct MarqueeGroup 
+    struct MarqueeGroup
     {
        uint32_t NumPixelsInGroup;
        CRGB     Color;
@@ -129,17 +129,13 @@ private:
     bool HasBeenInitialized = false;
 
 #define MIN_EFFECT_DELAY 10
-#define MAX_EFFECT_DELAY 65535
-#define DEFAULT_EFFECT_DELAY 1000
 
     using timeType = decltype(millis());
 
-
-    uint32_t EffectWait            = 32;              /* How long to wait for the effect to run again */
-
+    uint32_t EffectWait            = 0;               /* How long to wait for the effect to run again */
     uint32_t EffectCounter         = 0;               /* Counter for the number of calls to the active effect */
-    uint16_t EffectSpeed           = 6;               /* Externally controlled effect speed 1..10 */
-    uint16_t EffectDelay           = DEFAULT_EFFECT_DELAY; /* Internal representation of speed */
+    uint32_t EffectSpeed           = 6;               /* Externally controlled effect speed 1..10 */
+    uint32_t EffectDelay           = 0;               /* Internal representation of speed */
     bool EffectReverse             = false;           /* Externally controlled effect reverse option */
     bool EffectMirror              = false;           /* Externally controlled effect mirroring (start at center) */
     bool EffectAllLeds             = false;           /* Externally controlled effect all leds = 1st led */
@@ -180,10 +176,13 @@ private:
 
     const EffectDescriptor_t * ActiveEffect = nullptr;
 
-    dCRGB   TransitionCurrentColor = {0.0, 0.0, 0.0};
-    std::vector<c_InputEffectEngine::dCRGB>::iterator TransitionTargetColorIterator;
-    dCRGB   TransitionStepValue    = {2.0, 2.0, 2.0};
-    #define NumStepsToTarget         300.0
+    struct Transition_t
+    {
+        dCRGB       CurrentColor = {0.0, 0.0, 0.0};
+        std::vector<c_InputEffectEngine::dCRGB>::iterator TargetColorIterator;
+        dCRGB       StepValue    = {2.0, 2.0, 2.0};
+        double      StepsToTarget = 300; // number of NumStepsToTarget
+    } TransitionInfo;
     bool ColorHasReachedTarget ();
     bool ColorHasReachedTarget (double tc, double cc, double step);
     void ConditionalIncrementColor(double tc, double & cc, double step);

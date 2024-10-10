@@ -130,7 +130,7 @@ void TestHeap(uint32_t Id)
     DEBUG_V(String("Allocate JSON document. Size = ") + String(20 * 1024));
     DEBUG_V(String("Heap Before: ") + ESP.getFreeHeap());
     {
-        DynamicJsonDocument jsonDoc(20 * 1024);
+        JsonDocument jsonDoc;
     }
     DEBUG_V(String(" Heap After: ") + ESP.getFreeHeap());
 }
@@ -264,9 +264,9 @@ bool dsDevice(JsonObject & json)
     // PrettyPrint (json, "dsDevice");
 
     bool ConfigChanged = false;
-    if (json.containsKey(CN_device))
+    JsonObject JsonDeviceConfig = json[CN_device];
+    if (JsonDeviceConfig)
     {
-        JsonObject JsonDeviceConfig = json[CN_device];
 
 //TODO: Add configuration upgrade handling - cfgver moved to root level
         ConfigChanged |= setFromJSON (config.id,         JsonDeviceConfig, CN_id);
@@ -307,18 +307,22 @@ bool deserializeCore (JsonObject & json)
 
     // extern void PrettyPrint (JsonObject & jsonStuff, String Name);
     // PrettyPrint (json, "Main Config");
+    JsonObject SystemConfig = json[CN_system];
+    JsonObject InitConfig = json[CN_init];
+    JsonObject NetworkConfig = json[CN_network];
     JsonObject DeviceConfig;
 
     do // once
     {
         // was this saved by the ESP itself
-        if (json.containsKey(CN_system))
+        if (SystemConfig)
         {
-            // DEBUG_V("");
+            // DEBUG_V("Detected a System Config");
             DeviceConfig = json[CN_system];
+            // PrettyPrint (DeviceConfig, "System based DeviceConfig");
         }
         // is this an initial config from the flash tool?
-        else if (json.containsKey(CN_init) || json.containsKey(CN_network))
+        else if (InitConfig || NetworkConfig)
         {
             // trigger a save operation
             ConfigSaveNeeded = true;
@@ -332,22 +336,24 @@ bool deserializeCore (JsonObject & json)
             break;
         }
         // DEBUG_V("");
+        // PrettyPrint (DeviceConfig, "Selected DeviceConfig");
 
-        if (DeviceConfig.containsKey(CN_cfgver))
-        {
-            // DEBUG_V("");
-            uint8_t TempVersion = uint8_t(-1);
-            setFromJSON(TempVersion, DeviceConfig, CN_cfgver);
-            if (TempVersion != CurrentConfigVersion)
-            {
-                // TODO: Add configuration update handler
-                logcon(String(F("Incorrect Config Version ID")));
-            }
-        }
-        else
+        uint8_t TempVersion = uint8_t(-1);
+        setFromJSON(TempVersion, DeviceConfig, CN_cfgver);
+
+        if (TempVersion == uint8_t(-1))
         {
             logcon(String(F("Missing Config Version ID")));
             // break; // ignoring this error for now.
+        }
+        else if (TempVersion != CurrentConfigVersion)
+        {
+            // TODO: Add configuration update handler
+            logcon(String(F("Incorrect Config Version ID")));
+        }
+        else
+        {
+            // DEBUG_V("A valid config version ID is present");
         }
 
         // DEBUG_V("Checking to see if the config is from the web flash tool");
@@ -378,11 +384,11 @@ bool deserializeCore (JsonObject & json)
     return DataHasBeenAccepted;
 }
 
-void deserializeCoreHandler (DynamicJsonDocument & jsonDoc)
+void deserializeCoreHandler (JsonDocument & jsonDoc)
 {
     // DEBUG_START;
 
-    // extern void PrettyPrint(DynamicJsonDocument & jsonStuff, String Name);
+    // extern void PrettyPrint(JsonDocument & jsonStuff, String Name);
     // PrettyPrint(jsonDoc, "deserializeCoreHandler");
 
     JsonObject json = jsonDoc.as<JsonObject>();
@@ -399,8 +405,8 @@ void SaveConfig()
     ConfigSaveNeeded = false;
 
     // Create buffer and root object
-    DynamicJsonDocument jsonConfigDoc(2048);
-    JsonObject JsonConfig = jsonConfigDoc.createNestedObject(CN_system);
+    JsonDocument jsonConfigDoc;
+    JsonObject JsonConfig = jsonConfigDoc[CN_system].to<JsonObject>();
 
     GetConfig(JsonConfig);
 
@@ -445,7 +451,7 @@ void GetConfig (JsonObject & json)
     json[CN_cfgver] = CurrentConfigVersion;
 
     // Device
-    JsonObject device       = json.createNestedObject(CN_device);
+    JsonObject device       = json[CN_device].to<JsonObject>();
     device[CN_id]           = config.id;
     device[CN_blanktime]    = config.BlankDelay;
 
@@ -466,8 +472,8 @@ String serializeCore(bool pretty)
     // DEBUG_START;
 
     // Create buffer and root object
-    DynamicJsonDocument jsonConfigDoc(2048);
-    JsonObject JsonConfig = jsonConfigDoc.createNestedObject();
+    JsonDocument jsonConfigDoc;
+    JsonObject JsonConfig = jsonConfigDoc.add<JsonObject>();
 
     String jsonConfigString;
 
@@ -520,6 +526,8 @@ void loop()
     OutputMgr.Poll();
 
     WebMgr.Process ();
+
+    FileMgr.Poll();
 
 #ifdef SUPPORT_SENSOR_DS18B20
     SensorDS18B20.Poll();

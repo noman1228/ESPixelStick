@@ -130,29 +130,26 @@ void c_WiFiDriver::Begin ()
 
     if (FileMgr.SdCardIsInstalled())
     {
-        if (ESP_SDFS.exists (F("wificonfig.json")))
+        JsonDocument jsonConfigDoc;
+        // DEBUG_V ("read the sdcard config");
+        if (FileMgr.ReadSdFile (F("wificonfig.json"), jsonConfigDoc))
         {
-            DynamicJsonDocument jsonConfigDoc(1024);
-            // DEBUG_V ("read the sdcard config");
-            if (FileMgr.ReadSdFile (F("wificonfig.json"), jsonConfigDoc))
-            {
-                // DEBUG_V ("Process the sdcard config");
-                JsonObject jsonConfig = jsonConfigDoc.as<JsonObject> ();
+            // DEBUG_V ("Process the sdcard config");
+            JsonObject jsonConfig = jsonConfigDoc.as<JsonObject> ();
 
-                // copy the fields of interest into the local structure
-                setFromJSON (ssid,         jsonConfig, CN_ssid);
-                setFromJSON (passphrase,   jsonConfig, CN_passphrase);
-                setFromJSON (ap_ssid,       jsonConfig, CN_ap_ssid);
-                setFromJSON (ap_passphrase, jsonConfig, CN_ap_passphrase);
+            // copy the fields of interest into the local structure
+            setFromJSON (ssid,         jsonConfig, CN_ssid);
+            setFromJSON (passphrase,   jsonConfig, CN_passphrase);
+            setFromJSON (ap_ssid,       jsonConfig, CN_ap_ssid);
+            setFromJSON (ap_passphrase, jsonConfig, CN_ap_passphrase);
 
-                ConfigSaveNeeded = true;
+            ConfigSaveNeeded = true;
 
-                FileMgr.DeleteSdFile (F ("wificonfig.json"));
-            }
-            else
-            {
-                // DEBUG_V ("ERROR: Could not read SD card config");
-            }
+            FileMgr.DeleteSdFile (F ("wificonfig.json"));
+        }
+        else
+        {
+            // DEBUG_V ("ERROR: Could not read SD card config");
         }
     }
 
@@ -192,7 +189,7 @@ void c_WiFiDriver::Begin ()
 #endif
 
     // set up the poll interval
-    NextPoll.StartTimer(PollInterval);
+    NextPoll.StartTimer(PollInterval, false);
 
     // Main loop should start polling for us
     // pCurrentFsmState->Poll ();
@@ -438,7 +435,7 @@ void c_WiFiDriver::Poll ()
     if (NextPoll.IsExpired())
     {
         // DEBUG_V ("Start Poll");
-        NextPoll.StartTimer(PollInterval);
+        NextPoll.StartTimer(PollInterval, false);
         // displayFsmState ();
         pCurrentFsmState->Poll ();
         // displayFsmState ();
@@ -736,7 +733,7 @@ void fsm_WiFi_state_ConnectingUsingConfig::Init ()
     {
         pWiFiDriver->SetFsmState (this);
         pWiFiDriver->AnnounceState ();
-        pWiFiDriver->GetFsmTimer().StartTimer(1000 * pWiFiDriver->Get_sta_timeout());
+        pWiFiDriver->GetFsmTimer().StartTimer(1000 * pWiFiDriver->Get_sta_timeout(), false);
 
         pWiFiDriver->connectWifi (CurrentSsid, CurrentPassphrase);
     }
@@ -791,7 +788,7 @@ void fsm_WiFi_state_ConnectingUsingDefaults::Init ()
     {
         pWiFiDriver->SetFsmState (this);
         pWiFiDriver->AnnounceState ();
-        pWiFiDriver->GetFsmTimer().StartTimer(1000 * pWiFiDriver->Get_sta_timeout ());
+        pWiFiDriver->GetFsmTimer().StartTimer(1000 * pWiFiDriver->Get_sta_timeout (), false);
         pWiFiDriver->connectWifi (default_ssid, default_passphrase);
     }
     else
@@ -851,7 +848,7 @@ void fsm_WiFi_state_ConnectingAsAP::Init ()
 
     pWiFiDriver->SetFsmState (this);
     pWiFiDriver->AnnounceState ();
-    pWiFiDriver->GetFsmTimer ().StartTimer(1000 * pWiFiDriver->Get_ap_timeout ());
+    pWiFiDriver->GetFsmTimer ().StartTimer(1000 * pWiFiDriver->Get_ap_timeout (), false);
 
     if (true == pWiFiDriver->Get_ap_fallbackIsEnabled() || pWiFiDriver->Get_ap_StayInApMode())
     {

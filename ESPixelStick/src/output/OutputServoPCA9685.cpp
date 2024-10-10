@@ -164,13 +164,13 @@ bool c_OutputServoPCA9685::SetConfig (ArduinoJson::JsonObject & jsonConfig)
         pwm->setPWMFreq (UpdateFrequency);
 
         // do we have a channel configuration array?
-        if (false == jsonConfig.containsKey (OM_SERVO_PCA9685_CHANNELS_NAME))
+        JsonArray JsonChannelList = jsonConfig[OM_SERVO_PCA9685_CHANNELS_NAME];
+        if (!JsonChannelList)
         {
             // if not, flag an error and stop processing
             logcon (MN_04);
             break;
         }
-        JsonArray JsonChannelList = jsonConfig[OM_SERVO_PCA9685_CHANNELS_NAME];
 
         for (JsonVariant JsonChannelData : JsonChannelList)
         {
@@ -220,12 +220,12 @@ void c_OutputServoPCA9685::GetConfig (ArduinoJson::JsonObject & jsonConfig)
 
     jsonConfig[OM_SERVO_PCA9685_UPDATE_INTERVAL_NAME] = UpdateFrequency;
 
-    JsonArray JsonChannelList = jsonConfig.createNestedArray (OM_SERVO_PCA9685_CHANNELS_NAME);
+    JsonArray JsonChannelList = jsonConfig[OM_SERVO_PCA9685_CHANNELS_NAME].to<JsonArray> ();
 
     uint8_t ChannelId = 0;
     for (ServoPCA9685Channel_t & currentServoPCA9685 : OutputList)
     {
-        JsonObject JsonChannelData = JsonChannelList.createNestedObject ();
+        JsonObject JsonChannelData = JsonChannelList.add<JsonObject> ();
 
         JsonChannelData[OM_SERVO_PCA9685_CHANNEL_ID_NAME]       = ChannelId;
         JsonChannelData[OM_SERVO_PCA9685_CHANNEL_ENABLED_NAME]  = currentServoPCA9685.Enabled;

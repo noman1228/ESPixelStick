@@ -88,7 +88,7 @@ void c_FPPDiscovery::NetworkStateChanged (bool NewNetworkState)
         {
             Failed = false;
             logcon (String (F ("FPPDiscovery subscribed to broadcast messages on port: ")) + String(FPP_DISCOVERY_PORT));
-        }        
+        }
 
         if (!udp.listenMulticast (MulticastAddress, FPP_DISCOVERY_PORT))
         {
@@ -174,7 +174,7 @@ void c_FPPDiscovery::GetStatus (JsonObject & jsonStatus)
 #endif // def FPP_DEBUG_ENABLED
 
         // DEBUG_V ("Is Enabled");
-        JsonObject MyJsonStatus = jsonStatus.createNestedObject (F ("FPPDiscovery"));
+        JsonObject MyJsonStatus = jsonStatus[F ("FPPDiscovery")].to<JsonObject> ();
         MyJsonStatus[F ("FppRemoteIp")] = FppRemoteIp.toString ();
         if (InputFPPRemotePlayFile)
         {
@@ -222,7 +222,7 @@ void c_FPPDiscovery::ProcessReceivedUdpPacket (AsyncUDPPacket UDPpacket)
         gettimeofday (&tv, NULL);
         MultiSyncStats.lastReceiveTime = tv.tv_sec;
         MultiSyncStats.pktLastCommand = fppPacket->packet_type;
-        
+
         switch (fppPacket->packet_type)
         {
             case CTRL_PKT_CMD: // deprecated in favor of FPP Commands
@@ -528,7 +528,7 @@ void c_FPPDiscovery::BuildFseqResponse (String fname, c_FileMgr::FileId fseq, St
 {
     // DEBUG_START;
 
-    DynamicJsonDocument JsonDoc (4*1024);
+    JsonDocument JsonDoc;
     JsonObject JsonData = JsonDoc.to<JsonObject> ();
 
     FSEQRawHeader fsqHeader;
@@ -574,7 +574,7 @@ void c_FPPDiscovery::BuildFseqResponse (String fname, c_FileMgr::FileId fseq, St
 
     if (0 != fsqHeader.numSparseRanges)
     {
-        JsonArray  JsonDataRanges = JsonData.createNestedArray (F ("Ranges"));
+        JsonArray  JsonDataRanges = JsonData[F ("Ranges")].to<JsonArray> ();
 
         maxChannel = 0;
 
@@ -590,7 +590,7 @@ void c_FPPDiscovery::BuildFseqResponse (String fname, c_FileMgr::FileId fseq, St
             uint32_t RangeStart  = read24 (CurrentFSEQRangeEntry->Start);
             uint32_t RangeLength = read24 (CurrentFSEQRangeEntry->Length);
 
-            JsonObject JsonRange = JsonDataRanges.createNestedObject ();
+            JsonObject JsonRange = JsonDataRanges.add<JsonObject> ();
             JsonRange[F ("Start")]  = String (RangeStart);
             JsonRange[F ("Length")] = String (RangeLength);
 
@@ -614,7 +614,7 @@ void c_FPPDiscovery::BuildFseqResponse (String fname, c_FileMgr::FileId fseq, St
 
     if (FileOffsetToCurrentHeaderRecord < FileOffsetToStartOfSequenceData)
     {
-        JsonArray  JsonDataHeaders = JsonData.createNestedArray (F ("variableHeaders"));
+        JsonArray  JsonDataHeaders = JsonData[F ("variableHeaders")].to<JsonArray> ();
 
         char FSEQVariableDataHeaderBuffer[sizeof (FSEQRawVariableDataHeader) + 1];
         memset ((uint8_t*)FSEQVariableDataHeaderBuffer, 0x00, sizeof (FSEQVariableDataHeaderBuffer));
@@ -636,7 +636,7 @@ void c_FPPDiscovery::BuildFseqResponse (String fname, c_FileMgr::FileId fseq, St
 
                 FileMgr.ReadSdFile (fseq, (byte*)VariableDataHeaderDataBuffer, VariableDataHeaderDataLength, FileOffsetToCurrentHeaderRecord);
 
-                JsonObject JsonDataHeader = JsonDataHeaders.createNestedObject ();
+                JsonObject JsonDataHeader = JsonDataHeaders.add<JsonObject> ();
                 JsonDataHeader[HeaderTypeCode] = String (VariableDataHeaderDataBuffer);
 
                 free (VariableDataHeaderDataBuffer);
@@ -707,7 +707,7 @@ void c_FPPDiscovery::ProcessGET (AsyncWebServerRequest* request)
         else if (path.startsWith (F ("/api/system/status")))
         {
             String Response;
-            DynamicJsonDocument JsonDoc (2048);
+            JsonDocument JsonDoc;
             JsonObject JsonData = JsonDoc.to<JsonObject> ();
             GetStatusJSON(JsonData, true);
             serializeJson (JsonDoc, Response);
@@ -718,7 +718,7 @@ void c_FPPDiscovery::ProcessGET (AsyncWebServerRequest* request)
         else if (path.startsWith (F ("/api/system/info")))
         {
             String Response;
-            DynamicJsonDocument JsonDoc (2048);
+            JsonDocument JsonDoc;
             JsonObject JsonData = JsonDoc.to<JsonObject> ();
             GetSysInfoJSON(JsonData);
             serializeJson (JsonDoc, Response);
@@ -818,10 +818,16 @@ void c_FPPDiscovery::ProcessFile (
         }
 
         // DEBUG_V();
-        bool writeFinished = FileMgr.handleFileUpload (UploadFileName, index, data, len, final, ContentLength);
+        bool writeFailed = !FileMgr.handleFileUpload (UploadFileName, index, data, len, final, ContentLength);
+
+        if(writeFailed)
+        {
+            // DEBUG_V("WriteFailed");
+            request->send (500);
+        }
 
         // DEBUG_V();
-        if (final || !writeFinished)
+        if (final || writeFailed)
         {
             inFileUpload = false;
             UploadFileName = "";
@@ -909,12 +915,12 @@ void c_FPPDiscovery::GetSysInfoJSON (JsonObject & jsonResponse)
     jsonResponse[F ("minorVersion")] = (uint16_t)atoi (&version[2]);
     jsonResponse[F ("typeId")]       = FPP_TYPE_ID;
 
-    JsonObject jsonResponseUtilization = jsonResponse.createNestedObject (F ("Utilization"));
+    JsonObject jsonResponseUtilization = jsonResponse[F ("Utilization")].to<JsonObject> ();
     jsonResponseUtilization[F ("MemoryFree")] = ESP.getFreeHeap ();
     jsonResponseUtilization[F ("Uptime")]     = millis ();
 
     jsonResponse[CN_rssi] = WiFi.RSSI ();
-    JsonArray jsonResponseIpAddresses = jsonResponse.createNestedArray (F ("IPS"));
+    JsonArray jsonResponseIpAddresses = jsonResponse[F ("IPS")].to<JsonArray> ();
     jsonResponseIpAddresses.add(WiFi.localIP ().toString ());
 
     // DEBUG_END;
@@ -924,12 +930,12 @@ void c_FPPDiscovery::GetSysInfoJSON (JsonObject & jsonResponse)
 void c_FPPDiscovery::GetStatusJSON (JsonObject & JsonData, bool adv)
 {
     // DEBUG_START;
-    JsonObject JsonDataMqtt = JsonData.createNestedObject(F ("MQTT"));
+    JsonObject JsonDataMqtt = JsonData[F ("MQTT")].to<JsonObject>();
 
     JsonDataMqtt[F ("configured")] = false;
     JsonDataMqtt[F ("connected")]  = false;
 
-    JsonObject JsonDataCurrentPlaylist = JsonData.createNestedObject (F ("current_playlist"));
+    JsonObject JsonDataCurrentPlaylist = JsonData[F ("current_playlist")].to<JsonObject> ();
 
     JsonDataCurrentPlaylist[CN_count]          = "0";
     JsonDataCurrentPlaylist[F ("description")] = "";
@@ -988,7 +994,7 @@ void c_FPPDiscovery::GetStatusJSON (JsonObject & JsonData, bool adv)
     if (adv)
     {
         // DEBUG_V();
-        JsonObject JsonDataAdvancedView = JsonData.createNestedObject (F ("advancedView"));
+        JsonObject JsonDataAdvancedView = JsonData[F ("advancedView")].to<JsonObject> ();
         GetSysInfoJSON (JsonDataAdvancedView);
         // DEBUG_V();
     }
@@ -1013,7 +1019,7 @@ void c_FPPDiscovery::ProcessFPPJson (AsyncWebServerRequest* request)
             break;
         }
 
-        DynamicJsonDocument JsonDoc (2048);
+        JsonDocument JsonDoc;
         JsonObject JsonData = JsonDoc.to<JsonObject> ();
 
         String command = request->getParam (ulrCommand)->value ();

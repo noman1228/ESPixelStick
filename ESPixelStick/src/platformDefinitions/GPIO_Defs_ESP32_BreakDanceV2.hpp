@@ -1,9 +1,9 @@
 #pragma once
 /*
- * GPIO_Defs_ESP32_DevkitC.hpp - Output Management class
+ * GPIO_Defs_ESP32_BreakDanceV2.hpp - Output Management class
  *
  * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
- * Copyright (c) 2024 Shelby Merrick
+ * Copyright (c) 2021 - 2022 Shelby Merrick
  * http://www.forkineye.com
  *
  *  This program is provided free for you to use in any way that you wish,
@@ -23,14 +23,11 @@
 #define DEFAULT_RMT_1_GPIO     gpio_num_t::GPIO_NUM_13
 
 #define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_12
-#define DEFAULT_RMT_3_GPIO      gpio_num_t::GPIO_NUM_14
-#define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_32
-#define DEFAULT_RMT_5_GPIO      gpio_num_t::GPIO_NUM_33
 
 // SPI Output
 #define SUPPORT_SPI_OUTPUT
-#define DEFAULT_SPI_DATA_GPIO   gpio_num_t::GPIO_NUM_16
-#define DEFAULT_SPI_CLOCK_GPIO  gpio_num_t::GPIO_NUM_17
+#define DEFAULT_SPI_DATA_GPIO   gpio_num_t::GPIO_NUM_27
+#define DEFAULT_SPI_CLOCK_GPIO  gpio_num_t::GPIO_NUM_32
 #define DEFAULT_SPI_CS_GPIO     gpio_num_t::GPIO_NUM_0
 #define DEFAULT_SPI_DEVICE      VSPI_HOST
 
@@ -44,13 +41,13 @@
 #define SD_CARD_CLK_PIN         gpio_num_t::GPIO_NUM_18
 #define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_4
 
-#define DEFAULT_RELAY_GPIO      gpio_num_t::GPIO_NUM_1
+#define DEFAULT_RELAY_GPIO      gpio_num_t::GPIO_NUM_14
 
 // Output Types
 // Not Finished - #define SUPPORT_OutputType_TLS3001
 #define SUPPORT_OutputType_APA102           // SPI
 #define SUPPORT_OutputType_DMX              // UART / RMT
-#define SUPPORT_OutputType_GECE             // UART
+#define SUPPORT_OutputType_GECE             // UART / RMT
 #define SUPPORT_OutputType_GRINCH           // SPI
 #define SUPPORT_OutputType_GS8208           // UART / RMT
 #define SUPPORT_OutputType_Renard           // UART / RMT
