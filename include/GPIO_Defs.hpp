@@ -126,6 +126,8 @@ typedef enum
 #   include "platforms/GPIO_Defs_ESP32_TWILIGHTLORD_ETH.hpp"
 #elif defined (BOARD_ESP32_DEVKITC)
 #   include "platforms/GPIO_Defs_ESP32_DevkitC.hpp"
+#elif defined (BOARD_ESP32_JT)
+#   include "platforms/GPIO_Defs_ESP32_JT.hpp"
 #elif defined (BOARD_ESP01S)
 #   include "platforms/GPIO_Defs_ESP8266_ESP01S.hpp"
 #elif defined (BOARD_ESPS_V3)
