@@ -34,14 +34,3 @@
 ;    -D SECRETS_SSID="DEFAULT_SSID_NOT_SET"
 ;    -D SECRETS_PASS="DEFAULT_PASSPHRASE_NOT_SET"
 
-;[esp8266]
-;monitor_port = COM4
-;upload_port = COM4
-
-;[esp32]
-;monitor_port = COM5
-;upload_port = COM5
-
-;[env:espsv3]
-;monitor_port = COM6
-;upload_port = COM6
