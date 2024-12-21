@@ -71,7 +71,7 @@ void RMT_Task (void *arg)
             {
                 // invoke the channel
                 pRmt->StartNextFrame();
-                uint32_t NotificationValue = ulTaskNotifyTake( pdTRUE, pdMS_TO_TICKS(25) );
+                uint32_t NotificationValue = ulTaskNotifyTake( pdTRUE, pdMS_TO_TICKS(100) );
                 if(1 == NotificationValue)
                 {
                     // DEBUG_V("The transmission ended as expected.");
@@ -461,10 +461,10 @@ void IRAM_ATTR c_OutputRmt::ISR_Handler (uint32_t isrFlags)
     // //DEBUG_V(String("  RMT_INT_TX_END_BIT: 0x") + String(RMT_INT_TX_END_BIT, HEX));
     // ClearRmtInterrupts;
 
-#ifdef USE_RMT_DEBUG_COUNTERS
-    ++ISRcounter;
+    RMT_DEBUG_COUNTER(++ISRcounter);
 
-    if(isrFlags & RMT_INT_TX_END_BIT)
+    // did the transmitter stall?
+    if (isrFlags & RMT_INT_TX_END_BIT )
     {
         ++IntTxEndIsrCounter;
     }
@@ -629,7 +629,7 @@ void c_OutputRmt::PauseOutput(bool PauseOutput)
     OutputIsPaused = PauseOutput;
 
     // //DEBUG_END;
-}
+} // PauseOutput
 
 //----------------------------------------------------------------------------
 bool c_OutputRmt::StartNewFrame ()
@@ -643,6 +643,8 @@ bool c_OutputRmt::StartNewFrame ()
         if(OutputIsPaused)
         {
             // DEBUG_V("Paused");
+            DisableRmtInterrupts;
+            ClearRmtInterrupts;
             break;
         }
 
