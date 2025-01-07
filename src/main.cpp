@@ -86,7 +86,7 @@ static void _u0_putc(char c){
 #ifdef ESPS_VERSION
 const String VERSION = STRING(ESPS_VERSION);
 #else
-const String VERSION = "4.x-dev";
+const String VERSION = "4.xx";
 #endif
 
 const String ConfigFileName = "/config.json";
@@ -527,6 +527,7 @@ void loop()
 
     FileMgr.Poll();
 
+    OLED.Update();
 #ifdef SUPPORT_SENSOR_DS18B20
     SensorDS18B20.Poll();
 #endif // def SUPPORT_SENSOR_DS18B20
@@ -579,7 +580,7 @@ bool RebootInProgress()
 void RequestReboot(uint32_t LoopDelay, bool SkipDisable /* = false */)
 {
     RebootCount = LoopDelay;
-
+    OLED.ShowToast("REBOOTING");
     if(!SkipDisable)
     {
         InputMgr.SetOperationalState(false);
