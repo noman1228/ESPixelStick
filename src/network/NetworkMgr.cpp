@@ -25,6 +25,7 @@
 #include "network/NetworkMgr.hpp"
 #include "input/InputMgr.hpp"
 #include "service/FPPDiscovery.h"
+#include "service/DisplayOLED.h"
 #include "WebMgr.hpp"
 #include <Int64String.h>
 
@@ -60,6 +61,9 @@ void c_NetworkMgr::AdvertiseNewState ()
         FileMgr.NetworkStateChanged (IsConnected ());
         FPPDiscovery.NetworkStateChanged (IsConnected ());
     }
+#ifdef SUPPORT_OLED
+    OLED.Update();
+#endif
 
     // DEBUG_END;
 } // AdvertiseNewState
@@ -69,7 +73,9 @@ void c_NetworkMgr::AdvertiseNewState ()
 void c_NetworkMgr::Begin ()
 {
     // DEBUG_START;
-
+#ifdef SUPPORT_OLED
+    OLED.Loading();
+#endif
     // prevent recalls
     if (true == HasBeenInitialized) { return; }
     HasBeenInitialized = true;

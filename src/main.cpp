@@ -45,6 +45,9 @@
 #ifdef SUPPORT_SENSOR_DS18B20
 #include "service/SensorDS18B20.h"
 #endif // def SUPPORT_SENSOR_DS18B20
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif // def SUPPORT_OLED
 
 #ifdef ARDUINO_ARCH_ESP8266
 #include <Hash.h>
@@ -141,6 +144,10 @@ void setup()
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
+
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif // def SUPPORT_OLED
 
     config.BlankDelay = 5;
 #ifdef ARDUINO_ARCH_ESP32
