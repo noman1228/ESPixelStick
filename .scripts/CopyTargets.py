@@ -136,6 +136,6 @@ def after_build(source, target, env):
                 # print("Copy SRC_BL_DIR: " + SRC_BL_DIR)
                 print("Copy: " + SRC_BL_DIR)
                 shutil.copyfile(SRC_BL_DIR, DST_BOOT)
-    # merge_bin()
+    merge_bin()
 
 env.AddPostAction("buildprog", after_build)
