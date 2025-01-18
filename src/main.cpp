@@ -580,7 +580,7 @@ bool RebootInProgress()
 void RequestReboot(uint32_t LoopDelay, bool SkipDisable /* = false */)
 {
     RebootCount = LoopDelay;
-    OLED.ShowToast("REBOOTING");
+
     if(!SkipDisable)
     {
         InputMgr.SetOperationalState(false);

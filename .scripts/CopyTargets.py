@@ -77,8 +77,8 @@ else:
 
 def merge_bin():
     # create a file system image
-    FS_BLD_CMD = FS_BLD_PATH + " -b 4096 -p 256 -s 0x50000 -c ./ESPixelStick/data " + DST_FS
-    MERGE_CMD = "./dist/bin/esptool/esptool.exe" + " --chip " + BOARD_MCU + " merge_bin " + " -o " + DST_MERG + " --flash_mode dio" + " --flash_freq 80m" + " --flash_size 4MB" + " 0x0000 " + DST_BOOT + " 0x8000 " + DST_PART + " 0xe000 "  + DST_DIR + "boot_app0.bin" + " 0x10000 " + DST_BIN + " 0x003b0000 " + DST_FS + ""
+    FS_BLD_CMD = FS_BLD_PATH + " -b 4096 -p 256 -s 0x50000 -c ./data " + DST_FS
+    MERGE_CMD = "./dist/bin/esptool/esptool.exe" + " --chip " + BOARD_MCU + " merge_bin " + " -o " + DST_MERG + " --flash_mode "+ BOARD_FLASH_MODE + " --flash_freq " +BOARD_F_FLASH+ " --flash_size 4MB" + " 0x0000 " + DST_BOOT + " 0x8000 " + DST_PART + " 0xe000 "  + DST_DIR + "boot_app0.bin" + " 0x10000 " + DST_BIN + " 0x003b0000 " + DST_FS + ""
     
     if OS_NAME == "windows" :
         FS_BLD_CMD = FS_BLD_CMD.replace("/", "\\")
