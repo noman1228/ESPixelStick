@@ -18,7 +18,6 @@
 *
 */
 
-#define SUPPORT_ETHERNET
 
 //Output Manager
 #define DEFAULT_RMT_0_GPIO      gpio_num_t::GPIO_NUM_15
@@ -37,30 +36,13 @@
 #define SDA                     gpio_num_t::GPIO_NUM_33
 #define SCL                     gpio_num_t::GPIO_NUM_32
 
-#include <ETH.h>
-#define DEFAULT_ETH_CLK_MODE           eth_clock_mode_t::ETH_CLOCK_GPIO0_IN
-#define DEFAULT_ETH_POWER_PIN          gpio_num_t::GPIO_NUM_12
-#define DEFAULT_ETH_POWER_PIN_ACTIVE   LOW
-
-#define DEFAULT_ETH_TYPE               eth_phy_type_t::ETH_PHY_RTL8201
-
-
-#define DEFAULT_ETH_ADDR               0
-#define DEFAULT_ETH_MDC_PIN            gpio_num_t::GPIO_NUM_23
-#define DEFAULT_ETH_MDIO_PIN           gpio_num_t::GPIO_NUM_18
-#define ETH_TYPE                        ETH_PHY_RTL8201
-#define ETH_ADDR                        0
-#define ETH_CLK_MODE                    ETH_CLOCK_GPIO0_IN
-#define ETH_RESET_PIN                   -1
-#define ETH_MDC_PIN                     23
-#define ETH_POWER_PIN                   12
-#define ETH_MDIO_PIN                    18
-#define SD_MISO_PIN                     34
-#define SD_MOSI_PIN                     13
-#define SD_SCLK_PIN                     14
-#define SD_CS_PIN                       5
-
-
-
 // Output Types
-#define SUPPORT_OutputType_WS2811         // UART / RMT
+#define SUPPORT_OutputType_DMX              // UART
+#define SUPPORT_OutputType_GECE             // UART
+#define SUPPORT_OutputType_GS8208           // UART / RMT
+#define SUPPORT_OutputType_Renard           // UART
+#define SUPPORT_OutputType_Serial           // UART
+#define SUPPORT_OutputType_TM1814           // UART / RMT
+#define SUPPORT_OutputType_UCS1903          // UART / RMT
+#define SUPPORT_OutputType_UCS8903          // UART / RMT
+#define SUPPORT_OutputType_WS2811           // UART / RMT
