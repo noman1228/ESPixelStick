@@ -80,6 +80,8 @@ typedef enum
 #include "platforms/GPIO_Defs_ESP32_8CHWROVER.hpp"
 #elif defined (BOARD_ESP32_DEV4)
 #include "platforms/GPIO_Defs_ESP32_DEV4.hpp"
+#elif defined (BOARD_ESP32_TETH)
+#include "platforms/GPIO_Defs_ESP32_TETH.hpp"
 #elif defined (BOARD_ESP32_D1_MINI_ETH)
 #   include "platforms/GPIO_Defs_ESP32_D1_MINI_ETH.hpp"
 #elif defined (BOARD_ESP32_D1_MINI)
