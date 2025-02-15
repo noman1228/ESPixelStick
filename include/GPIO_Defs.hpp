@@ -142,6 +142,12 @@ typedef enum
 #   include "platforms/GPIO_Defs_ESP32_BreakDanceV2.hpp"
 #elif defined (BOARD_ESP8266_D1MINI_LOLIN_SD)
 #   include "platforms/GPIO_Defs_ESP8266_D1_mini_lolinsd.hpp"
+#elif defined(BOARD_ESP32_WROVER)
+#include "platforms/GPIO_Defs_ESP32_8CHWROVER.hpp"
+#elif defined (BOARD_ESP32_DEV4)
+#include "platforms/GPIO_Defs_ESP32_DEV4.hpp"
+#elif defined (BOARD_ESP32_TETH)
+#include "platforms/GPIO_Defs_ESP32_TETH.hpp"
 #elif defined (ARDUINO_ARCH_ESP32)
 #   include "platforms/GPIO_Defs_ESP32_generic.hpp"
 #elif defined (ARDUINO_ARCH_ESP8266)
