@@ -60,10 +60,11 @@ void c_NetworkMgr::AdvertiseNewState ()
         WebMgr.NetworkStateChanged (IsConnected ());
         FileMgr.NetworkStateChanged (IsConnected ());
         FPPDiscovery.NetworkStateChanged (IsConnected ());
+        #ifdef SUPPORT_OLED
+            OLED.Update();
+        #endif
     }
-#ifdef SUPPORT_OLED
-    OLED.Update();
-#endif
+
 
     // DEBUG_END;
 } // AdvertiseNewState
