@@ -225,7 +225,9 @@ void setup()
 #else
     esp_task_wdt_init (5, true);
 #endif
-
+#ifdef SUPPORT_OLED
+    OLED.Poll();
+#endif
     WebMgr.CreateAdminInfoFile();
 
     // Done with initialization
@@ -531,7 +533,9 @@ void loop()
 #ifdef SUPPORT_SENSOR_DS18B20
     SensorDS18B20.Poll();
 #endif // def SUPPORT_SENSOR_DS18B20
-
+#ifdef SUPPORT_OLED
+    OLED.Poll();
+#endif
     // need to keep the rx pipeline empty
     size_t BytesToDiscard = min (100, LOG_PORT.available ());
     DiscardedRxData += BytesToDiscard;

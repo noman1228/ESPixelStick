@@ -74,9 +74,7 @@ void c_NetworkMgr::AdvertiseNewState ()
 void c_NetworkMgr::Begin ()
 {
     // DEBUG_START;
-#ifdef SUPPORT_OLED
-    OLED.Loading();
-#endif
+
     // prevent recalls
     if (true == HasBeenInitialized) { return; }
     HasBeenInitialized = true;

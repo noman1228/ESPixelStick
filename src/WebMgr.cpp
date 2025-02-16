@@ -23,7 +23,7 @@
 #include "input/InputMgr.hpp"
 #include "service/FPPDiscovery.h"
 #include "network/NetworkMgr.hpp"
-
+#include <algorithm> 
 #include <Int64String.h>
 
 #include <FS.h>
