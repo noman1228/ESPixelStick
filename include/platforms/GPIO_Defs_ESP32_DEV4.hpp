@@ -17,10 +17,7 @@
 *  or use of these programs.
 *
 */
-#ifndef MY_GPIO_CONFIG_HPP
-#define MY_GPIO_CONFIG_HPP
 
-#include "driver/gpio.h" // Required for ESP32 GPIO functions
 
 // RMT GPIOs
 #define DEFAULT_RMT_0_GPIO gpio_num_t::GPIO_NUM_27
@@ -29,6 +26,8 @@
 #define DEFAULT_RMT_3_GPIO gpio_num_t::GPIO_NUM_32
 #define DEFAULT_RMT_4_GPIO gpio_num_t::GPIO_NUM_2
 #define DEFAULT_RMT_5_GPIO gpio_num_t::GPIO_NUM_4
+
+
 // SPI Output
 #define SUPPORT_SPI_OUTPUT
 #define DEFAULT_SPI_DATA_GPIO gpio_num_t::GPIO_NUM_13
@@ -48,7 +47,9 @@
 #define SD_CARD_CS_PIN gpio_num_t::GPIO_NUM_5
 
 // Button
-#define BUTON_GPIO1 gpio_num_t::GPIO_NUM_35
+#define BUTTON_GPIO1 gpio_num_t::GPIO_NUM_35
+
+
 // Output Types
 // Not Finished - #define SUPPORT_OutputType_TLS3001
 #define SUPPORT_OutputType_APA102           // SPI
@@ -63,94 +64,7 @@
 #define SUPPORT_OutputType_WS2801           // SPI
 #define SUPPORT_OutputType_WS2811           // UART / RMT
 #define SUPPORT_OutputType_Relay            // GPIO
-#define SUPPORT_OutputType_Servo_PCA9685    // I2C (default pins)
-void resetAllGPIOs8()
-{
-// RMT GPIOs
-#ifdef DEFAULT_RMT_0_GPIO
-    gpio_reset_pin(DEFAULT_RMT_0_GPIO);
-#endif
-#ifdef DEFAULT_RMT_1_GPIO
-    gpio_reset_pin(DEFAULT_RMT_1_GPIO);
-#endif
-#ifdef DEFAULT_RMT_2_GPIO
-    gpio_reset_pin(DEFAULT_RMT_2_GPIO);
-#endif
-#ifdef DEFAULT_RMT_3_GPIO
-    gpio_reset_pin(DEFAULT_RMT_3_GPIO);
-#endif
-#ifdef DEFAULT_RMT_4_GPIO
-    gpio_reset_pin(DEFAULT_RMT_4_GPIO);
-#endif
-#ifdef DEFAULT_RMT_5_GPIO
-    gpio_reset_pin(DEFAULT_RMT_5_GPIO);
-#endif
-#ifdef DEFAULT_RMT_6_GPIO
-    gpio_reset_pin(DEFAULT_RMT_6_GPIO);
-#endif
-#ifdef DEFAULT_RMT_7_GPIO
-    gpio_reset_pin(DEFAULT_RMT_7_GPIO);
-#endif
-#ifdef DEFAULT_UART_0_GPIO
-    gpio_reset_pin(DEFAULT_UART_0_GPIO);
-#endif
-#ifdef DEFAULT_UART_1_GPIO
-    gpio_reset_pin(DEFAULT_UART_1_GPIO);
-#endif
-#ifdef DEFAULT_UART_2_GPIO
-    gpio_reset_pin(DEFAULT_UART_2_GPIO);
-#endif
-#ifdef DEFAULT_UART_3_GPIO
-    gpio_reset_pin(DEFAULT_UART_3_GPIO);
-#endif
-// SPI GPIOs
-#ifdef DEFAULT_SPI_DATA_GPIO
-    gpio_reset_pin(DEFAULT_SPI_DATA_GPIO);
-#endif
-#ifdef DEFAULT_SPI_CLOCK_GPIO
-    gpio_reset_pin(DEFAULT_SPI_CLOCK_GPIO);
-#endif
-#ifdef DEFAULT_SPI_CS_GPIO
-    gpio_reset_pin(DEFAULT_SPI_CS_GPIO);
-#endif
 
-// I2C GPIOs
-#ifdef DEFAULT_I2C_SDA
-    gpio_reset_pin(DEFAULT_I2C_SDA);
-#endif
-#ifdef DEFAULT_I2C_SCL
-    gpio_reset_pin(DEFAULT_I2C_SCL);
-#endif
 
-// SD Card GPIOs
-#ifdef SD_CARD_MISO_PIN
-    gpio_reset_pin(SD_CARD_MISO_PIN);
-#endif
-#ifdef SD_CARD_MOSI_PIN
-    gpio_reset_pin(SD_CARD_MOSI_PIN);
-#endif
-#ifdef SD_CARD_CLK_PIN
-    gpio_reset_pin(SD_CARD_CLK_PIN);
-#endif
-#ifdef SD_CARD_CS_PIN
-    gpio_reset_pin(SD_CARD_CS_PIN);
-#endif
 
-// Button GPIO
-#ifdef BUTON_GPIO1
-    gpio_reset_pin(BUTON_GPIO1);
-#endif
-}
 
-// Automatically reset GPIOs when this header is included
-struct AutoGPIOReset
-{
-    AutoGPIOReset()
-    {
-        resetAllGPIOs8();
-    }
-};
-
-static AutoGPIOReset autoReset;
-
-#endif // MY_GPIO_CONFIG_HPP
