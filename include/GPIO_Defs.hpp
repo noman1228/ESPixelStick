@@ -148,6 +148,8 @@ typedef enum
 #include "platforms/GPIO_Defs_ESP32_DEV4.hpp"
 #elif defined (BOARD_ESP32_TETH)
 #include "platforms/GPIO_Defs_ESP32_TETH.hpp"
+#elif defined (BOARD_ESP32_BIGETH)
+#include "platforms/GPIO_Defs_ESP32_BIGBOI_ETH.hpp"
 #elif defined (ARDUINO_ARCH_ESP32)
 #   include "platforms/GPIO_Defs_ESP32_generic.hpp"
 #elif defined (ARDUINO_ARCH_ESP8266)
