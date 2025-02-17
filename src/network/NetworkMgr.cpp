@@ -61,7 +61,6 @@ void c_NetworkMgr::AdvertiseNewState ()
         FPPDiscovery.NetworkStateChanged (IsConnected ());
     }
 
-
     // DEBUG_END;
 } // AdvertiseNewState
 

@@ -14,14 +14,14 @@
 *  Author shall not be liable in any event for incidental or consequential
 *  damages in connection with, or arising out of, the furnishing, performance
 *  or use of these programs.
+*
 */
 
 #include "ESPixelStick.h"
 
 #ifdef SUPPORT_ETHERNET
 
-#include "Ethernet3.h" // For W5500 support
-#include <SPI.h>      // For W5500 support
+#include <ETH.h>
 #include "network/NetworkMgr.hpp"
 #include "network/EthernetDriver.hpp"
 
@@ -34,12 +34,6 @@ static fsm_Eth_state_ConnectingToEth   fsm_Eth_state_ConnectingToEth_imp;
 static fsm_Eth_state_WaitForIP         fsm_Eth_state_WaitForIP_imp;
 static fsm_Eth_state_GotIp             fsm_Eth_state_GotIp_imp;
 static fsm_Eth_state_DeviceInitFailed  fsm_Eth_state_DeviceInitFailed_imp;
-
-// W5500 Configuration
-#ifdef SUPPORT_W5500
-#define W5500_CS_PIN 5  // Define the CS pin for W5500
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // MAC address for W5500
-#endif
 
 //-----------------------------------------------------------------------------
 ///< Start up the driver and put it into a safe mode
@@ -84,26 +78,20 @@ void c_EthernetDriver::Begin ()
     fsm_Eth_state_GotIp_imp.SetParent(this);
     fsm_Eth_state_DeviceInitFailed_imp.SetParent(this);
 
-#ifdef SUPPORT_W5500
-    // Initialize W5500
-    Ethernet.init(W5500_CS_PIN);
-    if (Ethernet.begin(mac) == 0) {
-        logcon(F("Failed to configure W5500 using DHCP"));
-        fsm_Eth_state_DeviceInitFailed_imp.Init();
-    } else {
-        logcon(F("W5500 connected using DHCP"));
-        fsm_Eth_state_GotIp_imp.Init();
+#ifdef testEth
+    logcon(String("Start IP ") + GetIpAddress().toString());
+    if (false == ETH.begin(phy_addr, power_pin /*gpio_num_t(-1)*/, mdc_pin, mdio_pin, phy_type, clk_mode))
+    {
+        logcon(String("Failed IP ") + GetIpAddress().toString());
     }
-#else
-    // Initialize built-in Ethernet
-    if (false == ETH.begin(phy_addr, power_pin, mdc_pin, mdio_pin, phy_type, clk_mode)) {
-        logcon(F("Failed to configure built-in Ethernet"));
-        fsm_Eth_state_DeviceInitFailed_imp.Init();
-    } else {
-        logcon(F("Built-in Ethernet connected"));
-        fsm_Eth_state_GotIp_imp.Init();
-    }
-#endif
+    // https://github.com/espressif/arduino-esp32/issues/5733 - add delay
+    delay(100);
+    while(!GetIpAddress()) {}
+    logcon(String("After IP ") + GetIpAddress().toString());
+#endif // def testEth
+
+    // this gets called pre-setup so there is nothing we can do here.
+    fsm_Eth_state_Boot_imp.Init();
 
     // Setup Ethernet Handlers
     WiFi.onEvent ([this](WiFiEvent_t event, arduino_event_info_t info) {this->onEventHandler (event, info); });
@@ -127,11 +115,7 @@ void c_EthernetDriver::SetEthHostname ()
     if (0 != Hostname.length ())
     {
         // DEBUG_V (String ("Setting ETH hostname: ") + Hostname);
-#ifdef SUPPORT_W5500
-        Ethernet.setHostname (Hostname.c_str ());
-#else
         ETH.setHostname (Hostname.c_str ());
-#endif
     }
 
     logcon (String (F ("Ethernet Connecting as ")) + Hostname);
@@ -167,51 +151,31 @@ void c_EthernetDriver::GetConfig (JsonObject& json)
 //-----------------------------------------------------------------------------
 void c_EthernetDriver::GetHostname (String & Name)
 {
-#ifdef SUPPORT_W5500
-    Name = Ethernet.hostname();
-#else
     Name = ETH.getHostname ();
-#endif
 } // GetHostname
 
 //-----------------------------------------------------------------------------
 IPAddress c_EthernetDriver::GetIpAddress ()
 {
-#ifdef SUPPORT_W5500
-    return Ethernet.localIP();
-#else
     return ETH.localIP ();
-#endif
 } // GetIpAddress
 
 //-----------------------------------------------------------------------------
 IPAddress c_EthernetDriver::GetIpGateway ()
 {
-#ifdef SUPPORT_W5500
-    return Ethernet.gatewayIP();
-#else
     return ETH.gatewayIP ();
-#endif
 } // GetIpGateway
 
 //-----------------------------------------------------------------------------
 IPAddress c_EthernetDriver::GetIpSubNetMask ()
 {
-#ifdef SUPPORT_W5500
-    return Ethernet.subnetMask();
-#else
     return ETH.subnetMask ();
-#endif
 } // GetIpSubNetMask
 
 //-----------------------------------------------------------------------------
 String c_EthernetDriver::GetMacAddress ()
 {
-#ifdef SUPPORT_W5500
-    return Ethernet.macAddress();
-#else
     return ETH.macAddress ();
-#endif
 } // GetMacAddress
 
 //-----------------------------------------------------------------------------
@@ -335,11 +299,13 @@ void c_EthernetDriver::reset ()
     logcon (F ("Ethernet Reset has been requested"));
 
     NetworkStateChanged (false);
-#ifdef SUPPORT_W5500
-    Ethernet.begin(mac); // Reinitialize W5500
-#else
-    ETH.begin(phy_addr, power_pin, mdc_pin, mdio_pin, phy_type, clk_mode); // Reinitialize built-in Ethernet
-#endif
+#ifdef ETH_stop
+    // Disconnect Ethernet if connected
+    if (ETH.stop () != ESP_OK)
+    {
+        logcon (F ("Could not disconnect Ethernet"));
+    }
+#endif // def ETH.stop
 
     fsm_Eth_state_Boot_imp.Init ();
 
@@ -386,6 +352,15 @@ bool c_EthernetDriver::SetConfig (JsonObject & json)
     primaryDns.fromString (sDnsp);
     secondaryDns.fromString (sDnss);
 
+    // DEBUG_V (String ("     sip: ") + ip.toString ());
+    // DEBUG_V (String ("sgateway: ") + gateway.toString ());
+    // DEBUG_V (String ("snetmask: ") + netmask.toString ());
+
+    // DEBUG_V (String ("      ip: ") + ip.toString ());
+    // DEBUG_V (String (" gateway: ") + gateway.toString ());
+    // DEBUG_V (String (" netmask: ") + netmask.toString ());
+    // DEBUG_V (String (" UseDhcp: ") + UseDhcp);
+
     // Eth Driver does not support config updates while it is running.
     if (ConfigChanged && HasBeenPreviouslyConfigured)
     {
@@ -414,30 +389,34 @@ void c_EthernetDriver::SetUpIp ()
             break;
         }
 
+        // DEBUG_V ("   temp: " + temp.toString ());
+
         if (temp == ip)
         {
             logcon (F ("NETWORK: ERROR: STATIC SELECTED WITHOUT IP. Using DHCP assigned address"));
             break;
         }
 
-        if ((ip      == GetIpAddress ())    &&
-            (netmask == GetIpSubNetMask ()) &&
-            (gateway == GetIpGateway ()))
+        if ((ip      == ETH.localIP ())    &&
+            (netmask == ETH.subnetMask ()) &&
+            (gateway == ETH.gatewayIP ()))
         {
             // DEBUG_V ("correct IP is already set");
             break;
         }
 
+        // DEBUG_V ("     ip: " + ip.toString ());
+        // DEBUG_V ("netmask: " + netmask.toString ());
+        // DEBUG_V ("gateway: " + gateway.toString ());
+
         if(primaryDns == INADDR_NONE)
         {
             primaryDns = gateway;
         }
-
-#ifdef SUPPORT_W5500
-        Ethernet.begin(mac, ip, primaryDns, gateway, netmask);
-#else
+        // We didn't use DNS, so just set it to our configured gateway
+        // https://github.com/espressif/arduino-esp32/issues/5733 - add delay
+        delay(100);
         ETH.config (ip, gateway, netmask, primaryDns, secondaryDns);
-#endif
 
         logcon (F ("Connecting to Ethernet with Static IP"));
 
@@ -452,11 +431,15 @@ void c_EthernetDriver::StartEth ()
 {
     // DEBUG_START;
 
-#ifdef SUPPORT_W5500
-    Ethernet.begin(mac); // Initialize W5500
-#else
-    ETH.begin(phy_addr, power_pin, mdc_pin, mdio_pin, phy_type, clk_mode); // Initialize built-in Ethernet
-#endif
+// if (!eth_connected)
+// esp_eth_disable();
+    logcon(String("ETH IP Before Start: ") + ETH.localIP().toString());
+    if (false == ETH.begin (phy_addr, power_pin /*gpio_num_t(-1)*/, mdc_pin, mdio_pin, phy_type, clk_mode))
+    {
+        fsm_Eth_state_DeviceInitFailed_imp.Init ();
+    }
+    // https://github.com/espressif/arduino-esp32/issues/5733 - Add delay
+    delay(100);
 
     // DEBUG_END;
 } // StartEth
@@ -484,7 +467,10 @@ void fsm_Eth_state_Boot::Init ()
     // DEBUG_START;
 
     pEthernetDriver->SetFsmState (this);
+    // pEthernetDriver->AnnounceState ();
     pEthernetDriver->GetFsmTimer().StartTimer(10000, false);
+
+    // DEBUG_V(String("pEthernetDriver: 0x") + String(uint32_t(pEthernetDriver), HEX));
 
     // DEBUG_END;
 
@@ -496,8 +482,11 @@ void fsm_Eth_state_Boot::Poll ()
 {
     // DEBUG_START;
 
+    // DEBUG_V(String("pEthernetDriver: 0x") + String(uint32_t(pEthernetDriver), HEX));
+
     if (pEthernetDriver->GetFsmTimer().IsExpired())
     {
+        // DEBUG_V("Start trying to connect");
         fsm_Eth_state_PoweringUp_imp.Init();
     }
 
@@ -527,7 +516,10 @@ void fsm_Eth_state_PoweringUp::Poll ()
 
     if (pEthernetDriver->GetFsmTimer ().IsExpired())
     {
+        // Start trying to connect to based on input config
         fsm_Eth_state_ConnectingToEth_imp.Init ();
+
+        // this may throw the connected handler
         pEthernetDriver->StartEth ();
     }
 
@@ -553,11 +545,11 @@ void fsm_Eth_state_ConnectingToEth::Poll()
 {
     // DEBUG_START;
 
-    if(GetIpAddress())
+    if(ETH.localIP())
     {
+        // LOG_PORT.println(String("Got ETH IP: ") + ETH.localIP().toString());
         OnGotIp();
     }
-
     // DEBUG_END;
 } // fsm_Eth_state_ConnectingToEth
 
@@ -632,6 +624,8 @@ void fsm_Eth_state_GotIp::Init ()
     pEthernetDriver->NetworkStateChanged (true);
 
     logcon (String (F ("Ethernet Connected with IP: ")) + pEthernetDriver->GetIpAddress ().toString ());
+    // DEBUG_V (String (" gateway: ") + pEthernetDriver->GetIpGateway ().toString ());
+    // DEBUG_V (String (" netmask: ") + pEthernetDriver->GetIpSubNetMask ().toString ());
 
     // DEBUG_END;
 
@@ -643,6 +637,8 @@ void fsm_Eth_state_GotIp::OnDisconnect ()
     // DEBUG_START;
 
     pEthernetDriver->NetworkStateChanged (false);
+
+    // take some recovery action
     fsm_Eth_state_ConnectingToEth_imp.Init ();
 
     // DEBUG_END;
