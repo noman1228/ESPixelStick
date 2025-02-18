@@ -1,7 +1,7 @@
 #ifdef SUPPORT_OLED
 #include "service/DisplayOLED.h"
 #include "ESPixelStick.h"
-#include "driver/gpio.h"
+#include "Wire.h"
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, GPIO_NUM_22, GPIO_NUM_21);
 Preferences preferences;
 
@@ -43,6 +43,7 @@ void c_OLED::UpdateRunningStatus() {
 c_OLED::c_OLED() : currentPage(DisplayPage::NETWORK_INFO), lastPageSwitchTime(0), pageSwitchInterval(7500) {}
 
 void c_OLED::Begin() {
+    u8g2.begin();
     error_global = false;
     u8g2.begin();
     preferences.begin("oled", false);
