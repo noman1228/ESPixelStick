@@ -46,7 +46,7 @@
 #include "service/SensorDS18B20.h"
 #endif // def SUPPORT_SENSOR_DS18B20
 #ifdef SUPPORT_OLED
-#include "service/DisplayOLED.h"
+#include "service/DisplayOLED.hpp"
 #endif // def SUPPORT_OLED
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -225,9 +225,7 @@ void setup()
 #else
     esp_task_wdt_init (5, true);
 #endif
-#ifdef SUPPORT_OLED
-    OLED.Poll();
-#endif
+
     WebMgr.CreateAdminInfoFile();
 
     // Done with initialization
@@ -534,6 +532,7 @@ void loop()
     SensorDS18B20.Poll();
 #endif // def SUPPORT_SENSOR_DS18B20
 #ifdef SUPPORT_OLED
+    FeedWDT ();
     OLED.Poll();
 #endif
     // need to keep the rx pipeline empty

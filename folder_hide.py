@@ -1,19 +1,28 @@
 import json
 import os
+import sys
 
 # Path to your settings.json file
 SETTINGS_PATH = os.path.expanduser(r"C:\Users\jay\AppData\Roaming\Code\User\settings.json")
 
-# Folders to toggle
+# Folders and file patterns to toggle
 folders_to_toggle = [
+    "**/.git",
     "**/node_modules",
     "**/dist",
     "**/.pio",
+    "**/.data",
+    "**/.debug",
     "**/data",
     "**/debug",
     "**/.doxygen",
     "**/.ci",
-    "**/.github"
+    "**/.github",
+    "**/SupportingDocs",
+    "**/tools",
+    "*README*",
+    "*.md",
+    "*.json"
 ]
 
 # Load the settings file
@@ -31,13 +40,18 @@ except json.JSONDecodeError:
 if "files.exclude" not in settings:
     settings["files.exclude"] = {}
 
-# Toggle the visibility of each folder
+# Determine the current state of the folders
+# Check if any folder is currently visible (i.e., not excluded or explicitly set to false)
+any_visible = any(
+    folder not in settings["files.exclude"] or settings["files.exclude"].get(folder) is False
+    for folder in folders_to_toggle
+)
+
+# Toggle all folders based on the current state
+new_state = any_visible  # If any folder is visible, hide all; otherwise, show all
 for folder in folders_to_toggle:
-    if folder in settings["files.exclude"]:
-        settings["files.exclude"][folder] = not settings["files.exclude"][folder]
-    else:
-        settings["files.exclude"][folder] = True
-    print(f"Toggled visibility of {folder}: {settings['files.exclude'][folder]}")
+    settings["files.exclude"][folder] = new_state
+    print(f"Set visibility of {folder} to {'hidden' if new_state else 'visible'}")
 
 # Save the updated settings
 try:
@@ -46,3 +60,4 @@ try:
     print("Settings updated successfully.")
 except Exception as e:
     print(f"Error saving settings: {e}")
+

@@ -1,10 +1,12 @@
 #ifdef SUPPORT_OLED
-#include "service/DisplayOLED.h"
+#include "service/DisplayOLED.hpp"
 #include "ESPixelStick.h"
-#include "Wire.h"
+#include <ArduinoJson.h>
+#include "network/NetworkMgr.hpp"
+#include <Preferences.h>
+#include "ConstNames.hpp"
+#include "service/FPPDiscovery.h"
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, GPIO_NUM_22, GPIO_NUM_21);
-Preferences preferences;
-
 void c_OLED::UpdateRunningStatus() {
     static unsigned long lastUpdateTime = 0;
     const unsigned long updateInterval = 10000; // 10 seconds
@@ -40,17 +42,16 @@ void c_OLED::UpdateRunningStatus() {
     }
 }
 
-c_OLED::c_OLED() : currentPage(DisplayPage::NETWORK_INFO), lastPageSwitchTime(0), pageSwitchInterval(7500) {}
+c_OLED::c_OLED() : currentPage(DisplayPage::NETWORK_INFO), lastPageSwitchTime(0), pageSwitchInterval(7500), flipState(0) {}
 
 void c_OLED::Begin() {
     u8g2.begin();
     error_global = false;
     u8g2.begin();
-    preferences.begin("oled", false);
-    pinMode(BUTTON_GPIO1, INPUT_PULLUP);
-
-    u8g2.setDisplayRotation(preferences.getInt("flipState", 0) ? U8G2_R2 : U8G2_R0);
-    preferences.end();
+    #ifdef BUTTON_GPIO1
+        pinMode(BUTTON_GPIO1, INPUT_PULLUP);
+    #endif
+    u8g2.setDisplayRotation(flipState ? U8G2_R2 : U8G2_R0);
 
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_ncenB08_tr);
@@ -80,15 +81,13 @@ void c_OLED::UpdateErrorFlashing() {
 void c_OLED::Poll() {
     static unsigned long lastDebounceTime = 0;
     const unsigned long debounceDelay = 1000;
-
+    #ifdef BUTTON_GPIO1
     if (digitalRead(BUTTON_GPIO1) == LOW && millis() - lastDebounceTime > debounceDelay) {
         Flip();
         Update(true);
-        DUMPER(0xFFFFFFFFF);
         lastDebounceTime = millis();
-
     }
-
+    #endif
     if (millis() - lastPageSwitchTime >= pageSwitchInterval) {
         currentPage = (FPPDiscovery.PlayingAfile() && currentPage == DisplayPage::NETWORK_INFO) ? DisplayPage::RUNNING_STATUS : DisplayPage::NETWORK_INFO;
         lastPageSwitchTime = millis();
@@ -134,11 +133,8 @@ void c_OLED::UpdateNetworkInfo(bool forceUpdate) {
 }
 
 void c_OLED::Flip() {
-    preferences.begin("oled", false);
-    int flipState = !preferences.getInt("flipState", 0);
+    flipState = !flipState;
     u8g2.setDisplayRotation(flipState ? U8G2_R2 : U8G2_R0);
-    preferences.putInt("flipState", flipState);
-    preferences.end();
 }
 
 int c_OLED::getSignalStrength(int rssi) {
@@ -155,6 +151,36 @@ String c_OLED::getUpdateReason(String currIP, String dispIP, String currHost, St
     if (currHost != dispHostName) reason += "Host ";
     if (signalStrength != dispRSSI) reason += "RSSI ";
     return reason;
+}
+
+void c_OLED::GetConfig(JsonObject& json) {
+    JsonObject oledConfig = json[(char*)CN_oled].to<JsonObject>();
+    JsonWrite(oledConfig, CN_flipState, flipState);
+}
+
+bool c_OLED::SetConfig(JsonObject& json) {
+    bool ConfigChanged = false;
+
+    do // once
+    {
+        JsonObject oledConfig = json[(char*)CN_oled];
+        if (!oledConfig) {
+            //logcon(F("No OLED settings found."));
+            break;
+        }
+
+        uint32_t t = flipState;
+        ConfigChanged |= setFromJSON(t, oledConfig, CN_flipState);
+        flipState = t;
+        u8g2.setDisplayRotation(flipState ? U8G2_R2 : U8G2_R0);
+    } while(false);
+
+    return ConfigChanged;
+}
+
+void c_OLED::GetStatus(JsonObject& json) {
+    JsonObject oledStatus = json[(char*)CN_oled].to<JsonObject>();
+    JsonWrite(oledStatus, CN_flipState, flipState);
 }
 
 c_OLED OLED;
