@@ -20,8 +20,6 @@
 #ifdef SUPPORT_OLED
 #include "ESPixelStick.h"
 #include <U8g2lib.h>
-#include <WiFi.h>
-#include <TimeLib.h>
 #include "service/FPPDiscovery.h"
 #include <ArduinoJson.h>
 #include "network/NetworkMgr.hpp"

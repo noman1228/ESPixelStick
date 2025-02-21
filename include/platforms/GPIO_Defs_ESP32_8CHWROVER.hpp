@@ -23,11 +23,19 @@
 #define DEFAULT_RMT_1_GPIO gpio_num_t::GPIO_NUM_26
 #define DEFAULT_RMT_2_GPIO gpio_num_t::GPIO_NUM_33
 #define DEFAULT_RMT_3_GPIO gpio_num_t::GPIO_NUM_32
-#define DEFAULT_UART_1_GPIO     gpio_num_t::GPIO_NUM_13
-#define DEFAULT_UART_2_GPIO     gpio_num_t::GPIO_NUM_14
 
 
-#define BUTTON_GPIO1 gpio_num_t::GPIO_NUM_35
+// SPI Output
+//#define SUPPORT_SPI_OUTPUT
+#define DEFAULT_SPI_DATA_GPIO  gpio_num_t::GPIO_NUM_16
+#define DEFAULT_SPI_CLOCK_GPIO gpio_num_t::GPIO_NUM_17
+#define DEFAULT_SPI_CS_GPIO    gpio_num_t::GPIO_NUM_0
+#define DEFAULT_SPI_DEVICE     VSPI_HOST
+
+#define DEFAULT_I2C_SDA         gpio_num_t::GPIO_NUM_21
+#define DEFAULT_I2C_SCL         gpio_num_t::GPIO_NUM_22
+
+#define BUTTON_GPIO1 gpio_num_t::GPIO_NUM_34
 
 // File Manager
 #define SUPPORT_SD
@@ -36,14 +44,5 @@
 #define SD_CARD_CLK_PIN gpio_num_t::GPIO_NUM_18
 #define SD_CARD_CS_PIN gpio_num_t::GPIO_NUM_5
 
-
-
-// Output Types
-// Not Finished - #define SUPPORT_OutputType_TLS3001
-#define SUPPORT_OutputType_DMX              // UART
-#define SUPPORT_OutputType_GECE             // UART
-#define SUPPORT_OutputType_GS8208           // UART / RMT
-#define SUPPORT_OutputType_Renard           // UART
-#define SUPPORT_OutputType_Serial           // UART
 #define SUPPORT_OutputType_WS2811           // UART / RMT
 

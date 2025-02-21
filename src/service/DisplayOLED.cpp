@@ -45,7 +45,6 @@ c_OLED::c_OLED() : currentPage(DisplayPage::NETWORK_INFO), lastPageSwitchTime(0)
 void c_OLED::Begin() {
     u8g2.begin();
     error_global = false;
-    u8g2.begin();
     preferences.begin("oled", false);
     pinMode(BUTTON_GPIO1, INPUT_PULLUP);
 
@@ -53,7 +52,7 @@ void c_OLED::Begin() {
     preferences.end();
 
     u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_ncenB08_tr);
+    u8g2.setFont(u8g2_font_ncenB14_tr);
     u8g2.drawStr(0, 12, "Initialization...");
     u8g2.sendBuffer();
 }
@@ -84,7 +83,7 @@ void c_OLED::Poll() {
     if (digitalRead(BUTTON_GPIO1) == LOW && millis() - lastDebounceTime > debounceDelay) {
         Flip();
         Update(true);
-        DUMPER(0xFFFFFFFFF);
+       // DUMPER(0xFFFFFFFFF);
         lastDebounceTime = millis();
 
     }

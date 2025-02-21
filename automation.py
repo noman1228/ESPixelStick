@@ -113,6 +113,7 @@ def main():
         f"pio run -e {active_env} -t buildfs",  # Build filesystem
         f"pio run -e {active_env} -t upload",  # Upload firmware
         f"pio run -e {active_env} -t uploadfs"  # Upload filesystem
+
     ]
 
     for cmd in commands:
