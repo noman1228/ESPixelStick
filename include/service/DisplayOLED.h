@@ -57,33 +57,7 @@ private:
     // Display update functions
     void UpdateNetworkInfo(bool forceUpdate);
     void UpdateRunningStatus();
-    void DUMPER(uint64_t gpio_mask) {
-        DEBUG_V("GPIO Configuration Dump:");
-    
-        for (int gpio = 0; gpio < 40; gpio++) {  // ESP32 
-            if (gpio_mask & (1ULL << gpio)) {    // Check if this GPIO is in the mask
-                // Get the GPIO mode
-                const char* mode = "UNKNOWN";
-                uint32_t gpio_reg = GPIO_PIN_MUX_REG[gpio];  // Get the GPIO mux register address
-                if (gpio_reg != 0) {  // Check if the GPIO is valid
-                    uint32_t func = (*(volatile uint32_t*)gpio_reg) & 0x3FF;  // Get the function (mode)
-                    if (func == 0x100) {
-                        mode = "INPUT";
-                    } else if (func == 0x200) {
-                        mode = "OUTPUT";
-                    } else if (func == 0x300) {
-                        mode = "INPUT/OUTPUT";
-                    } else String(mode) = String(func);
-                }
-                bool pullup = (GPIO_PIN_MUX_REG[gpio] & 0x400) != 0;  // Check pull-up
-                bool pulldown = (GPIO_PIN_MUX_REG[gpio] & 0x800) != 0;  // Check pull-down
-                String rslt = String("GPIO " + String(gpio) + ": Mode=" + mode + ", PULL-UP=" + (pullup ? "ENABLED" : "DISABLED") + ", PULL-DOWN=" + (pulldown ? "ENABLED" : "DISABLED"));
-                DEBUG_V(rslt);
-    
-            }
-        }
-    }
-};
+   };
 
 extern c_OLED OLED;
 
