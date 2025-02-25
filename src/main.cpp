@@ -46,6 +46,9 @@
 #include "service/SensorDS18B20.h"
 #endif // def SUPPORT_SENSOR_DS18B20
 
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.hpp"
+#endif // def SUPPORT_OLED
 #ifdef ARDUINO_ARCH_ESP8266
 #include <Hash.h>
 extern "C"
@@ -142,7 +145,9 @@ void setup()
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
-
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif // def SUPPORT_OLED
     config.BlankDelay = 5;
 #ifdef ARDUINO_ARCH_ESP32
     // disable brownout detector
@@ -520,7 +525,10 @@ void loop()
     WebMgr.Process ();
 
     FileMgr.Poll();
-
+    #ifdef SUPPORT_OLED
+    OLED.Poll();
+    FeedWDT ();
+    #endif // def SUPPORT_OLED
 #ifdef SUPPORT_SENSOR_DS18B20
     SensorDS18B20.Poll();
 #endif // def SUPPORT_SENSOR_DS18B20

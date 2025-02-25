@@ -1,15 +1,12 @@
 /debug/
 /firmware/
 /.doxygen/doc/
-/.vscode/
 !/.vscode/extensions.json
 /dist/*.html
 /node_modules/
 /data
 /.pio
 __pycache__
-platformio_user.ini
-secrets.h
 firmware.map
 MyEnv.txt
 Changelog.pdf
