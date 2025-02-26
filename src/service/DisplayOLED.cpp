@@ -102,9 +102,9 @@ void c_OLED::UpdatePlayingStatus() {
 
         u8g2.clearBuffer();
         u8g2.setFont(u8g2_font_ncenB08_tr);
-        DrawCentered(10, statusLine1);
-        DrawCentered(22, statusLine2);
-        DrawCentered(34, statusLine3);
+        DrawCentered(8, statusLine1);
+        DrawCentered(18, statusLine2);
+        DrawCentered(26, statusLine3);
         u8g2.sendBuffer();
     }
 }
