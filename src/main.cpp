@@ -49,6 +49,9 @@
 #include "service/DisplayOLED.h"
 #endif // def SUPPORT_OLED
 
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.hpp"
+#endif // def SUPPORT_OLED
 #ifdef ARDUINO_ARCH_ESP8266
 #include <Hash.h>
 extern "C"
@@ -527,7 +530,10 @@ void loop()
     WebMgr.Process ();
 
     FileMgr.Poll();
-
+    #ifdef SUPPORT_OLED
+    OLED.Poll();
+    FeedWDT ();
+    #endif // def SUPPORT_OLED
 #ifdef SUPPORT_SENSOR_DS18B20
     SensorDS18B20.Poll();
 #endif // def SUPPORT_SENSOR_DS18B20

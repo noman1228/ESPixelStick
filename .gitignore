@@ -1,7 +1,6 @@
 /debug/
 /firmware/
 /.doxygen/doc/
-/.vscode/
 !/.vscode/extensions.json
 /dist/*.html
 /node_modules/

@@ -1,0 +1,149 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "[Erase]",
+            "type": "shell",
+            "command": "esptool.exe",
+            "args": [
+                "erase_flash"
+            ],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new",
+                "close": true
+            }
+        },
+        {
+            "label": "[GULP]",
+            "type": "shell",
+            "command": "./gulpme.bat",
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new",
+                "close": true
+            }
+        },
+        {
+            "label": "[FOLDERS]",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "folder_hide.py"
+            ],
+            "presentation": {
+                "echo": false,
+                "reveal": "never",
+                "focus": false,
+                "panel": "shared",
+                "close": true
+            }
+        },
+        {
+            "label": "[F/W]",
+            "type": "shell",
+            "command": "pio",
+            "args": [
+                "run"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "close": true
+            }
+        },
+        {
+            "label": "[Upload]",
+            "type": "shell",
+            "command": "pio",
+            "args": [
+                "run",
+                "-t",
+                "upload"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "close": true
+            }
+        },
+        {
+            "label": "[FS]",
+            "type": "shell",
+            "command": "pio",
+            "args": [
+                "run",
+                "-t",
+                "uploadfs"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "close": true
+            }
+        },
+        {
+            "label": "{RM COMMENTS}",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/remove_comments.py",
+                "${file}"
+            ],
+            "presentation": {
+                "echo": false,
+                "reveal": "never",
+                "focus": false,
+                "panel": "shared",
+                "close": true
+            }
+        },
+        {
+            "label": "[ESP-ALL]",
+            "options": {
+  "statusbar": {
+    "color" : "#d62222"}},
+            "dependsOn": [
+                "_Parallel Tasks",
+                "[Upload]",
+                "[FS]"
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "close": true
+            }
+        },
+        {
+            "label": "_Parallel Tasks",
+            "options": {
+                "statusbar": {
+                    "hide": true
+                }
+            },
+            "dependsOn": [
+                "[Erase]",
+                "[GULP]",
+                "[F/W]"
+            ],
+            "dependsOrder": "parallel"
+        }
+    ]
+}

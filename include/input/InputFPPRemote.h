@@ -20,7 +20,6 @@
 
 #include "InputCommon.hpp"
 #include "WebMgr.hpp"
-#include "service/FPPDiscovery.h"
 #include "InputFPPRemotePlayItem.hpp"
 
 class c_InputFPPRemote : public c_InputCommon
@@ -44,8 +43,15 @@ class c_InputFPPRemote : public c_InputCommon
       void ProcessButtonActions(c_ExternalInput::InputValue_t value);
       void SetOperationalState (bool ActiveFlag);
 
+      void FppStartRemoteFilePlay (String & FileName, uint32_t ElapsedTimeSec);
+      void FppStopRemoteFilePlay  ();
+      void FppSyncRemoteFilePlay  (String & FileName, uint32_t ElapsedTimeMS);
+      void GetFppRemotePlayStatus (JsonObject& jsonStatus);
+      bool IsIdle();
+      bool AllowedToPlayRemoteFile();
+      void SetBackgroundFile      ();
+
 protected:
-#   define No_LocalFileToPlay "..."
 
     c_InputFPPRemotePlayItem * pInputFPPRemotePlayItem = nullptr;
     int32_t GetSyncOffsetMS () { return SyncOffsetMS; }
@@ -70,9 +76,8 @@ private:
 
     int32_t SyncOffsetMS = 0;
     bool    SendFppSync = false;
-    String  FileBeingPlayed = No_LocalFileToPlay;
+    String  FileBeingPlayed = CN_No_LocalFileToPlay;
+    String  ConfiguredFileToPlay = CN_No_LocalFileToPlay;
     bool    Stopping = false;
-
-#   define JSON_NAME_FILE_TO_PLAY CN_fseqfilename
-
+    bool    FppSyncOverride = false;
 };

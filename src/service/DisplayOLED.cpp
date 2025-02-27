@@ -4,7 +4,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <U8g2lib.h>
-#include "service/DisplayOLED.h"
+#include "service/DisplayOLED.hpp"
 #include <TimeLib.h>
 #include "network/NetworkMgr.hpp"
 
