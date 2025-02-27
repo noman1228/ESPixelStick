@@ -17,7 +17,7 @@
 *  or use of these programs.
 *
 */
-#include "ESPixelstick.h"
+
 
 #define DEFAULT_RMT_0_GPIO      gpio_num_t::GPIO_NUM_13
 #define DEFAULT_RMT_1_GPIO      gpio_num_t::GPIO_NUM_14
@@ -86,11 +86,10 @@ private:
         io_conf.intr_type = GPIO_INTR_DISABLE;
 
         gpio_config(&io_conf);
-        
+
         if (mode == GPIO_MODE_OUTPUT) {
             gpio_set_level(pin, initial_level);
         }
-        gpio_reset_pin(pin);
     }
 };
 
