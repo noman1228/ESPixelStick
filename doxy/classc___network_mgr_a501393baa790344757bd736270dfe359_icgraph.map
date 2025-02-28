@@ -1,0 +1,15 @@
+<map id="c_NetworkMgr::GetlocalIP" name="c_NetworkMgr::GetlocalIP">
+<area shape="rect" id="Node000001" title=" " alt="" coords="686,42,859,68"/>
+<area shape="rect" id="Node000002" href="$classc___input_d_d_p.html#a19376f166f9b9872e04a3b3e5f9dc148" title=" " alt="" coords="438,5,638,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="670,45,638,41,639,36,671,40"/>
+<area shape="rect" id="Node000004" href="$classc___o_l_e_d.html#a99842a2ead47386d6e2ba3ce132869f0" title=" " alt="" coords="443,70,633,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="671,70,633,74,633,69,670,65"/>
+<area shape="rect" id="Node000003" href="$classc___input_d_d_p.html#a3ce4a8b28f73e04be6ae752efe285238" title="Call from loop(), renders Input data." alt="" coords="245,13,390,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="423,28,391,28,391,23,423,23"/>
+<area shape="rect" id="Node000005" href="$classc___o_l_e_d.html#a99684b70056ae2b81eb1af1826c42459" title=" " alt="" coords="258,70,377,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="428,86,377,86,377,80,428,80"/>
+<area shape="rect" id="Node000006" href="$classc___o_l_e_d.html#a4ee07acd46609820e0b0af51a0ba1ba9" title=" " alt="" coords="99,70,197,96"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="243,86,197,86,197,80,243,80"/>
+<area shape="rect" id="Node000007" href="$main_8cpp.html#afe461d27b9c48d5921c00d521181f12f" title="Main Loop." alt="" coords="5,70,51,96"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="83,86,51,86,51,80,83,80"/>
+</map>

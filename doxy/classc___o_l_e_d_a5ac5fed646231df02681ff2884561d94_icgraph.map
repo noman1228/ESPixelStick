@@ -1,0 +1,10 @@
+<map id="c_OLED::UpdateErrorFlashing" name="c_OLED::UpdateErrorFlashing">
+<area shape="rect" id="Node000001" title=" " alt="" coords="411,5,606,31"/>
+<area shape="rect" id="Node000002" href="$classc___o_l_e_d.html#a4ee07acd46609820e0b0af51a0ba1ba9" title=" " alt="" coords="99,5,197,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="396,21,197,21,197,16,396,16"/>
+<area shape="rect" id="Node000004" href="$classc___o_l_e_d.html#a99684b70056ae2b81eb1af1826c42459" title=" " alt="" coords="245,31,363,56"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="396,35,364,39,363,34,396,30"/>
+<area shape="rect" id="Node000003" href="$main_8cpp.html#afe461d27b9c48d5921c00d521181f12f" title="Main Loop." alt="" coords="5,5,51,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="83,21,51,21,51,16,83,16"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="229,34,197,29,198,23,230,29"/>
+</map>
