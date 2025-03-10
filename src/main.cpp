@@ -38,7 +38,7 @@
 
 // File System Interface
 #include "FileMgr.hpp"
-
+#include "service/DisplayOLED.hpp"
 // Services
 #include "service/FPPDiscovery.h"
 #include <TimeLib.h>
@@ -218,7 +218,7 @@ void setup()
 #else
     esp_task_wdt_init (5, true);
 #endif
-
+OLED.Begin();
     WebMgr.CreateAdminInfoFile();
 
     // Done with initialization
@@ -509,6 +509,7 @@ void loop()
         HeapTime += 5000;
     }
 */
+OLED.Poll();
     FeedWDT ();
 
     // Keep the Network Open

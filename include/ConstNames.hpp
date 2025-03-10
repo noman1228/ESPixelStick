@@ -27,7 +27,8 @@
 
 extern const String VERSION;
 extern const String BUILD_DATE;
-
+extern const CN_PROGMEM char CN_flipState [];
+extern const CN_PROGMEM char CN_oled [];
 extern const CN_PROGMEM char CN_active [];
 extern const CN_PROGMEM char CN_ActiveHigh [];
 extern const CN_PROGMEM char CN_activedelay [];
