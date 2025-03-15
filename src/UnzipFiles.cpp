@@ -1,32 +1,32 @@
 /*
-* UnzipFiles.cpp - Output Management class
-*
-* Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2021, 2025 Shelby Merrick
-* http://www.forkineye.com
-*
-*  This program is provided free for you to use in any way that you wish,
-*  subject to the laws and regulations where you are using it.  Due diligence
-*  is strongly suggested before using this code.  Please give credit where due.
-*
-*  The Author makes no warranty of any kind, express or implied, with regard
-*  to this program or the documentation contained in this document.  The
-*  Author shall not be liable in any event for incidental or consequential
-*  damages in connection with, or arising out of, the furnishing, performance
-*  or use of these programs.
-*
-*/
+ * UnzipFiles.cpp - Output Management class
+ *
+ * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
+ * Copyright (c) 2021, 2025 Shelby Merrick
+ * http://www.forkineye.com
+ *
+ *  This program is provided free for you to use in any way that you wish,
+ *  subject to the laws and regulations where you are using it.  Due diligence
+ *  is strongly suggested before using this code.  Please give credit where due.
+ *
+ *  The Author makes no warranty of any kind, express or implied, with regard
+ *  to this program or the documentation contained in this document.  The
+ *  Author shall not be liable in any event for incidental or consequential
+ *  damages in connection with, or arising out of, the furnishing, performance
+ *  or use of these programs.
+ *
+ */
 #ifdef SUPPORT_UNZIP
 
 #include "UnzipFiles.hpp"
 #include "FileMgr.hpp"
-
+#include "service/DisplayOLED.hpp"
 //
 // Callback functions needed by the unzipLIB to access a file system
 // The library has built-in code for memory-to-memory transfers, but needs
 // these callback functions to allow using other storage media
 //
-void * _OpenZipFile(const char *FileName, int32_t *size)
+void *_OpenZipFile(const char *FileName, int32_t *size)
 {
     return gUnzipFiles.OpenZipFile(FileName, size);
 }
@@ -47,15 +47,15 @@ int32_t _SeekZipFile(void *p, int32_t position, int iType)
 } // _SeekZipFile
 
 //-----------------------------------------------------------------------------
-UnzipFiles::UnzipFiles ()
+UnzipFiles::UnzipFiles()
 {
     // DEBUG_START;
 
     // use 75% and align to an even number of KB
-    BufferSize = uint32_t(float(ESP.getMaxAllocHeap ()) * 0.75) & 0xfffffc00;
+    BufferSize = uint32_t(float(ESP.getMaxAllocHeap()) * 0.75) & 0xfffffc00;
     // DEBUG_V(String("BufferSize: ") + String(BufferSize));
 
-    pOutputBuffer = (uint8_t*)malloc(BufferSize);
+    pOutputBuffer = (uint8_t *)malloc(BufferSize);
 
     // DEBUG_END;
 
@@ -63,11 +63,11 @@ UnzipFiles::UnzipFiles ()
 
 //-----------------------------------------------------------------------------
 ///< deallocate any resources and put the output channels into a safe state
-UnzipFiles::~UnzipFiles ()
+UnzipFiles::~UnzipFiles()
 {
     // DEBUG_START;
 
-    if(pOutputBuffer)
+    if (pOutputBuffer)
     {
         // DEBUG_V("Release buffer");
         free(pOutputBuffer);
@@ -90,7 +90,7 @@ void UnzipFiles::Run()
         FeedWDT();
         FileName = emptyString;
         FileMgr.FindFirstZipFile(FileName);
-        if(FileName.isEmpty())
+        if (FileName.isEmpty())
         {
             break;
         }
@@ -99,13 +99,13 @@ void UnzipFiles::Run()
 
         FileMgr.DeleteSdFile(FileName);
 
-    } while(true);
+    } while (true);
 
     // DEBUG_END;
 } // Run
 
 //-----------------------------------------------------------------------------
-void UnzipFiles::ProcessZipFile(String & FileName)
+void UnzipFiles::ProcessZipFile(String &FileName)
 {
     // DEBUG_START;
     char szComment[256], szName[256];
@@ -133,7 +133,7 @@ void UnzipFiles::ProcessZipFile(String & FileName)
                 FeedWDT();
                 String SubFileName = String(szName);
                 ProcessCurrentFileInZip(fi, SubFileName);
-                if(IsSpecialxLightsZipFile)
+                if (IsSpecialxLightsZipFile)
                 {
                     String NewName = FileName;
                     NewName.replace(".xlz", ".fseq");
@@ -157,7 +157,7 @@ void UnzipFiles::ProcessZipFile(String & FileName)
 } // Run
 
 //-----------------------------------------------------------------------------
-void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
+void UnzipFiles::ProcessCurrentFileInZip(unz_file_info &fi, String &FileName)
 {
     // DEBUG_START;
     // DEBUG_V(String("open Filename: ") + FileName);
@@ -166,13 +166,13 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
     uint32_t TotalBytesWritten = 0;
 
     logcon(FileName +
-    " - " + String(fi.compressed_size, DEC) +
-    "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
+           " - " + String(fi.compressed_size, DEC) +
+           "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
 
     do // once
     {
         int ReturnCode = zip.openCurrentFile();
-        if(ReturnCode != UNZ_OK)
+        if (ReturnCode != UNZ_OK)
         {
             // DEBUG_V(String("ReturnCode: ") + String(ReturnCode));
             logcon(FileName + F(" Failed."));
@@ -181,7 +181,7 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
 
         c_FileMgr::FileId FileHandle;
         FileMgr.OpenSdFile(FileName, c_FileMgr::FileMode::FileWrite, FileHandle, -1);
-        if(FileHandle == c_FileMgr::INVALID_FILE_HANDLE)
+        if (FileHandle == c_FileMgr::INVALID_FILE_HANDLE)
         {
             zip.closeCurrentFile();
             logcon(String("Could not open '") + FileName + "' for writting");
@@ -191,36 +191,40 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
         do
         {
             BytesRead = zip.readCurrentFile(pOutputBuffer, BufferSize);
-            // DEBUG_V(String("BytesRead: ") + String(BytesRead));
-            if(BytesRead != FileMgr.WriteSdFile(FileHandle, pOutputBuffer, BytesRead))
+            if (BytesRead != FileMgr.WriteSdFile(FileHandle, pOutputBuffer, BytesRead))
             {
                 logcon(String(F("Failed to write data to '")) + FileName + "'");
                 break;
             }
+
             TotalBytesWritten += BytesRead;
             LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
             LOG_PORT.flush();
+            int progress = (TotalBytesWritten * 100) / fi.uncompressed_size;
+OLED.UpdateUploadStatus(FileName, progress);
+OLED.isUploading = true;  // Ensure Update() recognizes the upload status
+
 
         } while (BytesRead > 0);
 
         FileMgr.CloseSdFile(FileHandle);
         zip.closeCurrentFile();
         logcon(FileName + F(" - Done."));
-    } while(false);
+    } while (false);
 
     // DEBUG_V(String("Close Filename: ") + FileName);
     // DEBUG_END;
 } // ProcessCurrentFileInZip
 
 //-----------------------------------------------------------------------------
-void * UnzipFiles::OpenZipFile(const char *FileName, int32_t *size)
+void *UnzipFiles::OpenZipFile(const char *FileName, int32_t *size)
 {
     // DEBUG_START;
     // DEBUG_V(String("  FileName: '") + String(FileName) + "'");
 
     c_FileMgr::FileId FileHandle = c_FileMgr::INVALID_FILE_HANDLE;
     FileMgr.OpenSdFile(FileName, c_FileMgr::FileMode::FileRead, FileHandle, -1);
-    if(FileHandle == c_FileMgr::INVALID_FILE_HANDLE)
+    if (FileHandle == c_FileMgr::INVALID_FILE_HANDLE)
     {
         logcon(String("Could not open file for unzipping: '") + FileName + "'");
     }

@@ -1,7 +1,9 @@
 #include "service/DisplayOLED.hpp"
 
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0);
-
+String lastUploadFilename = "";
+int lastUploadProgress = 0;
+bool isUploading = false;
 void OLEDTask(void *pvParameters)
 {
     while (1)
@@ -46,29 +48,26 @@ void c_OLED::status(int progress, const String &filename)
     uploadProgress = progress;
 }
 
-void c_OLED::UpdateUploadStatus()
+void c_OLED::UpdateUploadStatus(const String &filename, int progress)
 {
-    if (beginFileUpload)
-    {
-        if (millis() - lastUploadUpdate >= uploadTimeout)
-        {
-            beginFileUpload = false; // Timeout reached, hide upload status
-            return;
-        }
+    lastUploadFilename = filename;
+    lastUploadProgress = progress;
+    isUploading = true;  // Mark that an upload/unzip is in progress
 
-        u8g2.clearBuffer();
-        u8g2.setFont(u8g2_font_ncenB08_tr);
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_ncenB08_tr);
 
-        String progressText = "Expand: " + String(uploadProgress) + "%";
-        int progressBarWidth = (uploadProgress * 128) / 100; // Scale progress bar
+    String progressText = "Expand: " + String(progress) + "%";
+    int progressBarWidth = (progress * 128) / 100; // Scale progress bar
 
-        u8g2.drawStr(0, 12, uploadFilename.c_str());
-        u8g2.drawStr(0, 24, progressText.c_str());
-        u8g2.drawBox(0, 28, progressBarWidth, 4); // Draw progress bar
+    u8g2.drawStr(0, 12, filename.c_str());
+    u8g2.drawStr(0, 24, progressText.c_str());
+    u8g2.drawBox(0, 28, progressBarWidth, 4); // Draw progress bar
 
-        u8g2.sendBuffer();
-    }
+    u8g2.sendBuffer();
 }
+
+
 
 void c_OLED::UpdateRunningStatus()
 {
@@ -111,9 +110,9 @@ void c_OLED::UpdateRunningStatus()
 
 void c_OLED::Update(bool forceUpdate)
 {
-    if (beginFileUpload)
+    if (isUploading)
     {
-        UpdateUploadStatus();
+        UpdateUploadStatus(lastUploadFilename, lastUploadProgress);
     }
     else if (currentPage == DisplayPage::NETWORK_INFO)
     {

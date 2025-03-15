@@ -21,7 +21,7 @@
 
 #include "ESPixelStick.h"
 #include <unzipLIB.h>
-
+#include "service/DisplayOLED.hpp"
 class UnzipFiles
 {
 public:

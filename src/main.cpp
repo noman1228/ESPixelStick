@@ -17,8 +17,8 @@
 *
 */
 
-#include <Arduino.h>
-
+#include "Arduino.h"
+#include "service/DisplayOLED.hpp"
 // Core
 #include "ESPixelStick.h"
 #include "EFUpdate.h"
@@ -38,7 +38,7 @@
 
 // File System Interface
 #include "FileMgr.hpp"
-
+#include "service/DisplayOLED.hpp"
 // Services
 #include "service/FPPDiscovery.h"
 #include <TimeLib.h>
@@ -141,7 +141,8 @@ void setup()
     ResetGpio(DEBUG_GPIO);
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
-#endif // def DEBUG_GPIO
+#endif
+OLED.Begin();
 
     config.BlankDelay = 5;
 #ifdef ARDUINO_ARCH_ESP32
@@ -509,6 +510,7 @@ void loop()
         HeapTime += 5000;
     }
 */
+    OLED.Poll();
     FeedWDT ();
 
     // Keep the Network Open

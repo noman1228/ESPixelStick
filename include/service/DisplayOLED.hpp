@@ -29,6 +29,9 @@
  public:
      c_OLED();
      void Begin();
+
+     void UpdateNetworkInfo(bool forceUpdate);
+     void UpdateUploadStatus(const String &filename, int progress);
      void Poll();
      void Update(bool forceUpdate = false);
      void Flip();
@@ -40,11 +43,11 @@
  
      void UpdateRunningStatus();  // Now public for FreeRTOS task
      void status(int progress, const String& filename); // New function for upload status
-
+     String lastUploadFilename = "";
+int lastUploadProgress = 0;
+bool isUploading = false;
  private:
-     void UpdateErrorFlashing();
-     void UpdateNetworkInfo(bool forceUpdate);
-     void UpdateUploadStatus(); // New function to handle upload progress page
+
      int getSignalStrength(int rssi);
      String getUpdateReason(String currIP, String dispIP, String currHost, String dispHostName, int signalStrength, int dispRSSI);
  

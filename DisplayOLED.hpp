@@ -23,7 +23,7 @@
 #include "network/NetworkMgr.hpp"
 #include <Preferences.h>
 #include "ConstNames.hpp"
-#include "FPPDiscovery.h"
+#include "service/FPPDiscovery.h"
 class c_OLED {
 public:
     c_OLED();
@@ -33,7 +33,7 @@ public:
     void Flip();
     void GetConfig(JsonObject& json);
     bool SetConfig(JsonObject& json);
-    void GetStatus(JsonObject& json);
+    void initNow();
     void GetDriverName(String& name) const {
         name = "OLED";
     }
