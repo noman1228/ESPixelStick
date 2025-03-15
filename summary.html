@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESPixelStick Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .section {
+            background-color: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+        }
+        .title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status-item {
+            font-size: 1.2em;
+            margin: 5px 0;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: lightgreen;
+            font-weight: bold;
+        }
+        input {
+            padding: 10px;
+            font-size: 1em;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        let deviceAddress = "http://192.168.5.150/XJ";
+
+        function setDeviceAddress() {
+            const inputAddress = document.getElementById("deviceAddress").value;
+            if (inputAddress) {
+                deviceAddress = inputAddress;
+                fetchData();
+            }
+        }
+
+        async function fetchData() {
+            try {
+                let response = await fetch(deviceAddress);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                let data = await response.json();
+                console.log("Fetched Data:", data);
+                updateDisplay(data);
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                document.getElementById('output').innerHTML = '<p class="error">Failed to fetch data. Check console for details.</p>';
+            }
+        }
+
+        function updateDisplay(data) {
+            let outputHtml = '';
+            
+            if (data.status) {
+                let system = data.status.system;
+                let network = system.network;
+                let outputs = data.status.output || [];
+
+                // System Status
+                outputHtml += `<div class='section'>
+                    <div class='title'>System Status</div>
+                    <div class='status-item'>Free Heap: ${system.freeheap} bytes</div>
+                    <div class='status-item'>Uptime: ${Math.floor(system.uptime / 1000)} seconds</div>
+                    <div class='status-item'>Current Time: ${system.currenttime}</div>
+                    <div class='status-item'>SD Card Installed: <span class='${system.SDinstalled ? "success" : "error"}'>${system.SDinstalled}</span></div>
+                </div>`;
+
+                // Network Status
+                outputHtml += `<div class='section'>
+                    <div class='title'>Network Status</div>
+                    <div class='status-item'>Hostname: ${network.hostname}</div>
+                    <div class='status-item'>IP Address: ${network.wifi.ip}</div>
+                    <div class='status-item'>RSSI: ${network.wifi.rssi} dBm</div>
+                    <div class='status-item'>Connected: <span class='${network.wifi.connected ? "success" : "error"}'>${network.wifi.connected}</span></div>
+                </div>`;
+
+                // Output Status
+                outputs.forEach(output => {
+                    if (output.id !== undefined) {
+                        outputHtml += `<div class='section'>
+                            <div class='title'>Output Channel ${output.id}</div>
+                            <div class='status-item'>Frame Refresh Rate: ${output.framerefreshrate} Hz</div>
+                            <div class='status-item'>Frame Count: ${output.FrameCount}</div>
+                            <div class='status-item'>Paused: <span class='${output.OutputIsPaused ? "error" : "success"}'>${output.OutputIsPaused}</span></div>
+                            <div class='status-item'>Failed Frames: ${output["RMT Debug"].FailedToSendAllData}</div>
+                            <div class='status-item'>Ran Out of Data: ${output["RMT Debug"].RanOutOfData}</div>
+                        </div>`;
+                    }
+                });
+            } else {
+                outputHtml = '<p class="error">No status data available.</p>';
+            }
+            
+            document.getElementById('output').innerHTML = outputHtml;
+        }
+
+        setInterval(fetchData, 5000); // Auto-refresh every 5 seconds
+        window.onload = fetchData;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>ESPixelStick Dashboard</h1>
+        <input type="text" id="deviceAddress" placeholder="Enter device address (e.g., http://192.168.5.150/XJ)">
+        <button onclick="setDeviceAddress()">Set Address</button>
+        <div id="output">Loading...</div>
+    </div>
+</body>
+</html>

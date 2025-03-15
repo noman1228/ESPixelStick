@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLED Settings</title>
+    <script>
+        async function saveSettings() {
+            const settings = {
+                sda: document.getElementById("sda_pin").value,
+                scl: document.getElementById("scl_pin").value,
+                flipState: document.getElementById("flipState").checked,
+                showNetwork: document.getElementById("showNetwork").checked,
+                showPlayStats: document.getElementById("showPlayStats").checked
+            };
+
+            await fetch("/api/oled/settings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(settings)
+            });
+
+            alert("Settings saved!");
+        }
+
+        async function loadSettings() {
+            const response = await fetch("/api/oled/settings");
+            const settings = await response.json();
+
+            document.getElementById("sda_pin").value = settings.sda || 21;
+            document.getElementById("scl_pin").value = settings.scl || 22;
+            document.getElementById("flipState").checked = settings.flipState;
+            document.getElementById("showNetwork").checked = settings.showNetwork;
+            document.getElementById("showPlayStats").checked = settings.showPlayStats;
+        }
+
+        window.onload = loadSettings;
+    </script>
+</head>
+<body>
+    <h2>OLED Configuration</h2>
+    <label for="sda_pin">SDA Pin:</label>
+    <input type="number" id="sda_pin" min="0" max="64"><br><br>
+
+    <label for="scl_pin">SCL Pin:</label>
+    <input type="number" id="scl_pin" min="0" max="64"><br><br>
+
+    <label for="flipState">Flip OLED Display:</label>
+    <input type="checkbox" id="flipState"><br><br>
+
+    <label for="showNetwork">Show Network Info:</label>
+    <input type="checkbox" id="showNetwork"><br><br>
+
+    <label for="showPlayStats">Show Play Stats:</label>
+    <input type="checkbox" id="showPlayStats"><br><br>
+
+    <button onclick="saveSettings()">Save Settings</button>
+</body>
+</html>
