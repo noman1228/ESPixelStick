@@ -4,7 +4,11 @@ import sys
 
 # Detect the platform and set the correct settings.json path
 if sys.platform == "win32":
-    SETTINGS_PATH = os.path.expanduser(r"~\AppData\Roaming\Code\User\settings.json")
+    remote_settings_path = os.path.expanduser(r"~\AppData\Roaming\Code\User\settings.json")
+    local_settings_path = os.path.expanduser(r"~\AppData\Roaming\Cursor\User\settings.json")
+    
+    # Use remote settings if it exists, otherwise fall back to local
+    SETTINGS_PATH = remote_settings_path if os.path.exists(remote_settings_path) else local_settings_path
 elif sys.platform == "linux":
     # Check if using VS Code Remote - SSH
     remote_settings_path = os.path.expanduser(".vscode/settings.json")

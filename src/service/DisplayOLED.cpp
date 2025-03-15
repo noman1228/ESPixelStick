@@ -1,9 +1,14 @@
 #include "service/DisplayOLED.hpp"
 
-U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0);
+// Initialize the OLED display with specific parameters
+U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, GPIO_NUM_NC, SCL, SDA);
+
+// Variables to track upload status
 String lastUploadFilename = "";
 int lastUploadProgress = 0;
 bool isUploading = false;
+
+// Task to update the OLED display
 void OLEDTask(void *pvParameters)
 {
     while (1)
@@ -13,8 +18,10 @@ void OLEDTask(void *pvParameters)
     }
 }
 
+// Constructor for the OLED class
 c_OLED::c_OLED() : currentPage(DisplayPage::NETWORK_INFO), lastPageSwitchTime(0), flipState(0), beginFileUpload(false), lastUploadUpdate(0), uploadFilename(""), uploadProgress(0) {}
 
+// Initialize the OLED display
 void c_OLED::Begin()
 {
     u8g2.begin();
@@ -40,6 +47,7 @@ void c_OLED::Begin()
         1);
 }
 
+// Update the upload status
 void c_OLED::status(int progress, const String &filename)
 {
     beginFileUpload = true;
@@ -48,6 +56,7 @@ void c_OLED::status(int progress, const String &filename)
     uploadProgress = progress;
 }
 
+// Display the upload status on the OLED
 void c_OLED::UpdateUploadStatus(const String &filename, int progress)
 {
     lastUploadFilename = filename;
@@ -67,8 +76,7 @@ void c_OLED::UpdateUploadStatus(const String &filename, int progress)
     u8g2.sendBuffer();
 }
 
-
-
+// Update the running status on the OLED
 void c_OLED::UpdateRunningStatus()
 {
     static unsigned long lastUpdateTime = 0;
@@ -86,7 +94,6 @@ void c_OLED::UpdateRunningStatus()
                 String statusLine1 = fpp[String(CN_current_sequence)].as<String>();
                 String statusLine2 = fpp[String(CN_time_elapsed)].as<String>() + " / " + fpp[String(CN_time_remaining)].as<String>();
 
-
                 u8g2.clearBuffer();
                 u8g2.setFont(u8g2_font_ncenB08_tr);
 
@@ -99,7 +106,6 @@ void c_OLED::UpdateRunningStatus()
                 drawCentered(2, statusLine1);
                 drawCentered(20, statusLine2);
 
-
                 u8g2.sendBuffer();
             }
         }
@@ -107,7 +113,7 @@ void c_OLED::UpdateRunningStatus()
     }
 }
 
-
+// Update the OLED display based on the current state
 void c_OLED::Update(bool forceUpdate)
 {
     if (isUploading)
@@ -124,6 +130,7 @@ void c_OLED::Update(bool forceUpdate)
     }
 }
 
+// Poll for button presses and update the display accordingly
 void c_OLED::Poll()
 {
     static unsigned long lastDebounceTime = 0;
@@ -145,6 +152,8 @@ void c_OLED::Poll()
         Update(true);
     }
 }
+
+// Get the signal strength based on RSSI value
 int c_OLED::getSignalStrength(int rssi)
 {
     if (rssi > -50)
@@ -157,6 +166,8 @@ int c_OLED::getSignalStrength(int rssi)
         return 1;
     return 0;
 }
+
+// Update the network information on the OLED
 void c_OLED::UpdateNetworkInfo(bool forceUpdate)
 {
     String currIP = NetworkMgr.GetlocalIP().toString();
@@ -184,18 +195,21 @@ void c_OLED::UpdateNetworkInfo(bool forceUpdate)
     }
 }
 
+// Flip the display orientation
 void c_OLED::Flip()
 {
     flipState = !flipState;
     u8g2.setDisplayRotation(flipState ? U8G2_R2 : U8G2_R0);
 }
 
+// Get the OLED configuration
 void c_OLED::GetConfig(JsonObject &json)
 {
     JsonObject oledConfig = json[(char *)CN_oled].to<JsonObject>();
     JsonWrite(oledConfig, CN_flipState, flipState);
 }
 
+// Set the OLED configuration
 bool c_OLED::SetConfig(JsonObject &json)
 {
     bool ConfigChanged = false;
@@ -215,4 +229,5 @@ bool c_OLED::SetConfig(JsonObject &json)
 
     return ConfigChanged;
 }
+
 c_OLED OLED;
