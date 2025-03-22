@@ -32,9 +32,9 @@
 #	error "Unsupported CPU type"
 #endif
 
-#ifdef BOARD_HAS_PSRAM
-#   error "PSRAM is not supported by ESPixelStick"
-#endif // def BOARD_HAS_PSRAM
+//#ifdef BOARD_HAS_PSRAM
+//#   error "PSRAM is not supported by ESPixelStick"
+//#endif // def BOARD_HAS_PSRAM
 
 #define ARDUINOJSON_USE_LONG_LONG 1
 #define ARDUINOJSON_DEFAULT_NESTING_LIMIT 15
