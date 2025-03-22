@@ -27,8 +27,8 @@
 #define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_32
 #define DEFAULT_RMT_5_GPIO      gpio_num_t::GPIO_NUM_25
 
-#define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_27
-#define DEFAULT_RMT_5_GPIO      gpio_num_t::GPIO_NUM_14
+#define DEFAULT_RMT_6_GPIO      gpio_num_t::GPIO_NUM_27
+#define DEFAULT_RMT_7_GPIO      gpio_num_t::GPIO_NUM_14
 
 #define BUTTON_GPIO1            gpio_num_t::GPIO_NUM_34
 #define STATUS_LED1             gpio_num_t::GPIO_NUM_4
