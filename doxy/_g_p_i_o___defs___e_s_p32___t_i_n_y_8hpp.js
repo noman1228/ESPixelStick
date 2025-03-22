@@ -6,5 +6,6 @@ var _g_p_i_o___defs___e_s_p32___t_i_n_y_8hpp =
     [ "SD_CARD_CS_PIN", "_g_p_i_o___defs___e_s_p32___t_i_n_y_8hpp.html#a7b3ca01a31109575d4bd2bf82e692d0b", null ],
     [ "SD_CARD_MISO_PIN", "_g_p_i_o___defs___e_s_p32___t_i_n_y_8hpp.html#a1683e2f1e1a3fb629bd7c17dfd8d1e58", null ],
     [ "SD_CARD_MOSI_PIN", "_g_p_i_o___defs___e_s_p32___t_i_n_y_8hpp.html#aca6c98b14a61849654e93ee35fd1d1ab", null ],
-    [ "SUPPORT_OutputType_WS2811", "_g_p_i_o___defs___e_s_p32___t_i_n_y_8hpp.html#afa2071e30f23ea87fdcd80a2e4634bde", null ]
+    [ "SUPPORT_OutputType_WS2811", "_g_p_i_o___defs___e_s_p32___t_i_n_y_8hpp.html#afa2071e30f23ea87fdcd80a2e4634bde", null ],
+    [ "SUPPORT_SD", "_g_p_i_o___defs___e_s_p32___t_i_n_y_8hpp.html#aba5621a9fd6fd7ddca8fd3249560f239", null ]
 ];

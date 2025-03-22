@@ -106,6 +106,7 @@ $(function(){initNavTree('_e_s_pixel_stick_8h.html',''); initResizable(true); })
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;Arduino.h&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
 <code>#include &lt;Ticker.h&gt;</code><br />
 <code>#include &lt;ArduinoJson.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="memdebug_8h_source.html">memdebug.h</a>&quot;</code><br />
@@ -117,24 +118,26 @@ Include dependency graph for ESPixelStick.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="_e_s_pixel_stick_8h__incl.png" border="0" usemap="#a_2github_2workspace_2include_2_e_s_pixel_stick_8h" alt=""/></div>
 <map name="a_2github_2workspace_2include_2_e_s_pixel_stick_8h" id="a_2github_2workspace_2include_2_e_s_pixel_stick_8h">
-<area shape="rect" title=" " alt="" coords="337,5,510,46"/>
-<area shape="rect" title=" " alt="" coords="102,168,177,193"/>
-<area shape="poly" title=" " alt="" coords="337,31,247,36,150,47,66,67,35,80,15,96,9,106,9,116,14,125,24,134,53,150,88,163,86,168,51,155,21,139,10,129,4,117,4,105,11,92,33,75,65,62,149,42,246,31,337,26"/>
-<area shape="rect" title=" " alt="" coords="25,94,92,120"/>
-<area shape="poly" title=" " alt="" coords="337,47,108,96,107,91,336,42"/>
-<area shape="rect" title=" " alt="" coords="116,94,219,120"/>
-<area shape="poly" title=" " alt="" coords="360,49,223,91,221,86,359,44"/>
-<area shape="rect" href="memdebug_8h.html" title=" " alt="" coords="244,94,339,120"/>
-<area shape="poly" title=" " alt="" coords="392,49,326,88,323,83,389,44"/>
-<area shape="rect" href="_const_names_8hpp.html" title=" " alt="" coords="363,94,484,120"/>
-<area shape="poly" title=" " alt="" coords="426,46,426,78,421,78,421,46"/>
-<area shape="rect" href="_g_p_i_o___defs_8hpp.html" title=" " alt="" coords="509,94,621,120"/>
-<area shape="poly" title=" " alt="" coords="452,44,525,84,522,89,450,49"/>
-<area shape="rect" href="_fast_timer_8hpp.html" title=" " alt="" coords="645,94,749,120"/>
-<area shape="poly" title=" " alt="" coords="485,44,634,87,632,92,483,49"/>
-<area shape="poly" title=" " alt="" coords="267,123,180,163,178,158,265,118"/>
-<area shape="poly" title=" " alt="" coords="549,96,479,56,481,51,551,91"/>
-<area shape="poly" title=" " alt="" coords="661,96,514,53,515,48,662,91"/>
+<area shape="rect" title=" " alt="" coords="379,5,552,46"/>
+<area shape="rect" title=" " alt="" coords="157,168,233,193"/>
+<area shape="poly" title=" " alt="" coords="379,30,279,34,170,44,120,52,76,64,40,78,17,96,9,111,11,123,22,135,40,145,89,160,142,170,141,176,88,166,38,150,18,139,6,126,4,110,13,92,38,74,74,59,119,47,170,39,279,28,379,24"/>
+<area shape="rect" title=" " alt="" coords="28,94,109,120"/>
+<area shape="poly" title=" " alt="" coords="379,46,125,96,124,91,378,41"/>
+<area shape="rect" title=" " alt="" coords="133,94,201,120"/>
+<area shape="poly" title=" " alt="" coords="392,49,216,95,215,90,390,44"/>
+<area shape="rect" title=" " alt="" coords="225,94,328,120"/>
+<area shape="poly" title=" " alt="" coords="419,49,320,90,318,85,417,44"/>
+<area shape="rect" href="memdebug_8h.html" title=" " alt="" coords="353,94,448,120"/>
+<area shape="poly" title=" " alt="" coords="452,48,422,83,418,80,447,45"/>
+<area shape="rect" href="_const_names_8hpp.html" title=" " alt="" coords="472,94,593,120"/>
+<area shape="poly" title=" " alt="" coords="484,45,514,80,510,83,480,48"/>
+<area shape="rect" href="_g_p_i_o___defs_8hpp.html" title=" " alt="" coords="617,94,730,120"/>
+<area shape="poly" title=" " alt="" coords="511,44,622,86,620,91,509,49"/>
+<area shape="rect" href="_fast_timer_8hpp.html" title=" " alt="" coords="753,94,858,120"/>
+<area shape="poly" title=" " alt="" coords="543,44,739,89,737,94,542,49"/>
+<area shape="poly" title=" " alt="" coords="366,123,245,165,243,160,365,118"/>
+<area shape="poly" title=" " alt="" coords="647,96,539,54,541,49,649,91"/>
+<area shape="poly" title=" " alt="" coords="759,96,566,51,567,46,760,91"/>
 </map>
 </div>
 </div>
@@ -214,12 +217,12 @@ Functions</h2></td></tr>
 <tr class="separator:ab2cab25565163f647adbe103a4cf0358"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9ff9121bc3b70ed36279c307fdcde0ca" id="r_a9ff9121bc3b70ed36279c307fdcde0ca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9ff9121bc3b70ed36279c307fdcde0ca">PrettyPrint</a> (JsonDocument &amp;jsonStuff, String Name)</td></tr>
 <tr class="separator:a9ff9121bc3b70ed36279c307fdcde0ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8295d2ec53bab395bfc5811cfd78ca4d" id="r_a8295d2ec53bab395bfc5811cfd78ca4d"><td class="memTemplParams" colspan="2">template&lt;typename T , typename N &gt; </td></tr>
-<tr class="memitem:a8295d2ec53bab395bfc5811cfd78ca4d"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a8295d2ec53bab395bfc5811cfd78ca4d">setFromJSON</a> (T &amp;OutValue, JsonObject &amp;Json, N Name)</td></tr>
-<tr class="separator:a8295d2ec53bab395bfc5811cfd78ca4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a22f4176fd1b5a26a3d18c096681ad8e9" id="r_a22f4176fd1b5a26a3d18c096681ad8e9"><td class="memTemplParams" colspan="2">template&lt;typename T , typename N &gt; </td></tr>
-<tr class="memitem:a22f4176fd1b5a26a3d18c096681ad8e9"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a22f4176fd1b5a26a3d18c096681ad8e9">setFromJSON</a> (T &amp;OutValue, JsonVariant &amp;Json, N Name)</td></tr>
-<tr class="separator:a22f4176fd1b5a26a3d18c096681ad8e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a8cd82c1c33ed803e33f72b3cbf5082" id="r_a5a8cd82c1c33ed803e33f72b3cbf5082"><td class="memTemplParams" colspan="2">template&lt;typename T , typename N &gt; </td></tr>
+<tr class="memitem:a5a8cd82c1c33ed803e33f72b3cbf5082"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt;!std::is_same&lt; T, String &gt;::value, bool &gt;<a class="el" href="_e_f_update_8h.html#a90457c263a95013f40e41ab7cb1b03d5">::type</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a5a8cd82c1c33ed803e33f72b3cbf5082">setFromJSON</a> (T &amp;OutValue, JsonObject &amp;Json, N Name)</td></tr>
+<tr class="separator:a5a8cd82c1c33ed803e33f72b3cbf5082"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac171385caf3633654083138b56a41a13" id="r_ac171385caf3633654083138b56a41a13"><td class="memTemplParams" colspan="2">template&lt;typename N &gt; </td></tr>
+<tr class="memitem:ac171385caf3633654083138b56a41a13"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ac171385caf3633654083138b56a41a13">setFromJSON</a> (String &amp;OutValue, JsonObject &amp;Json, N Name)</td></tr>
+<tr class="separator:ac171385caf3633654083138b56a41a13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97937ae3377e427d21b29966a14e964a" id="r_a97937ae3377e427d21b29966a14e964a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a97937ae3377e427d21b29966a14e964a">ResetGpio</a> (const gpio_num_t pinId)</td></tr>
 <tr class="separator:a97937ae3377e427d21b29966a14e964a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -558,7 +561,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" title=" " alt="" coords="5,423,115,448"/>
 <area shape="rect" href="main_8cpp.html#ae3fa381b4975543d1b331c6aa0d4526a" title="Deserialize device configuration JSON to config structure &#45; returns true if config change detected." alt="" coords="209,448,284,474"/>
 <area shape="poly" title=" " alt="" coords="115,440,194,451,194,456,115,446"/>
-<area shape="rect" href="_e_s_pixel_stick_8h.html#a8295d2ec53bab395bfc5811cfd78ca4d" title=" " alt="" coords="644,448,749,474"/>
+<area shape="rect" href="_e_s_pixel_stick_8h.html#a5a8cd82c1c33ed803e33f72b3cbf5082" title=" " alt="" coords="644,448,749,474"/>
 <area shape="poly" title=" " alt="" coords="115,431,318,428,447,431,577,440,629,446,628,451,576,445,447,437,318,434,115,436"/>
 <area shape="rect" href="classc___file_mgr.html#ac14c25f4d4db4016303b200f6bd9ae99" title=" " alt="" coords="408,347,548,372"/>
 <area shape="poly" title=" " alt="" coords="85,420,121,403,162,389,221,376,282,367,392,358,392,364,282,373,222,381,163,394,123,408,87,424"/>
@@ -718,7 +721,7 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="160,325,192,325,192,330,160,330"/>
 <area shape="rect" href="main_8cpp.html#ae3fa381b4975543d1b331c6aa0d4526a" title="Deserialize device configuration JSON to config structure &#45; returns true if config change detected." alt="" coords="412,340,487,366"/>
 <area shape="poly" title=" " alt="" coords="318,332,397,343,396,348,317,338"/>
-<area shape="rect" href="_e_s_pixel_stick_8h.html#a8295d2ec53bab395bfc5811cfd78ca4d" title=" " alt="" coords="846,368,952,394"/>
+<area shape="rect" href="_e_s_pixel_stick_8h.html#a5a8cd82c1c33ed803e33f72b3cbf5082" title=" " alt="" coords="846,368,952,394"/>
 <area shape="poly" title=" " alt="" coords="317,322,406,321,521,322,650,330,779,346,841,361,840,366,778,351,650,335,521,327,406,326,318,328"/>
 <area shape="rect" href="classc___file_mgr.html#ac14c25f4d4db4016303b200f6bd9ae99" title=" " alt="" coords="610,239,750,264"/>
 <area shape="poly" title=" " alt="" coords="288,312,323,295,364,281,423,268,484,259,594,250,595,256,485,265,424,273,366,286,325,300,290,316"/>
@@ -872,7 +875,7 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="_e_s_pixel_stick_8h_ae3fa381b4975543d1b331c6aa0d4526a_cgraph.png" border="0" usemap="#a_e_s_pixel_stick_8h_ae3fa381b4975543d1b331c6aa0d4526a_cgraph" alt=""/></div>
 <map name="a_e_s_pixel_stick_8h_ae3fa381b4975543d1b331c6aa0d4526a_cgraph" id="a_e_s_pixel_stick_8h_ae3fa381b4975543d1b331c6aa0d4526a_cgraph">
 <area shape="rect" title="Deserialize device configuration JSON to config structure &#45; returns true if config change detected." alt="" coords="5,5,81,31"/>
-<area shape="rect" href="_e_s_pixel_stick_8h.html#a8295d2ec53bab395bfc5811cfd78ca4d" title=" " alt="" coords="129,5,234,31"/>
+<area shape="rect" href="_e_s_pixel_stick_8h.html#a5a8cd82c1c33ed803e33f72b3cbf5082" title=" " alt="" coords="129,5,234,31"/>
 <area shape="poly" title=" " alt="" coords="81,16,113,16,113,21,81,21"/>
 <area shape="rect" href="_web_mgr_8cpp.html#a47bc5f5aa91e940e6cfc297466285595" title=" " alt="" coords="282,5,364,31"/>
 <area shape="poly" title=" " alt="" coords="234,16,267,16,267,21,234,21"/>
@@ -1172,61 +1175,61 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="_e_s_pixel_stick_8h_a47bc5f5aa91e940e6cfc297466285595_icgraph.png" border="0" usemap="#a_e_s_pixel_stick_8h_a47bc5f5aa91e940e6cfc297466285595_icgraph" alt=""/></div>
 <map name="a_e_s_pixel_stick_8h_a47bc5f5aa91e940e6cfc297466285595_icgraph" id="a_e_s_pixel_stick_8h_a47bc5f5aa91e940e6cfc297466285595_icgraph">
-<area shape="rect" title=" " alt="" coords="1348,677,1430,703"/>
-<area shape="rect" href="_e_s_pixel_stick_8h.html#a8295d2ec53bab395bfc5811cfd78ca4d" title=" " alt="" coords="1194,652,1300,678"/>
-<area shape="poly" title=" " alt="" coords="1332,683,1299,677,1300,672,1333,678"/>
-<area shape="rect" href="_e_s_pixel_stick_8h.html#a22f4176fd1b5a26a3d18c096681ad8e9" title=" " alt="" coords="1194,701,1300,727"/>
-<area shape="poly" title=" " alt="" coords="1333,702,1300,708,1299,703,1332,697"/>
+<area shape="rect" title=" " alt="" coords="1348,628,1430,654"/>
+<area shape="rect" href="_e_s_pixel_stick_8h.html#ac171385caf3633654083138b56a41a13" title=" " alt="" coords="1194,603,1300,628"/>
+<area shape="poly" title=" " alt="" coords="1332,633,1299,628,1300,622,1333,628"/>
+<area shape="rect" href="_e_s_pixel_stick_8h.html#a5a8cd82c1c33ed803e33f72b3cbf5082" title=" " alt="" coords="1194,652,1300,678"/>
+<area shape="poly" title=" " alt="" coords="1333,653,1300,659,1299,653,1332,648"/>
 <area shape="rect" href="classc___wi_fi_driver.html#a1d60280a9692bcf4043fd430777a6422" title="&lt; Start the module" alt="" coords="978,5,1112,31"/>
-<area shape="poly" title=" " alt="" coords="1243,636,1237,509,1223,331,1210,240,1193,157,1171,90,1159,64,1144,44,1130,32,1112,25,1114,20,1132,28,1148,40,1163,61,1176,88,1198,156,1215,239,1228,331,1243,509,1248,636"/>
+<area shape="poly" title=" " alt="" coords="1195,640,1183,612,1175,579,1168,503,1169,417,1174,327,1178,239,1177,158,1167,91,1158,65,1144,44,1130,32,1112,24,1114,19,1132,27,1148,40,1162,62,1172,90,1182,158,1183,239,1179,327,1174,417,1174,503,1181,578,1188,610,1200,638"/>
 <area shape="rect" href="main_8cpp.html#a067b67c856af5452506085e83cdb2b01" title=" " alt="" coords="491,156,600,182"/>
-<area shape="poly" title=" " alt="" coords="1241,637,1233,539,1215,408,1202,342,1186,283,1167,236,1144,205,1127,194,1104,184,1045,169,973,160,892,156,730,159,601,167,600,161,730,153,892,151,973,155,1046,164,1106,179,1130,189,1148,202,1172,233,1191,282,1207,341,1220,407,1238,538,1247,636"/>
+<area shape="poly" title=" " alt="" coords="1193,643,1192,642,1183,625,1176,602,1170,548,1173,417,1175,350,1173,288,1164,238,1156,219,1144,204,1128,192,1105,181,1046,166,974,157,894,153,731,157,601,166,600,161,731,151,894,148,975,152,1047,161,1107,176,1130,187,1148,200,1160,216,1169,236,1178,288,1180,350,1178,417,1175,548,1181,601,1188,623,1197,639,1197,640"/>
 <area shape="rect" href="main_8cpp.html#ae3fa381b4975543d1b331c6aa0d4526a" title="Deserialize device configuration JSON to config structure &#45; returns true if config change detected." alt="" coords="758,207,834,232"/>
-<area shape="poly" title=" " alt="" coords="1240,636,1230,547,1211,431,1198,373,1183,321,1165,279,1144,252,1109,228,1069,212,1026,202,983,198,900,202,834,213,834,208,900,197,983,193,1027,197,1071,207,1112,223,1148,248,1169,277,1188,319,1203,372,1216,430,1235,547,1246,636"/>
+<area shape="poly" title=" " alt="" coords="1193,643,1192,642,1176,616,1165,589,1160,563,1158,537,1165,486,1177,437,1187,389,1190,342,1186,319,1178,296,1164,273,1145,251,1110,225,1071,208,1028,199,985,195,901,200,834,212,833,207,900,194,985,189,1029,193,1072,203,1113,221,1148,247,1169,270,1183,294,1191,317,1195,341,1193,389,1182,438,1170,487,1164,537,1165,562,1170,587,1181,613,1197,639,1197,640"/>
 <area shape="rect" href="classc___input_mgr.html#ae5f525a3c62f1d51057334394021717d" title=" " alt="" coords="700,538,892,578"/>
-<area shape="poly" title=" " alt="" coords="1225,642,1190,607,1169,591,1145,578,1082,559,1016,549,951,546,893,549,892,543,951,541,1016,544,1083,553,1147,573,1172,586,1194,603,1228,638"/>
+<area shape="poly" title=" " alt="" coords="1197,646,1192,643,1177,625,1169,607,1161,591,1145,578,1115,564,1084,554,1017,543,952,540,892,544,892,539,952,535,1018,537,1085,549,1117,559,1148,573,1165,588,1174,605,1182,622,1196,639,1200,642"/>
 <area shape="rect" href="classc___input_mgr.html#a3982db8dd97b38f17ec31c73e6b4940b" title=" " alt="" coords="443,484,648,510"/>
-<area shape="poly" title=" " alt="" coords="1239,638,1229,596,1212,547,1184,500,1166,480,1145,463,1106,448,1054,439,993,437,927,439,796,451,696,463,641,473,591,486,590,481,640,468,695,458,796,446,926,434,993,432,1054,434,1107,443,1148,459,1170,476,1189,497,1217,545,1234,595,1244,636"/>
+<area shape="poly" title=" " alt="" coords="1193,644,1192,642,1177,618,1171,593,1172,546,1174,523,1171,502,1163,482,1145,463,1107,445,1056,436,995,434,929,436,797,450,696,463,641,473,591,486,590,481,640,468,695,458,797,445,928,431,995,428,1057,431,1109,440,1148,459,1167,479,1177,501,1179,523,1178,546,1176,593,1182,616,1196,639,1197,640"/>
 <area shape="rect" href="classc___output_mgr.html#a90986e86ff8aa884607ca104560a2b0f" title=" " alt="" coords="944,307,1146,348"/>
-<area shape="poly" title=" " alt="" coords="1241,637,1235,581,1219,509,1206,471,1190,434,1169,399,1144,368,1121,351,1124,346,1148,364,1174,396,1194,432,1211,469,1224,508,1240,580,1247,636"/>
+<area shape="poly" title=" " alt="" coords="1193,643,1192,642,1171,606,1163,570,1164,536,1169,502,1174,469,1174,436,1165,402,1144,368,1123,350,1127,346,1148,364,1170,400,1179,435,1179,469,1174,503,1169,536,1169,570,1176,604,1197,639,1197,640"/>
 <area shape="rect" href="classc___output_mgr.html#a33b3e6588cc7639555d7e91b59378540" title=" " alt="" coords="707,332,885,373"/>
-<area shape="poly" title=" " alt="" coords="1240,637,1232,589,1216,529,1187,469,1168,442,1145,419,1126,408,1101,398,1034,382,958,370,885,362,886,357,959,365,1035,377,1103,393,1129,403,1148,415,1172,439,1192,466,1221,527,1238,587,1246,636"/>
+<area shape="poly" title=" " alt="" coords="1193,643,1192,642,1175,612,1168,582,1168,553,1171,525,1174,498,1173,471,1164,445,1144,419,1127,407,1102,396,1036,380,959,368,885,361,886,355,960,363,1037,374,1104,391,1130,402,1148,415,1169,442,1178,470,1180,498,1177,526,1173,554,1173,582,1180,610,1197,639,1197,640"/>
 <area shape="rect" href="classc___input_m_q_t_t.html#a18091bce67a4c82c95692bcd9366872f" title=" " alt="" coords="696,1219,896,1244"/>
-<area shape="poly" title=" " alt="" coords="1197,690,1197,690,1180,718,1169,745,1163,772,1161,798,1166,850,1178,901,1189,952,1193,1003,1190,1029,1182,1055,1168,1081,1148,1108,1125,1129,1102,1141,1079,1147,1055,1148,1004,1148,976,1151,945,1159,876,1190,821,1221,818,1216,874,1185,943,1154,975,1146,1004,1142,1055,1143,1078,1142,1100,1136,1122,1125,1144,1104,1164,1079,1177,1053,1185,1028,1188,1003,1184,953,1173,902,1161,851,1155,798,1157,771,1163,744,1175,716,1192,687,1193,686"/>
+<area shape="poly" title=" " alt="" coords="1246,693,1235,787,1216,911,1203,973,1187,1030,1169,1076,1148,1108,1124,1128,1101,1140,1077,1145,1054,1147,1003,1147,975,1151,945,1159,876,1190,821,1221,818,1216,874,1185,943,1154,974,1145,1003,1142,1053,1142,1076,1140,1099,1135,1121,1124,1144,1104,1165,1074,1182,1028,1198,972,1211,910,1230,786,1240,693"/>
 <area shape="rect" href="classc___input_m_q_t_t.html#aa7e66ef912ee4ea959c6a4046ed2724e" title=" " alt="" coords="964,1219,1126,1244"/>
-<area shape="poly" title=" " alt="" coords="1200,692,1190,716,1183,744,1176,810,1176,884,1178,962,1181,1038,1179,1108,1169,1167,1161,1190,1148,1209,1128,1225,1124,1220,1144,1206,1156,1188,1164,1165,1174,1108,1175,1038,1173,962,1170,884,1171,810,1177,743,1185,715,1195,690"/>
+<area shape="poly" title=" " alt="" coords="1247,693,1240,805,1223,960,1210,1038,1194,1110,1173,1169,1148,1209,1128,1224,1125,1219,1144,1206,1168,1167,1189,1109,1205,1037,1218,959,1234,805,1242,693"/>
 <area shape="rect" href="classc___external_input.html#ade8595d667e193c7eda9ee516b85bb88" title=" " alt="" coords="963,587,1127,628"/>
 <area shape="poly" title=" " alt="" coords="1184,650,1119,631,1120,626,1185,645"/>
 <area shape="rect" href="classc___input_f_p_p_remote_play_list.html#a7c9150d33dd2d0752c2cabe86b462430" title=" " alt="" coords="954,472,1136,513"/>
-<area shape="poly" title=" " alt="" coords="1230,640,1195,586,1172,558,1145,534,1114,516,1117,511,1148,529,1175,554,1199,583,1234,637"/>
+<area shape="poly" title=" " alt="" coords="1194,645,1192,643,1181,628,1174,614,1168,586,1162,560,1156,547,1145,533,1119,516,1122,511,1148,530,1160,544,1167,558,1173,585,1179,612,1185,625,1196,639,1198,641"/>
 <area shape="rect" href="classc___file_mgr.html#ac14c25f4d4db4016303b200f6bd9ae99" title=" " alt="" coords="726,256,866,282"/>
-<area shape="poly" title=" " alt="" coords="1240,637,1228,557,1208,454,1180,357,1163,321,1145,297,1112,276,1075,261,1036,251,996,247,918,248,852,258,852,253,918,243,996,241,1037,246,1077,256,1114,271,1148,294,1168,318,1185,356,1213,453,1233,556,1245,636"/>
+<area shape="poly" title=" " alt="" coords="1193,643,1192,642,1177,619,1168,595,1161,549,1166,504,1176,461,1184,418,1186,377,1182,357,1175,337,1162,317,1145,297,1112,274,1075,257,1036,248,995,243,915,246,847,258,847,253,914,241,995,238,1036,242,1077,252,1115,269,1148,294,1167,314,1179,335,1187,355,1191,377,1190,419,1181,462,1171,505,1167,549,1173,594,1182,616,1197,639,1197,640"/>
 <area shape="rect" href="classc___f_p_p_discovery.html#aa24886fa3cde31ed61750425ecd927aa" title=" " alt="" coords="955,703,1135,728"/>
 <area shape="poly" title=" " alt="" coords="1180,684,1100,705,1099,699,1178,679"/>
 <area shape="rect" href="classc___input_f_p_p_remote.html#a1ee15e1c30584550418fd15599f8de61" title="Set a new config in the driver." alt="" coords="697,677,894,703"/>
 <area shape="poly" title=" " alt="" coords="1179,671,895,687,895,682,1178,666"/>
 <area shape="rect" href="classc___input_artnet.html#aa8ef414340a74ff9ba8caaf222e33b9b" title="Set a new config in the driver." alt="" coords="964,752,1126,778"/>
-<area shape="poly" title=" " alt="" coords="1201,688,1196,691,1182,704,1173,717,1164,730,1148,743,1124,754,1122,749,1145,739,1160,727,1169,714,1178,701,1193,687,1198,683"/>
+<area shape="poly" title=" " alt="" coords="1223,691,1189,718,1148,743,1119,754,1117,749,1145,738,1185,714,1219,686"/>
 <area shape="rect" href="classc___input_e131.html#ae77e361a9e510852cd0b7d0cf6721ec6" title="Set a new config in the driver." alt="" coords="968,801,1123,827"/>
-<area shape="poly" title=" " alt="" coords="1198,689,1196,691,1180,716,1174,742,1168,767,1160,780,1148,792,1125,806,1122,801,1145,788,1156,777,1163,765,1169,740,1175,714,1192,687,1195,685"/>
+<area shape="poly" title=" " alt="" coords="1234,693,1199,744,1175,770,1148,792,1125,804,1122,799,1145,788,1172,766,1195,741,1229,690"/>
 <area shape="rect" href="classc___input_effect_engine.html#acf078d65ad2078ad5f32afe6867284a2" title="Set a new config in the driver." alt="" coords="977,902,1113,942"/>
-<area shape="poly" title=" " alt="" coords="1197,689,1196,690,1181,715,1174,739,1174,787,1175,811,1173,835,1165,860,1148,885,1133,899,1115,909,1113,904,1130,894,1144,882,1161,858,1168,834,1170,811,1169,787,1169,739,1176,713,1192,687,1193,686"/>
+<area shape="poly" title=" " alt="" coords="1243,694,1232,735,1213,786,1186,839,1148,885,1115,907,1112,902,1145,882,1181,836,1208,784,1226,734,1238,692"/>
 <area shape="rect" href="classfsm___play_effect__state___idle.html#ada2b3107cabbc50be21d6907e25f417c" title=" " alt="" coords="724,872,868,913"/>
-<area shape="poly" title=" " alt="" coords="1197,689,1196,690,1184,710,1177,729,1176,767,1172,805,1164,824,1148,842,1128,854,1099,864,1026,879,944,888,869,893,868,888,944,883,1025,874,1098,859,1125,849,1145,837,1160,821,1167,803,1170,767,1172,728,1179,707,1192,687,1193,686"/>
+<area shape="poly" title=" " alt="" coords="1241,693,1229,728,1210,769,1183,809,1148,842,1126,853,1098,862,1025,876,869,892,868,887,1024,871,1096,857,1124,848,1145,837,1179,805,1205,766,1224,726,1236,691"/>
 <area shape="rect" href="classc___input_m_q_t_t.html#a82f5323123d44bba063f058694a4b210" title="Set a new config in the driver." alt="" coords="964,967,1127,992"/>
-<area shape="poly" title=" " alt="" coords="1197,690,1197,690,1177,725,1170,758,1171,791,1176,824,1181,857,1181,889,1171,923,1148,956,1129,970,1126,966,1144,952,1166,920,1175,889,1176,857,1171,825,1166,792,1165,758,1172,723,1192,687,1193,686"/>
+<area shape="poly" title=" " alt="" coords="1247,694,1241,749,1225,820,1212,857,1196,893,1175,927,1148,956,1129,969,1126,965,1145,952,1170,923,1191,891,1208,855,1220,818,1236,748,1242,693"/>
 <area shape="rect" href="classc___network_mgr.html#a50d97dec317ecb4cc9a308b5e0aadf2d" title=" " alt="" coords="712,105,880,131"/>
-<area shape="poly" title=" " alt="" coords="1242,637,1235,529,1218,382,1206,308,1189,241,1169,187,1157,167,1145,152,1113,129,1077,113,1038,103,999,98,921,98,854,107,853,102,920,93,999,92,1039,98,1079,108,1115,125,1148,148,1162,164,1174,185,1194,240,1211,307,1224,381,1240,528,1247,636"/>
+<area shape="poly" title=" " alt="" coords="1195,640,1185,616,1179,589,1172,526,1175,380,1177,308,1175,242,1165,189,1156,168,1144,152,1127,141,1102,132,1034,120,955,116,881,117,881,111,956,111,1034,115,1103,126,1129,136,1148,148,1161,165,1170,187,1180,242,1182,308,1180,380,1178,525,1184,588,1190,615,1200,638"/>
 <area shape="rect" href="classc___output_common.html#acc5c49f206afba001b6514aeb4b6b2ba" title="Set a new config in the driver." alt="" coords="951,1068,1139,1094"/>
-<area shape="poly" title=" " alt="" coords="1197,690,1197,690,1182,714,1172,737,1164,783,1167,827,1176,871,1185,915,1187,959,1177,1004,1165,1027,1148,1051,1123,1070,1120,1065,1144,1047,1161,1024,1172,1002,1181,958,1179,915,1171,872,1162,828,1158,782,1167,736,1177,712,1192,687,1193,686"/>
+<area shape="poly" title=" " alt="" coords="1245,694,1232,776,1211,882,1183,983,1167,1023,1148,1051,1120,1070,1117,1065,1144,1047,1162,1021,1178,982,1206,881,1227,775,1239,693"/>
 <area shape="rect" href="classc___output_pixel.html#aba69c60f370711f72ed8d1166e2bec41" title="Set a new config in the driver." alt="" coords="714,1043,878,1068"/>
-<area shape="poly" title=" " alt="" coords="1197,690,1197,690,1183,711,1175,732,1168,772,1171,812,1179,851,1186,891,1187,930,1176,968,1165,988,1148,1007,1129,1020,1103,1030,1033,1045,954,1053,879,1057,878,1052,953,1048,1032,1040,1101,1025,1127,1015,1145,1003,1160,984,1171,966,1182,929,1181,891,1174,852,1166,813,1162,772,1169,730,1179,709,1192,687,1193,686"/>
+<area shape="poly" title=" " alt="" coords="1249,694,1247,759,1235,844,1222,889,1204,932,1180,972,1148,1007,1129,1019,1102,1029,1032,1043,953,1052,879,1056,878,1051,953,1047,1031,1038,1100,1024,1126,1014,1145,1003,1175,969,1199,930,1217,887,1229,843,1242,758,1244,693"/>
 <area shape="rect" href="classc___output_uart.html#ac46575620d6687d26468934e3146fc4d" title=" " alt="" coords="964,1169,1126,1195"/>
-<area shape="poly" title=" " alt="" coords="1199,692,1181,724,1170,754,1164,784,1162,813,1167,870,1179,926,1191,981,1195,1037,1191,1065,1183,1094,1169,1122,1148,1152,1123,1171,1120,1167,1144,1148,1164,1120,1178,1092,1186,1064,1189,1037,1186,982,1174,927,1162,871,1157,813,1159,783,1165,753,1177,722,1194,690"/>
+<area shape="poly" title=" " alt="" coords="1246,693,1237,794,1218,931,1205,1000,1189,1063,1170,1116,1148,1152,1122,1171,1119,1167,1144,1148,1166,1113,1184,1062,1200,999,1213,930,1231,793,1241,692"/>
 <area shape="rect" href="classc___wi_fi_driver.html#a07e5aa4bfbe3e838bd38fce6fa949c27" title=" " alt="" coords="966,55,1124,80"/>
-<area shape="poly" title=" " alt="" coords="1242,637,1234,521,1218,360,1205,279,1189,204,1168,143,1144,101,1119,83,1122,79,1148,98,1173,141,1194,203,1210,278,1223,360,1240,520,1247,636"/>
+<area shape="poly" title=" " alt="" coords="1195,640,1184,614,1177,585,1169,516,1169,439,1172,357,1174,278,1173,205,1164,144,1156,120,1144,101,1120,83,1124,79,1148,98,1161,118,1169,143,1178,205,1180,278,1177,358,1174,439,1175,516,1182,584,1189,613,1200,638"/>
 <area shape="rect" href="classc___input_m_q_t_t.html#aae66b8ba9f171ca8ef69547c127d2f1d" title=" " alt="" coords="954,1268,1136,1309"/>
-<area shape="poly" title=" " alt="" coords="1200,692,1189,718,1181,749,1174,820,1174,901,1177,986,1181,1069,1179,1146,1170,1211,1161,1237,1148,1258,1136,1270,1133,1266,1144,1255,1156,1235,1165,1210,1174,1146,1175,1069,1172,986,1169,901,1169,820,1176,748,1184,717,1195,690"/>
+<area shape="poly" title=" " alt="" coords="1247,693,1241,814,1225,983,1212,1069,1195,1148,1174,1213,1162,1239,1148,1259,1136,1270,1132,1266,1144,1255,1157,1236,1169,1211,1190,1147,1207,1068,1219,982,1235,814,1242,693"/>
 <area shape="rect" href="classc___network_mgr.html#a30fdcc713ea1db9f7a207427e5e6cdc2" title="&lt; Start the module" alt="" coords="246,36,391,62"/>
 <area shape="poly" title=" " alt="" coords="963,24,391,48,391,43,963,19"/>
 <area shape="rect" href="main_8cpp.html#a4fc01d736fe50cf5b977f755b675f11d" title="Arduino Setup." alt="" coords="5,51,59,76"/>
@@ -1567,8 +1570,46 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a8295d2ec53bab395bfc5811cfd78ca4d" name="a8295d2ec53bab395bfc5811cfd78ca4d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8295d2ec53bab395bfc5811cfd78ca4d">&#9670;&#160;</a></span>setFromJSON() <span class="overload">[1/2]</span></h2>
+<a id="ac171385caf3633654083138b56a41a13" name="ac171385caf3633654083138b56a41a13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac171385caf3633654083138b56a41a13">&#9670;&#160;</a></span>setFromJSON() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename N &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool setFromJSON </td>
+          <td>(</td>
+          <td class="paramtype">String &amp;</td>          <td class="paramname"><span class="paramname"><em>OutValue</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">JsonObject &amp;</td>          <td class="paramname"><span class="paramname"><em>Json</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">N</td>          <td class="paramname"><span class="paramname"><em>Name</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="_e_s_pixel_stick_8h_ac171385caf3633654083138b56a41a13_cgraph.png" border="0" usemap="#a_e_s_pixel_stick_8h_ac171385caf3633654083138b56a41a13_cgraph" alt=""/></div>
+<map name="a_e_s_pixel_stick_8h_ac171385caf3633654083138b56a41a13_cgraph" id="a_e_s_pixel_stick_8h_ac171385caf3633654083138b56a41a13_cgraph">
+<area shape="rect" title=" " alt="" coords="5,5,111,31"/>
+<area shape="rect" href="_web_mgr_8cpp.html#a47bc5f5aa91e940e6cfc297466285595" title=" " alt="" coords="159,5,241,31"/>
+<area shape="poly" title=" " alt="" coords="111,16,143,16,143,21,111,21"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a5a8cd82c1c33ed803e33f72b3cbf5082" name="a5a8cd82c1c33ed803e33f72b3cbf5082"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a8cd82c1c33ed803e33f72b3cbf5082">&#9670;&#160;</a></span>setFromJSON() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1576,7 +1617,7 @@ Here is the call graph for this function:</div>
 template&lt;typename T , typename N &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool setFromJSON </td>
+          <td class="memname">std::enable_if&lt;!std::is_same&lt; T, String &gt;::value, bool &gt;<a class="el" href="_e_f_update_8h.html#a90457c263a95013f40e41ab7cb1b03d5">::type</a> setFromJSON </td>
           <td>(</td>
           <td class="paramtype">T &amp;</td>          <td class="paramname"><span class="paramname"><em>OutValue</em></span>, </td>
         </tr>
@@ -1595,8 +1636,8 @@ template&lt;typename T , typename N &gt; </div>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="_e_s_pixel_stick_8h_a8295d2ec53bab395bfc5811cfd78ca4d_cgraph.png" border="0" usemap="#a_e_s_pixel_stick_8h_a8295d2ec53bab395bfc5811cfd78ca4d_cgraph" alt=""/></div>
-<map name="a_e_s_pixel_stick_8h_a8295d2ec53bab395bfc5811cfd78ca4d_cgraph" id="a_e_s_pixel_stick_8h_a8295d2ec53bab395bfc5811cfd78ca4d_cgraph">
+<div class="center"><img src="_e_s_pixel_stick_8h_a5a8cd82c1c33ed803e33f72b3cbf5082_cgraph.png" border="0" usemap="#a_e_s_pixel_stick_8h_a5a8cd82c1c33ed803e33f72b3cbf5082_cgraph" alt=""/></div>
+<map name="a_e_s_pixel_stick_8h_a5a8cd82c1c33ed803e33f72b3cbf5082_cgraph" id="a_e_s_pixel_stick_8h_a5a8cd82c1c33ed803e33f72b3cbf5082_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,111,31"/>
 <area shape="rect" href="_web_mgr_8cpp.html#a47bc5f5aa91e940e6cfc297466285595" title=" " alt="" coords="159,5,241,31"/>
 <area shape="poly" title=" " alt="" coords="111,16,143,16,143,21,111,21"/>
@@ -1605,8 +1646,8 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="_e_s_pixel_stick_8h_a8295d2ec53bab395bfc5811cfd78ca4d_icgraph.png" border="0" usemap="#a_e_s_pixel_stick_8h_a8295d2ec53bab395bfc5811cfd78ca4d_icgraph" alt=""/></div>
-<map name="a_e_s_pixel_stick_8h_a8295d2ec53bab395bfc5811cfd78ca4d_icgraph" id="a_e_s_pixel_stick_8h_a8295d2ec53bab395bfc5811cfd78ca4d_icgraph">
+<div class="center"><img src="_e_s_pixel_stick_8h_a5a8cd82c1c33ed803e33f72b3cbf5082_icgraph.png" border="0" usemap="#a_e_s_pixel_stick_8h_a5a8cd82c1c33ed803e33f72b3cbf5082_icgraph" alt=""/></div>
+<map name="a_e_s_pixel_stick_8h_a5a8cd82c1c33ed803e33f72b3cbf5082_icgraph" id="a_e_s_pixel_stick_8h_a5a8cd82c1c33ed803e33f72b3cbf5082_icgraph">
 <area shape="rect" title=" " alt="" coords="1194,652,1300,678"/>
 <area shape="rect" href="classc___wi_fi_driver.html#a1d60280a9692bcf4043fd430777a6422" title="&lt; Start the module" alt="" coords="978,5,1112,31"/>
 <area shape="poly" title=" " alt="" coords="1243,636,1237,509,1223,331,1210,240,1193,157,1171,90,1159,64,1144,44,1130,32,1112,25,1114,20,1132,28,1148,40,1163,61,1176,88,1198,156,1215,239,1228,331,1243,509,1248,636"/>
@@ -1685,44 +1726,6 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="935,1072,878,1066,879,1061,936,1067"/>
 <area shape="poly" title=" " alt="" coords="964,87,863,107,862,102,963,81"/>
 <area shape="poly" title=" " alt="" coords="938,1267,855,1248,856,1242,939,1262"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="a22f4176fd1b5a26a3d18c096681ad8e9" name="a22f4176fd1b5a26a3d18c096681ad8e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a22f4176fd1b5a26a3d18c096681ad8e9">&#9670;&#160;</a></span>setFromJSON() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T , typename N &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">bool setFromJSON </td>
-          <td>(</td>
-          <td class="paramtype">T &amp;</td>          <td class="paramname"><span class="paramname"><em>OutValue</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">JsonVariant &amp;</td>          <td class="paramname"><span class="paramname"><em>Json</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">N</td>          <td class="paramname"><span class="paramname"><em>Name</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="_e_s_pixel_stick_8h_a22f4176fd1b5a26a3d18c096681ad8e9_cgraph.png" border="0" usemap="#a_e_s_pixel_stick_8h_a22f4176fd1b5a26a3d18c096681ad8e9_cgraph" alt=""/></div>
-<map name="a_e_s_pixel_stick_8h_a22f4176fd1b5a26a3d18c096681ad8e9_cgraph" id="a_e_s_pixel_stick_8h_a22f4176fd1b5a26a3d18c096681ad8e9_cgraph">
-<area shape="rect" title=" " alt="" coords="5,5,111,31"/>
-<area shape="rect" href="_web_mgr_8cpp.html#a47bc5f5aa91e940e6cfc297466285595" title=" " alt="" coords="159,5,241,31"/>
-<area shape="poly" title=" " alt="" coords="111,16,143,16,143,21,111,21"/>
 </map>
 </div>
 

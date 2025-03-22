@@ -1,20 +1,22 @@
 <map id="/github/workspace/include/ESPixelStick.h" name="/github/workspace/include/ESPixelStick.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="337,5,510,46"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="102,168,177,193"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="337,31,247,36,150,47,66,67,35,80,15,96,9,106,9,116,14,125,24,134,53,150,88,163,86,168,51,155,21,139,10,129,4,117,4,105,11,92,33,75,65,62,149,42,246,31,337,26"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="25,94,92,120"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="337,47,108,96,107,91,336,42"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="116,94,219,120"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="360,49,223,91,221,86,359,44"/>
-<area shape="rect" id="Node000005" href="$memdebug_8h.html" title=" " alt="" coords="244,94,339,120"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="392,49,326,88,323,83,389,44"/>
-<area shape="rect" id="Node000006" href="$_const_names_8hpp.html" title=" " alt="" coords="363,94,484,120"/>
-<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="426,46,426,78,421,78,421,46"/>
-<area shape="rect" id="Node000007" href="$_g_p_i_o___defs_8hpp.html" title=" " alt="" coords="509,94,621,120"/>
-<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="452,44,525,84,522,89,450,49"/>
-<area shape="rect" id="Node000008" href="$_fast_timer_8hpp.html" title=" " alt="" coords="645,94,749,120"/>
-<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="485,44,634,87,632,92,483,49"/>
-<area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="267,123,180,163,178,158,265,118"/>
-<area shape="poly" id="edge8_Node000007_Node000001" title=" " alt="" coords="549,96,479,56,481,51,551,91"/>
-<area shape="poly" id="edge10_Node000008_Node000001" title=" " alt="" coords="661,96,514,53,515,48,662,91"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="379,5,552,46"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="157,168,233,193"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="379,30,279,34,170,44,120,52,76,64,40,78,17,96,9,111,11,123,22,135,40,145,89,160,142,170,141,176,88,166,38,150,18,139,6,126,4,110,13,92,38,74,74,59,119,47,170,39,279,28,379,24"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="28,94,109,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="379,46,125,96,124,91,378,41"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="133,94,201,120"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="392,49,216,95,215,90,390,44"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="225,94,328,120"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="419,49,320,90,318,85,417,44"/>
+<area shape="rect" id="Node000006" href="$memdebug_8h.html" title=" " alt="" coords="353,94,448,120"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="452,48,422,83,418,80,447,45"/>
+<area shape="rect" id="Node000007" href="$_const_names_8hpp.html" title=" " alt="" coords="472,94,593,120"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="484,45,514,80,510,83,480,48"/>
+<area shape="rect" id="Node000008" href="$_g_p_i_o___defs_8hpp.html" title=" " alt="" coords="617,94,730,120"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="511,44,622,86,620,91,509,49"/>
+<area shape="rect" id="Node000009" href="$_fast_timer_8hpp.html" title=" " alt="" coords="753,94,858,120"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="543,44,739,89,737,94,542,49"/>
+<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="366,123,245,165,243,160,365,118"/>
+<area shape="poly" id="edge9_Node000008_Node000001" title=" " alt="" coords="647,96,539,54,541,49,649,91"/>
+<area shape="poly" id="edge11_Node000009_Node000001" title=" " alt="" coords="759,96,566,51,567,46,760,91"/>
 </map>
