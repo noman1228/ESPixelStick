@@ -3,7 +3,7 @@
 * ESPixelStick.h
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2016, 2022 Shelby Merrick
+* Copyright (c) 2016, 2025 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -19,7 +19,7 @@
 */
 
 #include <Arduino.h>
-
+#include <type_traits> 
 #if defined(ARDUINO_ARCH_ESP8266)
 #	include <ESP8266WiFi.h>
 #	include <ESPAsyncTCP.h>
@@ -93,17 +93,44 @@ extern void PrettyPrint (JsonArray& jsonStuff, String Name);
 extern void PrettyPrint(JsonDocument &jsonStuff, String Name);
 
 template <typename T, typename N>
-bool setFromJSON (T& OutValue, JsonObject & Json, N Name)
+typename std::enable_if<!std::is_same<T, String>::value, bool>::type
+setFromJSON(T& OutValue, JsonObject& Json, N Name)
 {
     bool HasBeenModified = false;
+    JsonVariant val = Json[Name];
 
-    if (Json[(char*)Name].template is<T>())
+    if (val.is<T>())
     {
-        T temp = Json[(char*)Name];
+        T temp = val.as<T>();
         if (temp != OutValue)
         {
             OutValue = temp;
             HasBeenModified = true;
+        }
+    }
+    else if (val.is<const char*>())
+    {
+        const char* strVal = val.as<const char*>();
+        if (strVal)
+        {
+            T temp = OutValue;
+
+            if (std::is_same<T, uint8_t>::value || std::is_same<T, int>::value)
+                temp = static_cast<T>(atoi(strVal));
+            else if (std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value)
+                temp = static_cast<T>(strtoul(strVal, nullptr, 10));
+            else if (std::is_same<T, float>::value)
+                temp = static_cast<T>(strtof(strVal, nullptr));
+            else if (std::is_same<T, double>::value)
+                temp = static_cast<T>(strtod(strVal, nullptr));
+            else
+                return false;
+
+            if (temp != OutValue)
+            {
+                OutValue = temp;
+                HasBeenModified = true;
+            }
         }
     }
     else
@@ -115,14 +142,16 @@ bool setFromJSON (T& OutValue, JsonObject & Json, N Name)
     return HasBeenModified;
 };
 
-template <typename T, typename N>
-bool setFromJSON (T& OutValue, JsonVariant & Json, N Name)
+// #### Specialization for String ####
+template <typename N>
+bool setFromJSON (String& OutValue, JsonObject& Json, N Name)
 {
     bool HasBeenModified = false;
+    JsonVariant val = Json[Name];
 
-    if (Json[(char*)Name].template is<T>())
+    if (val.is<const char*>())
     {
-        T temp = Json[(char*)Name];
+        String temp = val.as<const char*>();
         if (temp != OutValue)
         {
             OutValue = temp;
