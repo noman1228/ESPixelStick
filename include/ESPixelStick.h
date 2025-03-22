@@ -19,7 +19,7 @@
 */
 
 #include <Arduino.h>
-
+#include <type_traits> 
 #if defined(ARDUINO_ARCH_ESP8266)
 #	include <ESP8266WiFi.h>
 #	include <ESPAsyncTCP.h>
@@ -32,9 +32,9 @@
 #	error "Unsupported CPU type"
 #endif
 
-//#ifdef BOARD_HAS_PSRAM
-//#   error "PSRAM is not supported by ESPixelStick"
-//#endif // def BOARD_HAS_PSRAM
+#ifdef BOARD_HAS_PSRAM
+#   error "PSRAM is not supported by ESPixelStick"
+#endif // def BOARD_HAS_PSRAM
 
 #define ARDUINOJSON_USE_LONG_LONG 1
 #define ARDUINOJSON_DEFAULT_NESTING_LIMIT 15
@@ -93,13 +93,65 @@ extern void PrettyPrint (JsonArray& jsonStuff, String Name);
 extern void PrettyPrint(JsonDocument &jsonStuff, String Name);
 
 template <typename T, typename N>
-bool setFromJSON (T& OutValue, JsonObject & Json, N Name)
+typename std::enable_if<!std::is_same<T, String>::value, bool>::type
+setFromJSON(T& OutValue, JsonObject& Json, N Name)
 {
     bool HasBeenModified = false;
+    JsonVariant val = Json[Name];
 
-    if (Json[(char*)Name].template is<T>())
+    if (val.is<T>())
     {
-        T temp = Json[(char*)Name];
+        T temp = val.as<T>();
+        if (temp != OutValue)
+        {
+            OutValue = temp;
+            HasBeenModified = true;
+        }
+    }
+    else if (val.is<const char*>())
+    {
+        const char* strVal = val.as<const char*>();
+        if (strVal)
+        {
+            T temp = OutValue;
+
+            if (std::is_same<T, uint8_t>::value || std::is_same<T, int>::value)
+                temp = static_cast<T>(atoi(strVal));
+            else if (std::is_same<T, uint16_t>::value || std::is_same<T, uint32_t>::value)
+                temp = static_cast<T>(strtoul(strVal, nullptr, 10));
+            else if (std::is_same<T, float>::value)
+                temp = static_cast<T>(strtof(strVal, nullptr));
+            else if (std::is_same<T, double>::value)
+                temp = static_cast<T>(strtod(strVal, nullptr));
+            else
+                return false;
+
+            if (temp != OutValue)
+            {
+                OutValue = temp;
+                HasBeenModified = true;
+            }
+        }
+    }
+    else
+    {
+        DEBUG_V(String("Could not find field '") + Name + "' in the json record");
+        PrettyPrint(Json, Name);
+    }
+
+    return HasBeenModified;
+}
+
+// === Specialization for String ===
+template <typename N>
+bool setFromJSON(String& OutValue, JsonObject& Json, N Name)
+{
+    bool HasBeenModified = false;
+    JsonVariant val = Json[Name];
+
+    if (val.is<const char*>())
+    {
+        String temp = val.as<const char*>();
         if (temp != OutValue)
         {
             OutValue = temp;
@@ -109,34 +161,11 @@ bool setFromJSON (T& OutValue, JsonObject & Json, N Name)
     else
     {
         DEBUG_V(String("Could not find field '") + Name + "' in the json record");
-        PrettyPrint (Json, Name);
+        PrettyPrint(Json, Name);
     }
 
     return HasBeenModified;
-};
-
-template <typename T, typename N>
-bool setFromJSON (T& OutValue, JsonVariant & Json, N Name)
-{
-    bool HasBeenModified = false;
-
-    if (Json[(char*)Name].template is<T>())
-    {
-        T temp = Json[(char*)Name];
-        if (temp != OutValue)
-        {
-            OutValue = temp;
-            HasBeenModified = true;
-        }
-    }
-    else
-    {
-        DEBUG_V(String("Could not find field '") + Name + "' in the json record");
-        PrettyPrint (Json, Name);
-    }
-
-    return HasBeenModified;
-};
+}
 
 #if defined(ARDUINO_ARCH_ESP8266)
 #   define JsonWrite(j, n, v)  (j)[String(n)] = (v)

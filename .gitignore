@@ -8,7 +8,6 @@
 /data
 /.pio
 __pycache__
-platformio_user.ini
 firmware.map
 MyEnv.txt
 Changelog.pdf

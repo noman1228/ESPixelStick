@@ -23,7 +23,7 @@
 
 
 // File Manager
-#undef SUPPORT_SD
+#define SUPPORT_SD
 #define SD_CARD_MISO_PIN        gpio_num_t::GPIO_NUM_19
 #define SD_CARD_MOSI_PIN        gpio_num_t::GPIO_NUM_23
 #define SD_CARD_CLK_PIN         gpio_num_t::GPIO_NUM_18

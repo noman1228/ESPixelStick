@@ -6,24 +6,24 @@ def toggle_debug(text):
     Toggles debug print statements:
     - `// DEBUG_` → `DEBUG_` (enable debugging)
     - `DEBUG_` → `// DEBUG_` (disable debugging)
-    - Tracks state using `// DEBUG_TOGGLE_ENABLED` or `// DEBUG_TOGGLE_DISABLED`
-    - Ensures no double comments (`// // DEBUG_`)
+    - Tracks state using `/* DEBUG_TOGGLE:ENABLED */` or `/* DEBUG_TOGGLE:DISABLED */`
     """
-    debug_enabled = "// DEBUG_TOGGLE_ENABLED" in text
-    debug_disabled = "// DEBUG_TOGGLE_DISABLED" in text
+    debug_enabled = "/* DEBUG_TOGGLE:ENABLED */" in text
+    debug_disabled = "/* DEBUG_TOGGLE:DISABLED */" in text
 
-    # Ensure we track the toggle state correctly
+    # If no state is found, assume it's enabled by default
     if not debug_enabled and not debug_disabled:
-        text += "\n// DEBUG_TOGGLE_ENABLED\n"  # Default state
+        text += "\n/* DEBUG_TOGGLE:ENABLED */\n"
+        debug_enabled = True
 
     if debug_enabled:
-        # Enable debugging: Remove one level of `//` if it exists
-        text = re.sub(r'(^|\s)// (DEBUG_)', r'\1\2', text)  # `// DEBUG_` → `DEBUG_`
-        text = text.replace("// DEBUG_TOGGLE_ENABLED", "// DEBUG_TOGGLE_DISABLED")  # Update toggle state
+        # Enable debugging → uncomment lines
+        text = re.sub(r'(^|\s)// (DEBUG_)', r'\1\2', text)
+        text = text.replace("/* DEBUG_TOGGLE:ENABLED */", "/* DEBUG_TOGGLE:DISABLED */")
     else:
-        # Disable debugging: Ensure only a single `//` is added
-        text = re.sub(r'(^|\s)(?<!// )(DEBUG_)', r'\1// \2', text)  # `DEBUG_` → `// DEBUG_`
-        text = text.replace("// DEBUG_TOGGLE_DISABLED", "// DEBUG_TOGGLE_ENABLED")  # Update toggle state
+        # Disable debugging → comment out lines
+        text = re.sub(r'(^|\s)(?<!// )(DEBUG_)', r'\1// \2', text)
+        text = text.replace("/* DEBUG_TOGGLE:DISABLED */", "/* DEBUG_TOGGLE:ENABLED */")
 
     return text
 

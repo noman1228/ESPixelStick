@@ -202,9 +202,9 @@ void c_WebMgr::init ()
                 OutputMgr.DeleteConfig ();
                 DeleteConfig ();
 
-                request->send (200, CN_textSLASHplain, "Rebooting");
+                request->send (200, CN_textSLASHplain, "Device RESET.. Rebooting");
                 // DEBUG_V ("");
-                RequestReboot(100000);;
+                RequestReboot(1000);;
             }
         });
 
