@@ -42,6 +42,9 @@
 // Services
 #include "service/FPPDiscovery.h"
 #include <TimeLib.h>
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 #ifdef SUPPORT_SENSOR_DS18B20
 #include "service/SensorDS18B20.h"
 #endif // def SUPPORT_SENSOR_DS18B20
@@ -141,7 +144,10 @@ void setup()
     ResetGpio(DEBUG_GPIO);
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
-#endif // def DEBUG_GPIO
+#endif
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif
 
     config.BlankDelay = 5;
 #ifdef ARDUINO_ARCH_ESP32
@@ -512,7 +518,10 @@ void loop()
         HeapTime += 5000;
     }
 */
-    FeedWDT ();
+#ifdef SUPPORT_OLED
+    OLED.Poll();
+    FeedWDT();
+#endif
 
     // Keep the Network Open
     NetworkMgr.Poll ();
