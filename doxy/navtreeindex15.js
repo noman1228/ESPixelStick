@@ -1,7 +1,5 @@
 var NAVTREEINDEX15 =
 {
-"structc___f_p_p_discovery_1_1_multi_sync_stats__t.html#a696d35732ec09d9bb00d510ed88deb26":[0,0,2,0,6],
-"structc___f_p_p_discovery_1_1_multi_sync_stats__t.html#a8a1a55323597480025ab1d1d5db2e85c":[0,0,2,0,10],
 "structc___f_p_p_discovery_1_1_multi_sync_stats__t.html#aa1efbe022405cc72b462549a106d1e7f":[0,0,2,0,13],
 "structc___f_p_p_discovery_1_1_multi_sync_stats__t.html#aac512a4a01651b9e3b1071c528677546":[0,0,2,0,4],
 "structc___f_p_p_discovery_1_1_multi_sync_stats__t.html#abd241700cde458b75d7dffbaa5e7a81b":[0,0,2,0,2],
