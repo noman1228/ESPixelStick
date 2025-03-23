@@ -124,6 +124,13 @@ jobs:
 
           - target: "esp32_smallman"    
             chip: "esp32"
+
+          - target: "esp32_babyboi"
+            chip: "esp32"
+
+          - target: "esp32_teth"
+            chip: "esp32"
+            
     runs-on: ubuntu-latest
     steps:
       # Checkout ESPixelStick

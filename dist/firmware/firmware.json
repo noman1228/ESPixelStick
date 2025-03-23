@@ -1273,6 +1273,41 @@
             }
         },
         {
+            "name": "esp32_bigboi",
+            "description": "Big Boi (Pixel Rick)",
+            "chip": "esp32",
+            "appbin": "esp32/esp32_bigboi-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "--before default_reset --after hard_reset",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                {
+                    "name": "esp32/esp32_bigboi-bootloader.bin",
+                    "offset": "0x1000"
+                },
+                {
+                    "name": "esp32/esp32_bigboi-partitions.bin",
+                    "offset": "0x8000"
+                },
+                {
+                    "name": "esp32/boot_app0.bin",
+                    "offset": "0xe000"
+                },
+                {
+                    "name": "esp32/esp32_bigboi-app.bin",
+                    "offset": "0x10000"
+                }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0xE0000",
+                "offset": "0x310000"
+            }
+        },
+        {
             "name": "esp32_tiny",
             "description": "Tiny Dancer",
             "chip": "esp32",
@@ -1283,10 +1318,22 @@
                 "flashcmd": "write_flash -z"
             },
             "binfiles": [
-                { "name": "esp32/esp32_tiny-bootloader.bin", "offset": "0x1000" },
-                { "name": "esp32/esp32_tiny-partitions.bin", "offset": "0x8000" },
-                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
-                { "name": "esp32/esp32_tiny-app.bin", "offset": "0x10000" }
+                {
+                    "name": "esp32/esp32_tiny-bootloader.bin",
+                    "offset": "0x1000"
+                },
+                {
+                    "name": "esp32/esp32_tiny-partitions.bin",
+                    "offset": "0x8000"
+                },
+                {
+                    "name": "esp32/boot_app0.bin",
+                    "offset": "0xe000"
+                },
+                {
+                    "name": "esp32/esp32_tiny-app.bin",
+                    "offset": "0x10000"
+                }
             ],
             "filesystem": {
                 "page": "256",
@@ -1306,10 +1353,22 @@
                 "flashcmd": "write_flash -z"
             },
             "binfiles": [
-                { "name": "esp32/esp32_smallman-bootloader.bin", "offset": "0x1000" },
-                { "name": "esp32/esp32_smallman-partitions.bin", "offset": "0x8000" },
-                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
-                { "name": "esp32/esp32_smallman-app.bin", "offset": "0x10000" }
+                {
+                    "name": "esp32/esp32_smallman-bootloader.bin",
+                    "offset": "0x1000"
+                },
+                {
+                    "name": "esp32/esp32_smallman-partitions.bin",
+                    "offset": "0x8000"
+                },
+                {
+                    "name": "esp32/boot_app0.bin",
+                    "offset": "0xe000"
+                },
+                {
+                    "name": "esp32/esp32_smallman-app.bin",
+                    "offset": "0x10000"
+                }
             ],
             "filesystem": {
                 "page": "256",
@@ -1329,33 +1388,22 @@
                 "flashcmd": "write_flash -z"
             },
             "binfiles": [
-                { "name": "esp32/esp32_babyboi-bootloader.bin", "offset": "0x1000" },
-                { "name": "esp32/esp32_babyboi-partitions.bin", "offset": "0x8000" },
-                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
-                { "name": "esp32/esp32_babyboi-app.bin", "offset": "0x10000" }
-            ],
-            "filesystem": {
-                "page": "256",
-                "block": "4096",
-                "size": "0xE0000",
-                "offset": "0x310000"
-            }
-        },
-        {
-            "name": "esp32_babyboi",
-            "description": "Small Man (Babyboi Edition)",
-            "chip": "esp32",
-            "appbin": "esp32/esp32_babyboi-app.bin",
-            "esptool": {
-                "baudrate": "460800",
-                "options": "--before default_reset --after hard_reset",
-                "flashcmd": "write_flash -z"
-            },
-            "binfiles": [
-                { "name": "esp32/esp32_babyboi-bootloader.bin", "offset": "0x1000" },
-                { "name": "esp32/esp32_babyboi-partitions.bin", "offset": "0x8000" },
-                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
-                { "name": "esp32/esp32_babyboi-app.bin", "offset": "0x10000" }
+                {
+                    "name": "esp32/esp32_babyboi-bootloader.bin",
+                    "offset": "0x1000"
+                },
+                {
+                    "name": "esp32/esp32_babyboi-partitions.bin",
+                    "offset": "0x8000"
+                },
+                {
+                    "name": "esp32/boot_app0.bin",
+                    "offset": "0xe000"
+                },
+                {
+                    "name": "esp32/esp32_babyboi-app.bin",
+                    "offset": "0x10000"
+                }
             ],
             "filesystem": {
                 "page": "256",
@@ -1375,10 +1423,22 @@
                 "flashcmd": "write_flash -z"
             },
             "binfiles": [
-                { "name": "esp32/esp32_teth-bootloader.bin", "offset": "0x1000" },
-                { "name": "esp32/esp32_teth-partitions.bin", "offset": "0x8000" },
-                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
-                { "name": "esp32/esp32_teth-app.bin", "offset": "0x10000" }
+                {
+                    "name": "esp32/esp32_teth-bootloader.bin",
+                    "offset": "0x1000"
+                },
+                {
+                    "name": "esp32/esp32_teth-partitions.bin",
+                    "offset": "0x8000"
+                },
+                {
+                    "name": "esp32/boot_app0.bin",
+                    "offset": "0xe000"
+                },
+                {
+                    "name": "esp32/esp32_teth-app.bin",
+                    "offset": "0x10000"
+                }
             ],
             "filesystem": {
                 "page": "256",
@@ -1387,8 +1447,5 @@
                 "offset": "0x310000"
             }
         }
-        
-        
-             
     ]
 }
