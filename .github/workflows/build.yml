@@ -116,9 +116,14 @@ jobs:
           - target: "esp32_ka_4"
             chip: "esp32"
           #
-          - target: "esp32_breakdancev2"
+          - target: "esp32_bigboi"
             chip: "esp32"
 
+          - target: "esp32_tiny"
+            chip: "esp32"
+
+          - target: "esp32_smallman"    
+            chip: "esp32"
     runs-on: ubuntu-latest
     steps:
       # Checkout ESPixelStick
