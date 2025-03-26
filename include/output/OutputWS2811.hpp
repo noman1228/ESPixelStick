@@ -56,7 +56,7 @@ protected:
 //    #define WS2811_PIXEL_NS_BIT_0_LOW       945.0 // = 937 on logic analyzer 580ns - 1.6us per datasheet
 //    #define WS2811_PIXEL_NS_BIT_1_HIGH      975.0 // = 937 on logic analyzer 580ns - 1.6us per datasheet
 //    #define WS2811_PIXEL_NS_BIT_1_LOW       300.0 // = 312 on logic analyzer 220ns - 380ns per datasheet
-    #define WS2811_PIXEL_NS_BIT_0_HIGH      300.0 // 220ns - 380ns per datasheet
+    #define WS2811_PIXEL_NS_BIT_0_HIGH      275.0 // 220ns - 380ns per datasheet
     #define WS2811_PIXEL_NS_BIT_0_LOW       (WS2811_PIXEL_NS_BIT_TOTAL - WS2811_PIXEL_NS_BIT_0_HIGH)
     #define WS2811_PIXEL_NS_BIT_1_HIGH      WS2811_PIXEL_NS_BIT_0_LOW
     #define WS2811_PIXEL_NS_BIT_1_LOW       WS2811_PIXEL_NS_BIT_0_HIGH

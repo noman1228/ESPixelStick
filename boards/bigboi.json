@@ -2,15 +2,14 @@
   "build": {
     "arduino":{
       "ldscript": "esp32_out.ld",
-      "partitions": "huge_app.csv"
+      "partitions": "ESP32_partitions.csv"
     },
     "core": "esp32",
     "extra_flags": [
       "'-D ESP32_WROVER_KIT'",
       "'-D BOARD_NAME=\"esp32_BIGBOI\"'",
       "'-D BOARD_ESP32_WROVER'",
-      "'-DARDUINO_ARCH_ESP32'",
-      "'-D SCCB_I2C_PORT=I2C_NUM_0'"
+      "'-DARDUINO_ARCH_ESP32'"
     ],
     "f_cpu": "240000000L",
     "f_flash": "80000000L",
