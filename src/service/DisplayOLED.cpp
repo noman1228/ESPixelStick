@@ -63,9 +63,9 @@ void c_OLED::Begin()
         "OLEDTask",
         4096,
         nullptr,
-        1,
+        10,
         &oledTaskHandle,
-        1
+        0
     );
     if (taskCreated != pdPASS) return;
 
