@@ -20,7 +20,9 @@
 #include "ESPixelStick.h"
 
 #ifdef SUPPORT_ETHERNET
-
+#ifdef SUPPORT_OLED
+    #include "service/DisplayOLED.h"
+#endif
 #include <ETH.h>
 #include "network/NetworkMgr.hpp"
 #include "network/EthernetDriver.hpp"
@@ -626,7 +628,9 @@ void fsm_Eth_state_GotIp::Init ()
     logcon (String (F ("Ethernet Connected with IP: ")) + pEthernetDriver->GetIpAddress ().toString ());
     // DEBUG_V (String (" gateway: ") + pEthernetDriver->GetIpGateway ().toString ());
     // DEBUG_V (String (" netmask: ") + pEthernetDriver->GetIpSubNetMask ().toString ());
-
+    #ifdef SUPPORT_OLED
+    OLED.UpdateNetworkInfo(true);
+#endif
     // DEBUG_END;
 
 } // fsm_Eth_state_GotIp::Init

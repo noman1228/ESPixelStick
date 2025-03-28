@@ -29,7 +29,9 @@
 #include "network/WiFiDriver.hpp"
 #include "network/NetworkMgr.hpp"
 #include "FileMgr.hpp"
-
+#ifdef SUPPORT_OLED
+    #include "service/DisplayOLED.h"
+#endif
 //-----------------------------------------------------------------------------
 /*
     There are three ways to define the default Network Name and PassPhrase
@@ -926,7 +928,9 @@ void fsm_WiFi_state_ConnectedToAP::Init ()
 
     pWiFiDriver->SetIsWiFiConnected (true);
     NetworkMgr.SetWiFiIsConnected (true);
-
+    #ifdef SUPPORT_OLED
+    OLED.UpdateNetworkInfo(true);
+#endif
     // DEBUG_END;
 } // fsm_WiFi_state_ConnectedToAP::Init
 

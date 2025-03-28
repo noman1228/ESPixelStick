@@ -1,5 +1,5 @@
 #include "service/DisplayOLED.h"
-
+#include "ESPixelStick.h"
 // === GLOBALS ===
 
 static SemaphoreHandle_t displayMutex = nullptr;
@@ -13,7 +13,12 @@ bool acquireDisplayLock() {
 }
 
 void releaseDisplayLock() {
-    xSemaphoreGive(displayMutex);
+    if (displayMutex) {
+        xSemaphoreGive(displayMutex);
+    } else {
+        // Optional: log or assert
+         LOG_PORT.println("releaseDisplayLock() called with null mutex!");
+    }
 }
 
 // === TASK ===
