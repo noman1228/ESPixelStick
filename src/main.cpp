@@ -230,7 +230,9 @@ void setup() {
 
     // Done with initialization
     IsBooting = false;
-
+    #ifdef SUPPORT_OLED
+    OLED.UpdateNetworkInfo(true);
+    #endif
     // DEBUG_END;
 
 } // setup
@@ -383,7 +385,9 @@ void deserializeCoreHandler(JsonDocument &jsonDoc) {
 // Save configuration JSON file
 void SaveConfig() {
     // DEBUG_START;
-
+    #ifdef SUPPORT_OLED
+    OLED.ShowToast("Settings Saved");
+    #endif
     ConfigSaveNeeded = false;
 
     // Create buffer and root object
@@ -417,6 +421,9 @@ void LoadConfig() {
 
 void DeleteConfig() {
     // DEBUG_START;
+    #ifdef SUPPORT_OLED
+        OLED.ShowToast("Deleting Config");
+#endif
     FileMgr.DeleteFlashFile(ConfigFileName);
 
     // DEBUG_END;
@@ -522,11 +529,12 @@ void loop() {
     // Reboot handler
     if (NotRebootingValue != RebootCount) {
         if (0 == --RebootCount) {
-#ifdef SUPPORT_OLED
-            OLED.ShowRebootScreen();
-#endif
+
             logcon(String(CN_stars) + CN_minussigns + F("Internal Reboot Requested. Rebooting Now"));
             delay(REBOOT_DELAY);
+            #ifdef SUPPORT_OLED
+            OLED.ShowRebootScreen();
+            #endif
             ESP.restart();
         }
     }
@@ -540,9 +548,7 @@ void loop() {
 
     if (ConfigSaveNeeded) {
         FeedWDT();
-#ifdef SUPPORT_OLED
-        OLED.ShowToast("Settings Saved");
-#endif
+
         SaveConfig();
     }
 

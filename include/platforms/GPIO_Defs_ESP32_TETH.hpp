@@ -23,7 +23,7 @@
 #define DEFAULT_RMT_0_GPIO      gpio_num_t::GPIO_NUM_15
 #define DEFAULT_RMT_1_GPIO      gpio_num_t::GPIO_NUM_2
 #define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_4
-
+#define DEFAULT_RMT_3_GPIO      gpio_num_t::GPIO_NUM_1
 
 // File Manager
 #define SUPPORT_SD

@@ -7,7 +7,6 @@
     "core": "esp32",
     "extra_flags": [
       "'-D ESP32_WROVER_KIT'",
-      "'-D BOARD_NAME=\"esp32_BIGBOI\"'",
       "'-D BOARD_ESP32_WROVER'",
       "'-DARDUINO_ARCH_ESP32'"
     ],
