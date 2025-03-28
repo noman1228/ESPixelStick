@@ -2,6 +2,7 @@
 #include "ESPixelStick.h"
 #ifdef ARDUINO_ARCH_ESP32
 #include "output/OutputRmt.hpp"
+#include <driver/rmt.h>
 
 static void IRAM_ATTR rmt_intr_handler(void *param);
 static rmt_isr_handle_t RMT_intr_handle = NULL;
@@ -19,17 +20,24 @@ static uint32_t FrameTimeouts = 0;
 
 void RMT_Task(void *arg) {
 
-    while (1) {
-
-        for (c_OutputRmt *pRmt : rmt_isr_ThisPtrs) {
-
-            if (nullptr != pRmt) {
-
-                if (pRmt->StartNextFrame()) {
-
-                    uint32_t NotificationValue = ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
-                    if (1 == NotificationValue) {
-
+    while(1)
+    {
+        // Give the outputs a chance to catch up.
+        delay(1);
+        // process all possible channels
+        for (c_OutputRmt * pRmt : rmt_isr_ThisPtrs)
+        {
+            // do we have a driver on this channel?
+            if(nullptr != pRmt)
+            {
+                // invoke the channel
+                if (pRmt->StartNextFrame())
+                {
+                    // sys_delay_ms(500);
+                    uint32_t NotificationValue = ulTaskNotifyTake( pdTRUE, pdMS_TO_TICKS(100) );
+                    if(1 == NotificationValue)
+                    {
+                        // DEBUG_V("The transmission ended as expected.");
                         ++FrameCompletes;
                     } else {
                         ++FrameTimeouts;
@@ -94,9 +102,18 @@ static void IRAM_ATTR rmt_intr_handler(void *param) {
 
 void c_OutputRmt::Begin(OutputRmtConfig_t config, c_OutputCommon *_pParent) {
 
-    do {
+    do // once
+    {
+        if(HasBeenInitialized)
+        {
+            // release the old GPIO pin.
+            ResetGpio(OutputRmtConfig.DataPin);
+        }
+
+        // save the new config
         OutputRmtConfig = config;
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+
+        #if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
         if ((nullptr == OutputRmtConfig.pPixelDataSource) && (nullptr == OutputRmtConfig.pSerialDataSource))
 #else
         if (nullptr == OutputRmtConfig.pPixelDataSource)
@@ -129,13 +146,21 @@ void c_OutputRmt::Begin(OutputRmtConfig_t config, c_OutputCommon *_pParent) {
         RmtConfig.tx_config.carrier_en = false;
         RmtConfig.tx_config.loop_en = true;
         RmtConfig.tx_config.idle_output_en = true;
-
+        // DEBUG_V();
+        // DEBUG_V(String("RmtChannelId: ") + String(OutputRmtConfig.RmtChannelId));
+        // DEBUG_V(String("     Datapin: ") + String(OutputRmtConfig.DataPin));
         ResetGpio(OutputRmtConfig.DataPin);
         ESP_ERROR_CHECK(rmt_config(&RmtConfig));
 
-        if (NULL == RMT_intr_handle) {
+        // DEBUG_V();
+        // ESP_ERROR_CHECK(rmt_set_source_clk(RmtConfig.channel, rmt_source_clk_t::RMT_BASECLK_APB));
 
-            for (auto &currentThisPtr : rmt_isr_ThisPtrs) {
+        if(NULL == RMT_intr_handle)
+        {
+            // DEBUG_V("Allocate interrupt handler");
+            // ESP_ERROR_CHECK (esp_intr_alloc (ETS_RMT_INTR_SOURCE, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL3 | ESP_INTR_FLAG_SHARED, rmt_intr_handler, this, &RMT_intr_handle));
+            for(auto & currentThisPtr : rmt_isr_ThisPtrs)
+            {
                 currentThisPtr = nullptr;
             }
             ESP_ERROR_CHECK(rmt_isr_register(rmt_intr_handler, this, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1 | ESP_INTR_FLAG_SHARED, &RMT_intr_handle));
@@ -170,14 +195,17 @@ void c_OutputRmt::Begin(OutputRmtConfig_t config, c_OutputCommon *_pParent) {
         pParent = _pParent;
         rmt_isr_ThisPtrs[OutputRmtConfig.RmtChannelId] = this;
 
-        ResetGpio(OutputRmtConfig.DataPin);
-        rmt_set_gpio(OutputRmtConfig.RmtChannelId, RMT_MODE_TX, OutputRmtConfig.DataPin, false);
-
         HasBeenInitialized = true;
     } while (false);
-}
 
-void c_OutputRmt::GetStatus(ArduinoJson::JsonObject &jsonStatus) {
+    // DEBUG_END;
+
+} // Begin
+
+//----------------------------------------------------------------------------
+void c_OutputRmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
+{
+    // // DEBUG_START;
 
     jsonStatus[F("NumRmtSlotOverruns")] = NumRmtSlotOverruns;
 #ifdef USE_RMT_DEBUG_COUNTERS
