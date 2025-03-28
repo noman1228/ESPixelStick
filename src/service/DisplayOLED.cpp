@@ -315,24 +315,24 @@ void c_OLED::Update(bool forceUpdate) {
         return;
     }
 
-    if (!acquireDisplayLock()) return;
-
     if (isToastActive) {
-        handleToastDisplay();
-        releaseDisplayLock();
+        if (acquireDisplayLock()) {
+            handleToastDisplay();
+            releaseDisplayLock();
+        }
         return;
     }
 
     if (isUploading) {
-        releaseDisplayLock();
-        UpdateUploadStatus();
+        UpdateUploadStatus(); // It handles its own lock
         return;
     }
+
+    if (!acquireDisplayLock()) return;
 
     handleRegularDisplay(forceUpdate);
     releaseDisplayLock();
 }
-
 void c_OLED::handleRegularDisplay(bool forceUpdate) {
     unsigned long now = millis();
 
