@@ -67,9 +67,10 @@ jobs:
         env:
           chip: ${{ matrix.chip }}
         run: |
-          pio run -e ${{ matrix.target }}
-          ls -al ./firmware/${{ matrix.chip }}
-          ls -al ./debug/${{ matrix.chip }}
+          pio run -e ${{ matrix.target }} -t buildprog
+          ls -al .pio/build/firmware/${{ matrix.chip }} || echo "Firmware output not found"
+          ls -al .pio/build/debug/${{ matrix.chip }} || echo "Debug output not found"
+
 
       - name: Upload Firmware Artifacts
         uses: actions/upload-artifact@v4
