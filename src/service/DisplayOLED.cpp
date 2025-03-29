@@ -324,7 +324,7 @@ void c_OLED::Update(bool forceUpdate) {
     }
 
     if (isUploading) {
-        UpdateUploadStatus(); // It handles its own lock
+        UpdateUploadStatus();
         return;
     }
 
@@ -333,17 +333,16 @@ void c_OLED::Update(bool forceUpdate) {
     handleRegularDisplay(forceUpdate);
     releaseDisplayLock();
 }
+
 void c_OLED::handleRegularDisplay(bool forceUpdate) {
     unsigned long now = millis();
 
     if (currentPage == DisplayPage::NETWORK_INFO) {
         if (forceUpdate || now - lastNetworkUpdate >= NETWORK_UPDATE_INTERVAL_MS) {
-            releaseDisplayLock();
             UpdateNetworkInfo(forceUpdate);
             lastNetworkUpdate = now;
         }
     } else if (currentPage == DisplayPage::RUNNING_STATUS) {
-        releaseDisplayLock();
         UpdateRunningStatus();
     }
 }
