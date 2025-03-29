@@ -32,7 +32,7 @@
   "name": "ESP32 WROVER kit",
   "upload": {
     "flash_size": "4MB",
-    "maximum_ram_size": 327680,
+    "maximum_ram_size": 532480,
     "maximum_size": 4194304,
     "require_upload_port": true,
     "speed": 460800
