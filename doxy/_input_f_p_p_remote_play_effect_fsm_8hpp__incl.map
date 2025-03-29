@@ -1,0 +1,24 @@
+<map id="/github/workspace/include/input/InputFPPRemotePlayEffectFsm.hpp" name="/github/workspace/include/input/InputFPPRemotePlayEffectFsm.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="358,5,573,61"/>
+<area shape="rect" id="Node000002" href="$_e_s_pixel_stick_8h.html" title=" " alt="" coords="413,109,519,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="468,61,468,93,463,93,463,61"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="157,256,233,282"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="412,129,181,149,73,165,36,175,17,185,9,199,11,212,22,223,40,233,89,249,143,259,142,264,88,254,38,238,19,227,6,214,4,198,13,181,34,170,72,160,180,144,412,124"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="28,183,109,208"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="412,134,125,185,124,180,412,129"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="133,183,201,208"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="413,138,216,184,215,179,412,133"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="225,183,328,208"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="435,138,324,179,322,174,433,133"/>
+<area shape="rect" id="Node000007" href="$memdebug_8h.html" title=" " alt="" coords="353,183,448,208"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="457,137,424,173,420,169,453,133"/>
+<area shape="rect" id="Node000008" href="$_const_names_8hpp.html" title=" " alt="" coords="472,183,593,208"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="479,133,513,169,509,173,475,137"/>
+<area shape="rect" id="Node000009" href="$_g_p_i_o___defs_8hpp.html" title=" " alt="" coords="618,183,730,208"/>
+<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="495,133,618,175,616,180,493,138"/>
+<area shape="rect" id="Node000010" href="$_fast_timer_8hpp.html" title=" " alt="" coords="754,183,858,208"/>
+<area shape="poly" id="edge11_Node000002_Node000010" title=" " alt="" coords="517,133,739,179,737,184,516,138"/>
+<area shape="poly" id="edge7_Node000007_Node000003" title=" " alt="" coords="366,211,245,253,243,248,365,206"/>
+<area shape="poly" id="edge10_Node000009_Node000002" title=" " alt="" coords="644,185,521,142,523,137,646,180"/>
+<area shape="poly" id="edge12_Node000010_Node000002" title=" " alt="" coords="754,185,534,139,535,133,755,179"/>
+</map>
