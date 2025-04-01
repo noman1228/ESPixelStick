@@ -18,18 +18,14 @@
 */
 #include "ESPixelStick.h"
 #ifdef ARDUINO_ARCH_ESP32
-#define CN_RMT "RMT"
-
 #include "output/OutputRmt.hpp"
+#include <driver/rmt.h>
 
 // forward declaration for the isr handler
 static void IRAM_ATTR   rmt_intr_handler (void* param);
 static rmt_isr_handle_t RMT_intr_handle = NULL;
 static c_OutputRmt *    rmt_isr_ThisPtrs[MAX_NUM_RMT_CHANNELS];
 static bool             InIsr = false;
-#define RMT_INT_MASK_TX_END(chan)     (1 << ((chan) * 3))
-#define RMT_INT_MASK_THR_EVENT(chan)  (1 << (24 + (chan)))
-#define RMT_ISR_MASK(chan)            (RMT_INT_MASK_TX_END(chan) | RMT_INT_MASK_THR_EVENT(chan))
 
 #ifdef USE_RMT_DEBUG_COUNTERS
 static uint32_t RawIsrCounter = 0;
@@ -166,7 +162,7 @@ void c_OutputRmt::Begin (OutputRmtConfig_t config, c_OutputCommon * _pParent )
         // save the new config
         OutputRmtConfig = config;
 
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
         if ((nullptr == OutputRmtConfig.pPixelDataSource) && (nullptr == OutputRmtConfig.pSerialDataSource))
 #else
         if (nullptr == OutputRmtConfig.pPixelDataSource)
@@ -220,7 +216,7 @@ void c_OutputRmt::Begin (OutputRmtConfig_t config, c_OutputCommon * _pParent )
 
         if(NULL == RMT_intr_handle)
         {
-            // DEBUG_V();
+            // DEBUG_V("Allocate interrupt handler");
             // ESP_ERROR_CHECK (esp_intr_alloc (ETS_RMT_INTR_SOURCE, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL3 | ESP_INTR_FLAG_SHARED, rmt_intr_handler, this, &RMT_intr_handle));
             for(auto & currentThisPtr : rmt_isr_ThisPtrs)
             {
@@ -244,19 +240,7 @@ void c_OutputRmt::Begin (OutputRmtConfig_t config, c_OutputCommon * _pParent )
         memset((void*)&RMTMEM.chan[OutputRmtConfig.RmtChannelId].data32[0], 0x0, sizeof(RMTMEM.chan[0].data32));
 
         // DEBUG_V();
-
-        // this should be a vector.
-        if (nullptr != OutputRmtConfig.CitrdsArray)
-        {
-            // DEBUG_V();
-            const ConvertIntensityToRmtDataStreamEntry_t *CurrentTranslation = OutputRmtConfig.CitrdsArray;
-            while (CurrentTranslation->Id != RmtDataBitIdType_t::RMT_LIST_END)
-            {
-                // DEBUG_V(String("CurrentTranslation->Id: ") + String(uint32_t(CurrentTranslation->Id)));
-                SetIntensity2Rmt(CurrentTranslation->Translation, CurrentTranslation->Id);
-                CurrentTranslation++;
-            }
-        }
+        UpdateBitXlatTable(OutputRmtConfig.CitrdsArray);
 
         // DEBUG_V (String ("                Intensity2Rmt[0]: 0x") + String (uint32_t (Intensity2Rmt[0].val), HEX));
         // DEBUG_V (String ("                Intensity2Rmt[1]: 0x") + String (uint32_t (Intensity2Rmt[1].val), HEX));
@@ -270,15 +254,70 @@ void c_OutputRmt::Begin (OutputRmtConfig_t config, c_OutputCommon * _pParent )
         pParent = _pParent;
         rmt_isr_ThisPtrs[OutputRmtConfig.RmtChannelId] = this;
 
-        ResetGpio(OutputRmtConfig.DataPin);
-        rmt_set_gpio(OutputRmtConfig.RmtChannelId, RMT_MODE_TX, OutputRmtConfig.DataPin, false);
-
         HasBeenInitialized = true;
     } while (false);
 
     // DEBUG_END;
 
-} // init
+} // Begin
+
+//----------------------------------------------------------------------------
+void c_OutputRmt::UpdateBitXlatTable(const CitrdsArray_t * CitrdsArray)
+{
+    // DEBUG_START;
+
+    if (nullptr != OutputRmtConfig.CitrdsArray)
+    {
+        // DEBUG_V();
+        // this should be a vector.
+        const ConvertIntensityToRmtDataStreamEntry_t *CurrentTranslation = CitrdsArray;
+        while (CurrentTranslation->Id != RmtDataBitIdType_t::RMT_LIST_END)
+        {
+            // DEBUG_V(String("CurrentTranslation->Id: ") + String(uint32_t(CurrentTranslation->Id)));
+            SetIntensity2Rmt(CurrentTranslation->Translation, CurrentTranslation->Id);
+            CurrentTranslation++;
+        }
+    }
+    else
+    {
+        logcon(String(CN_stars) + F("ERROR: Missing pointer to RMT bit translation values") + CN_stars);
+    }
+    // DEBUG_END;
+} // UpdateBitXlatTable
+
+//----------------------------------------------------------------------------
+bool c_OutputRmt::ValidateBitXlatTable(const CitrdsArray_t * CitrdsArray)
+{
+    // DEBUG_START;
+    bool Response = false;
+    if (nullptr != OutputRmtConfig.CitrdsArray)
+    {
+        // DEBUG_V();
+        // this should be a vector.
+        const ConvertIntensityToRmtDataStreamEntry_t *CurrentTranslation = CitrdsArray;
+        while (CurrentTranslation->Id != RmtDataBitIdType_t::RMT_LIST_END)
+        {
+            // DEBUG_V(String("CurrentTranslation->Id: ") + String(uint32_t(CurrentTranslation->Id)));
+            SetIntensity2Rmt(CurrentTranslation->Translation, CurrentTranslation->Id);
+
+            if(Intensity2Rmt[CurrentTranslation->Id].val != CurrentTranslation->Translation.val)
+            {
+                logcon(String(CN_stars) + F("ERROR: incorrect bit translation deteced. Chan: ") + String(OutputRmtConfig.RmtChannelId) +
+                        F(" Slot: ") + String(CurrentTranslation->Id) +
+                        F(" Got: 0x") + String(Intensity2Rmt[CurrentTranslation->Id].val, HEX) +
+                        F(" Expected: 0x") + String(CurrentTranslation->Translation.val));
+            }
+
+            CurrentTranslation++;
+        }
+    }
+    else
+    {
+        logcon(String(CN_stars) + F("ERROR: Missing pointer to RMT bit translation values") + CN_stars);
+    }
+    // DEBUG_END;
+    return Response;
+} // ValidateBitXlatTable
 
 //----------------------------------------------------------------------------
 void c_OutputRmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
@@ -468,8 +507,7 @@ void IRAM_ATTR c_OutputRmt::ISR_Handler (uint32_t isrFlags)
         DisableRmtInterrupts;
     }
     // did the transmitter stall?
-    else if (isrFlags & RMT_INT_MASK_TX_END(OutputRmtConfig.RmtChannelId))
-
+    else if (isrFlags & RMT_INT_TX_END_BIT )
     {
         RMT_DEBUG_COUNTER(++IntTxEndIsrCounter);
         DisableRmtInterrupts;
@@ -483,8 +521,7 @@ void IRAM_ATTR c_OutputRmt::ISR_Handler (uint32_t isrFlags)
         vTaskNotifyGiveFromISR( SendFrameTaskHandle, &xHigherPriorityTaskWoken );
         // portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
     }
-    else if (isrFlags & RMT_INT_MASK_THR_EVENT(OutputRmtConfig.RmtChannelId))
-
+    else if (isrFlags & RMT_INT_THR_EVNT_BIT )
     {
         RMT_DEBUG_COUNTER(++IntTxThrIsrCounter);
 
@@ -724,50 +761,5 @@ bool c_OutputRmt::StartNewFrame ()
     return Response;
 
 } // StartNewFrame
-void c_OutputRmt::DeInit()
-{
-    if (!HasBeenInitialized) return;
-
-    const int chan = OutputRmtConfig.RmtChannelId;
-
-    // Stop transmission
-    RMT.conf_ch[chan].conf1.tx_start = 0;
-
-    // Disable and clear interrupts
-    RMT.int_ena.val &= ~RMT_ISR_MASK(chan);
-    RMT.int_clr.val |= RMT_ISR_MASK(chan);
-
-    // Reset memory and config
-    RMT.conf_ch[chan].conf1.mem_owner = RMT_MEM_OWNER_RX;
-    RMT.conf_ch[chan].conf1.apb_mem_rst = 1;
-    RMT.conf_ch[chan].conf1.apb_mem_rst = 0;
-
-    memset((void*)&RMTMEM.chan[chan].data32[0], 0, sizeof(RMTMEM.chan[chan].data32));
-
-    // Clear this instance pointer
-    rmt_isr_ThisPtrs[chan] = nullptr;
-
-    // Kill the task if it's not shared (optional logic — comment if needed)
-    if (SendFrameTaskHandle) {
-        vTaskDelete(SendFrameTaskHandle);
-        SendFrameTaskHandle = NULL;
-    }
-
-    // Free ISR if no channels remain active
-    bool allNull = true;
-    for (auto ptr : rmt_isr_ThisPtrs) {
-        if (ptr != nullptr) {
-            allNull = false;
-            break;
-        }
-    }
-    if (allNull && RMT_intr_handle) {
-        esp_intr_free(RMT_intr_handle);
-        RMT_intr_handle = NULL;
-    }
-
-    HasBeenInitialized = false;
-}
-
 
 #endif // def ARDUINO_ARCH_ESP32
