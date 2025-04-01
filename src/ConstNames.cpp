@@ -18,7 +18,8 @@
 */
 
 #include "ESPixelStick.h"
-
+const CN_PROGMEM char CN_oled                   [] = "oled";
+const CN_PROGMEM char CN_flipState                   [] = "flipState";
 const CN_PROGMEM char CN_active                   [] = "active";
 const CN_PROGMEM char CN_ActiveHigh               [] = "ActiveHigh";
 const CN_PROGMEM char CN_ActiveLow                [] = "ActiveLow";

@@ -21,6 +21,9 @@
 #include "UnzipFiles.hpp"
 #include "FileMgr.hpp"
 
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 //
 // Callback functions needed by the unzipLIB to access a file system
 // The library has built-in code for memory-to-memory transfers, but needs
@@ -200,6 +203,10 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
             TotalBytesWritten += BytesRead;
             LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
             LOG_PORT.flush();
+            #ifdef SUPPORT_OLED
+            int progress = (TotalBytesWritten * 100) / fi.uncompressed_size;
+            OLED.UpdateUploadStatus(FileName, progress);
+            #endif
 
         } while (BytesRead > 0);
 
@@ -207,6 +214,10 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
         FileMgr.CloseSdFile(FileHandle);
         zip.closeCurrentFile();
         logcon(FileName + F(" - Done."));
+        #ifdef SUPPORT_OLED
+        OLED.isUploading = false;  // Ensure Update() recognizes the upload status
+        OLED.ShowToast("Files Ready");
+        #endif
     } while(false);
 
     // DEBUG_V(String("Close Filename: ") + FileName);

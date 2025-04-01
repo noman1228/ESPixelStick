@@ -42,6 +42,9 @@
 // Services
 #include "service/FPPDiscovery.h"
 #include <TimeLib.h>
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 #ifdef SUPPORT_SENSOR_DS18B20
 #include "service/SensorDS18B20.h"
 #endif // def SUPPORT_SENSOR_DS18B20
@@ -142,7 +145,10 @@ void setup()
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
-
+#ifdef SUPPORT_OLED
+ OLED.Begin();
+ DEBUG_V("OLED SUPPORTED AND RUNNING");
+#endif
     config.BlankDelay = 5;
 #ifdef ARDUINO_ARCH_ESP32
     // disable brownout detector
@@ -226,7 +232,9 @@ void setup()
 
     // Done with initialization
     IsBooting = false;
-
+    #ifdef SUPPORT_OLED
+    OLED.UpdateNetworkInfo(true);
+    #endif
     // DEBUG_END;
 
 } // setup
@@ -513,6 +521,9 @@ void loop()
     }
 */
     FeedWDT ();
+#ifdef SUPPORT_OLED
+    OLED.Poll();
+#endif
 
     // Keep the Network Open
     NetworkMgr.Poll ();
@@ -547,6 +558,9 @@ void loop()
         {
             logcon (String(CN_stars) + CN_minussigns + F ("Internal Reboot Requested. Rebooting Now"));
             delay (REBOOT_DELAY);
+            #ifdef SUPPORT_OLED
+            OLED.ShowRebootScreen();
+            #endif
             ESP.restart ();
         }
     }
