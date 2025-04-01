@@ -1133,41 +1133,6 @@
             }
         },
         {
-            "name": "ESP32 Solo2go",
-            "description": "D1 ESP32 based quad controller",
-            "chip": "esp32",
-            "appbin": "esp32/esp32_solo2go-app.bin",
-            "esptool": {
-                "baudrate": "460800",
-                "options": "--before default_reset --after hard_reset",
-                "flashcmd": "write_flash -z"
-            },
-            "binfiles": [
-                {
-                    "name": "esp32/esp32_solo2go-bootloader.bin",
-                    "offset": "0x01000"
-                },
-                {
-                    "name": "esp32/esp32_solo2go-partitions.bin",
-                    "offset": "0x08000"
-                },
-                {
-                    "name": "esp32/boot_app0.bin",
-                    "offset": "0x0e000"
-                },
-                {
-                    "name": "esp32/esp32_solo2go-app.bin",
-                    "offset": "0x10000"
-                }
-            ],
-            "filesystem": {
-                "page": "256",
-                "block": "4096",
-                "size": "0x50000",
-                "offset": "0x3B0000"
-            }
-        },
-        {
             "name": "ESP32 KR Lights MSM",
             "description": "ESP32 based 5 port controller",
             "chip": "esp32",
@@ -1306,6 +1271,124 @@
                 "size": "0x50000",
                 "offset": "0x3B0000"
             }
+        },
+        {
+            "name": "esp32_tiny",
+            "description": "Tiny Dancer",
+            "chip": "esp32",
+            "appbin": "esp32/esp32_tiny-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "--before default_reset --after hard_reset",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                { "name": "esp32/esp32_tiny-bootloader.bin", "offset": "0x1000" },
+                { "name": "esp32/esp32_tiny-partitions.bin", "offset": "0x8000" },
+                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
+                { "name": "esp32/esp32_tiny-app.bin", "offset": "0x10000" }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0xE0000",
+                "offset": "0x310000"
+            }
+        },
+        {
+            "name": "esp32_smallman",
+            "description": "Small Man (Trickle Pixel)",
+            "chip": "esp32",
+            "appbin": "esp32/esp32_smallman-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "--before default_reset --after hard_reset",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                { "name": "esp32/esp32_smallman-bootloader.bin", "offset": "0x1000" },
+                { "name": "esp32/esp32_smallman-partitions.bin", "offset": "0x8000" },
+                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
+                { "name": "esp32/esp32_smallman-app.bin", "offset": "0x10000" }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0xE0000",
+                "offset": "0x310000"
+            }
+        },
+        {
+            "name": "esp32_babyboi",
+            "description": "Small Man (Babyboi Edition)",
+            "chip": "esp32",
+            "appbin": "esp32/esp32_babyboi-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "--before default_reset --after hard_reset",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                { "name": "esp32/esp32_babyboi-bootloader.bin", "offset": "0x1000" },
+                { "name": "esp32/esp32_babyboi-partitions.bin", "offset": "0x8000" },
+                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
+                { "name": "esp32/esp32_babyboi-app.bin", "offset": "0x10000" }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0xE0000",
+                "offset": "0x310000"
+            }
+        },
+        {
+            "name": "esp32_babyboi",
+            "description": "Small Man (Babyboi Edition)",
+            "chip": "esp32",
+            "appbin": "esp32/esp32_babyboi-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "--before default_reset --after hard_reset",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                { "name": "esp32/esp32_babyboi-bootloader.bin", "offset": "0x1000" },
+                { "name": "esp32/esp32_babyboi-partitions.bin", "offset": "0x8000" },
+                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
+                { "name": "esp32/esp32_babyboi-app.bin", "offset": "0x10000" }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0xE0000",
+                "offset": "0x310000"
+            }
+        },
+        {
+            "name": "esp32_teth",
+            "description": "Pinoccio (ETH Strings)",
+            "chip": "esp32",
+            "appbin": "esp32/esp32_teth-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "--before default_reset --after hard_reset",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                { "name": "esp32/esp32_teth-bootloader.bin", "offset": "0x1000" },
+                { "name": "esp32/esp32_teth-partitions.bin", "offset": "0x8000" },
+                { "name": "esp32/boot_app0.bin", "offset": "0xe000" },
+                { "name": "esp32/esp32_teth-app.bin", "offset": "0x10000" }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0xE0000",
+                "offset": "0x310000"
+            }
         }
+        
+        
+             
     ]
 }

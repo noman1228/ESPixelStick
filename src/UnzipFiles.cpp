@@ -218,7 +218,7 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
         OLED.isUploading = false;  // Ensure Update() recognizes the upload status
         OLED.ShowToast("Files Ready");
         #endif
-    } while(false);
+    } while (false);
 
     // DEBUG_V(String("Close Filename: ") + FileName);
     // DEBUG_END;
