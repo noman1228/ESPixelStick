@@ -8,7 +8,6 @@
 /data
 /.pio
 __pycache__
-secrets.h
 firmware.map
 MyEnv.txt
 Changelog.pdf
