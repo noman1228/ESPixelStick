@@ -520,9 +520,9 @@ void loop()
         HeapTime += 5000;
     }
 */
-    FeedWDT ();
 #ifdef SUPPORT_OLED
     OLED.Poll();
+    FeedWDT();
 #endif
 
     // Keep the Network Open

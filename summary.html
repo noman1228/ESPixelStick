@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESPixelStick Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .section {
+            background-color: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+        }
+        .title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status-item {
+            font-size: 1.1em;
+            margin: 5px 0;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: lightgreen;
+            font-weight: bold;
+        }
+        .channel-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .channel-column {
+            width: 48%;
+        }
+        .channel-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        .channel-header {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .channel-data {
+            display: flex;
+            justify-content: space-between;
+        }
+        .channel-data-column {
+            width: 48%;
+        }
+        input {
+            padding: 10px;
+            font-size: 1em;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        let deviceAddress = "http://192.168.5.200/XJ";
+
+        function setDeviceAddress() {
+            const inputAddress = document.getElementById("deviceAddress").value;
+            if (inputAddress) {
+                deviceAddress = inputAddress;
+                fetchData();
+            }
+        }
+
+        async function fetchData() {
+            try {
+                let response = await fetch(deviceAddress);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                let data = await response.json();
+                console.log("Fetched Data:", data);
+                updateDisplay(data);
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                document.getElementById('output').innerHTML = '<p class="error">Failed to fetch data. Check console for details.</p>';
+            }
+        }
+
+        function updateDisplay(data) {
+            let outputHtml = '';
+            
+            if (data.status) {
+                let system = data.status.system;
+                let network = system.network;
+                let outputs = data.status.output || [];
+                let inputbutton = data.status.inputbutton;
+                let inputs = data.status.input || [];
+
+                // System Status
+                outputHtml += `<div class='section'>
+                    <div class='title'>System Status</div>
+                    <div class='status-item'>Free Heap: ${system.freeheap} bytes</div>
+                    <div class='status-item'>Uptime: ${Math.floor(system.uptime / 1000)} seconds</div>
+                    <div class='status-item'>Current Time: ${system.currenttime}</div>
+                    <div class='status-item'>SD Card Installed: <span class='${system.SDinstalled ? "success" : "error"}'>${system.SDinstalled}</span></div>
+                    <div class='status-item'>Discarded Rx Data: ${system.DiscardedRxData}</div>
+                    <div class='status-item'>Size: ${system.size}</div>
+                    <div class='status-item'>Used: ${system.used}</div>
+                </div>`;
+
+                // Network Status
+                outputHtml += `<div class='section'>
+                    <div class='title'>Network Status</div>
+                    <div class='status-item'>Hostname: ${network.hostname}</div>
+                    <div class='status-item'>IP Address: ${network.wifi.ip}</div>
+                    <div class='status-item'>Subnet: ${network.wifi.subnet}</div>
+                    <div class='status-item'>MAC: ${network.wifi.mac}</div>
+                    <div class='status-item'>SSID: ${network.wifi.ssid}</div>
+                    <div class='status-item'>RSSI: ${network.wifi.rssi} dBm</div>
+                    <div class='status-item'>Connected: <span class='${network.wifi.connected ? "success" : "error"}'>${network.wifi.connected}</span></div>
+                </div>`;
+
+                // Input Button Status
+                outputHtml += `<div class='section'>
+                    <div class='title'>Input Button Status</div>
+                    <div class='status-item'>ID: ${inputbutton.id}</div>
+                    <div class='status-item'>State: ${inputbutton.state}</div>
+                </div>`;
+
+                // Input Status
+                inputs.forEach((input, index) => {
+                    outputHtml += `<div class='section'>
+                        <div class='title'>Input ${index}</div>`;
+                    if (input.disabled) {
+                        outputHtml += `<div class='status-item'>Disabled ID: ${input.disabled.id}</div>`;
+                    }
+                    if (input.effects) {
+                        outputHtml += `<div class='status-item'>Current Effect: ${input.effects.currenteffect}</div>
+                        <div class='status-item'>Effect ID: ${input.effects.id}</div>`;
+                    }
+                    outputHtml += `</div>`;
+                });
+
+                // Output Status (Two Columns of Channel Containers)
+                outputHtml += `<div class='channel-grid'>`;
+
+                outputs.forEach((output, index) => {
+                    if (output.id !== undefined) {
+                        let channelHtml = `<div class='channel-column'>
+                            <div class='section channel-container'>
+                                <div class='channel-header'>Output Channel ${output.id} | Frame Refresh Rate: ${output.framerefreshrate} Hz</div>
+                                <div class='channel-data'>
+                                    <div class='channel-data-column'>
+                                        <div class='status-item'>Frame Count: ${output.FrameCount}</div>
+                                        <div class='status-item'>Paused: <span class='${output.OutputIsPaused ? "error" : "success"}'>${output.OutputIsPaused}</span></div>
+                                        <div class='status-item'>Num Rmt Slot Overruns: ${output.NumRmtSlotOverruns}</div>
+                                        <div class='status-item'>Failed Frames: ${output["RMT Debug"].FailedToSendAllData}</div>
+                                        <div class='status-item'>Ran Out of Data: ${output["RMT Debug"].RanOutOfData}</div>
+                                        <div class='status-item'>Incomplete Frame: ${output["RMT Debug"].IncompleteFrame}</div>
+                                        <div class='status-item'>Intensity Values Sent: ${output["RMT Debug"].IntensityValuesSent}</div>
+                                        <div class='status-item'>Intensity Bits Sent: ${output["RMT Debug"].IntensityBitsSent}</div>
+                                        <div class='status-item'>RMT Channel ID: ${output["RMT Debug"].RmtChannelId}</div>
+                                        <div class='status-item'>GPIO: ${output["RMT Debug"].GPIO}</div>
+                                        <div class='status-item'>RMT Config 0: ${output["RMT Debug"].conf0}</div>
+                                    </div>
+                                    <div class='channel-data-column'>
+                                        <div class='status-item'>RMT Config 1: ${output["RMT Debug"].conf1}</div>
+                                        <div class='status-item'>TX Limit Channel: ${output["RMT Debug"].tx_lim_ch}</div>
+                                        <div class='status-item'>Error ISR: ${output["RMT Debug"].ErrorIsr}</div>
+                                        <div class='status-item'>Frame Completes: ${output["RMT Debug"].FrameCompletes}</div>
+                                        <div class='status-item'>Frame Start Counter: ${output["RMT Debug"].FrameStartCounter}</div>
+                                        <div class='status-item'>Frame Timeouts: ${output["RMT Debug"].FrameTimeouts}</div>
+                                        <div class='status-item'>Intensity Values Sent Last Frame: ${output["RMT Debug"].IntensityValuesSentLastFrame}</div>
+                                        <div class='status-item'>Intensity Bits Sent Last Frame: ${output["RMT Debug"].IntensityBitsSentLastFrame}</div>
+                                        <div class='status-item'>Int Tx End ISR Counter: ${output["RMT Debug"].IntTxEndIsrCounter}</div>
+                                        <div class='status-item'>Int Tx Thr ISR Counter: ${output["RMT Debug"].IntTxThrIsrCounter}</div>
+                                        <div class='status-item'>ISR Counter: ${output["RMT Debug"].ISRcounter}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+
+                        outputHtml += channelHtml;
+                    }
+                });
+
+                outputHtml += `</div>`; // Close channel-grid
+
+                document.getElementById('output').innerHTML = outputHtml;
+            } else {
+                document.getElementById('output').innerHTML = '<p class="error">No status data available.</p>';
+            }
+        }
+
+        setInterval(fetchData, 10000); // Auto-refresh every 10 seconds
+        window.onload = fetchData;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>ESPixelStick Dashboard</h1>
+        <input type="text" id="deviceAddress" placeholder="Enter device address (e.g., http://192.168.5.150/XJ)">
+        <button onclick="setDeviceAddress()">Set Address</button>
+        <div id="output">Loading...</div>
+    </div>
+</body>
+</html>
