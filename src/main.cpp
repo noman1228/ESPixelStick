@@ -522,8 +522,9 @@ void loop()
 */
 #ifdef SUPPORT_OLED
     OLED.Poll();
-    FeedWDT();
 #endif
+
+FeedWDT();
 
     // Keep the Network Open
     NetworkMgr.Poll ();

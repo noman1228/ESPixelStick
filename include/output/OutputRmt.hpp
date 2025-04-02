@@ -23,7 +23,6 @@
 #include <driver/rmt.h>
 #include "OutputPixel.hpp"
 #include "OutputSerial.hpp"
-#define CN_RMT "RMT"
 
 class c_OutputRmt
 {
@@ -78,15 +77,12 @@ public:
 
 private:
 #define MAX_NUM_RMT_CHANNELS     8
-// Per-channel interrupt masks (call these like RMT_INT_MASK_TX_END(chan))
-#define RMT_INT_MASK_TX_END(chan)      (1 << ((chan) * 3))
-#define RMT_INT_MASK_RX_END(chan)      (1 << (((chan) * 3) + 1))
-#define RMT_INT_MASK_ERROR(chan)       (1 << (((chan) * 3) + 2))
-#define RMT_INT_MASK_THR_EVENT(chan)   (1 << (24 + (chan)))
+#define RMT_INT_TX_END          (1)
+#define RMT_INT_RX_END          (2)
+#define RMT_INT_ERROR           (4)
+#define RMT_BITS_PER_CHAN       (3)
 
-// Combined ISR masks for use in Enable/Disable/Clear macros
-#define RMT_ISR_MASK(chan)  (RMT_INT_MASK_TX_END(chan) | RMT_INT_MASK_THR_EVENT(chan))
-
+#define RMT_INT_THR_EVNT_BIT    (1 << (24 + uint32_t (OutputRmtConfig.RmtChannelId)))
 
 #define RMT_INT_TX_END_BIT      (RMT_INT_TX_END   << (uint32_t (OutputRmtConfig.RmtChannelId)*RMT_BITS_PER_CHAN))
 #define RMT_INT_RX_END_BIT      (RMT_INT_RX_END   << (uint32_t (OutputRmtConfig.RmtChannelId)*RMT_BITS_PER_CHAN))
@@ -130,26 +126,20 @@ private:
 public:
     c_OutputRmt ();
     virtual ~c_OutputRmt ();
-    void DeInit();
+
     void Begin                                  (OutputRmtConfig_t config, c_OutputCommon * pParent);
     bool StartNewFrame                          ();
     bool StartNextFrame                         () { return ((nullptr != pParent) & (!OutputIsPaused)) ? pParent->RmtPoll() : false; }
     void GetStatus                              (ArduinoJson::JsonObject& jsonStatus);
-    void set_pin                                (gpio_num_t _DataPin) { OutputRmtConfig.DataPin = _DataPin; rmt_set_gpio (OutputRmtConfig.RmtChannelId, rmt_mode_t::RMT_MODE_TX, OutputRmtConfig.DataPin, false); }
     void PauseOutput                            (bool State);
-    void GetDriverName           (String &sDriverName) { sDriverName = "RMT"; }
-    inline uint32_t IRAM_ATTR GetRmtIntMask()
-    {
-        return RMT_INT_MASK_TX_END(OutputRmtConfig.RmtChannelId) |
-               RMT_INT_MASK_THR_EVENT(OutputRmtConfig.RmtChannelId) |
-               RMT_INT_MASK_ERROR(OutputRmtConfig.RmtChannelId) |
-               RMT_INT_MASK_RX_END(OutputRmtConfig.RmtChannelId); // optional
-    }
-    #define DisableRmtInterrupts  RMT.int_ena.val &= ~RMT_ISR_MASK(OutputRmtConfig.RmtChannelId)
-    #define EnableRmtInterrupts   RMT.int_ena.val |=  RMT_ISR_MASK(OutputRmtConfig.RmtChannelId)
-    #define ClearRmtInterrupts    RMT.int_clr.val  =  RMT_ISR_MASK(OutputRmtConfig.RmtChannelId)
-    #define InterrupsAreEnabled   (RMT.int_ena.val &  RMT_ISR_MASK(OutputRmtConfig.RmtChannelId))
-    
+    inline uint32_t IRAM_ATTR GetRmtIntMask     ()               { return ((RMT_INT_TX_END_BIT | RMT_INT_ERROR_BIT | RMT_INT_ERROR_BIT)); }
+    void GetDriverName                          (String &value)  { value = CN_RMT; }
+
+#define RMT_ISR_BITS         (RMT_INT_TX_END_BIT | RMT_INT_THR_EVNT_BIT)
+#define DisableRmtInterrupts RMT.int_ena.val &= ~(RMT_ISR_BITS)
+#define EnableRmtInterrupts  RMT.int_ena.val |=  (RMT_ISR_BITS)
+#define ClearRmtInterrupts   RMT.int_clr.val  =  (RMT_ISR_BITS)
+#define InterrupsAreEnabled  (RMT.int_ena.val &  (RMT_ISR_BITS))
 
     bool DriverIsSendingIntensityData() {return 0 != InterrupsAreEnabled;}
 
@@ -157,10 +147,12 @@ public:
 #define RMT_Clock_Divisor   2.0
 #define RMT_TickLengthNS    float ( (1/ (RMT_ClockRate/RMT_Clock_Divisor)) * float(NanoSecondsInASecond))
 
+    void UpdateBitXlatTable(const CitrdsArray_t * CitrdsArray);
+    bool ValidateBitXlatTable(const CitrdsArray_t * CitrdsArray);
     void SetIntensity2Rmt (rmt_item32_t NewValue, RmtDataBitIdType_t ID) { Intensity2Rmt[ID] = NewValue; }
 
     bool ThereIsDataToSend = false;
-    #define RMT_ISR_MASK(chan)  (RMT_INT_MASK_TX_END(chan) | RMT_INT_MASK_THR_EVENT(chan))
+    bool NoFrameInProgress () { return (0 == (RMT.int_ena.val & (RMT_ISR_BITS))); }
 
     void IRAM_ATTR ISR_Handler (uint32_t isrFlags);
     c_OutputCommon * pParent = nullptr;
