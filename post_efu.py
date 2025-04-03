@@ -2,7 +2,7 @@ Import("env")
 import os
 import shutil
 import subprocess
-from make_efu import make_efu
+from make_efu import make_efu  # ✅ CORRECT: use binary EFU format
 from SCons.Script import AlwaysBuild
 
 def generate_efu(source, target, env):
@@ -26,7 +26,7 @@ def generate_efu(source, target, env):
         return
 
     try:
-        make_efu(sketch_bin, fs_bin, efu_out)
+        make_efu(sketch_bin, fs_bin, efu_out)  # ✅ this is the function to call
         print(f"[EFU] Successfully created: {efu_out}")
 
         # Optional: copy to output folder
