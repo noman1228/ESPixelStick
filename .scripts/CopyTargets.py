@@ -1,3 +1,4 @@
+#.scripts\CopyTargets.py
 import platform
 import shutil
 import os

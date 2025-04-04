@@ -1,106 +1,66 @@
-/*
- * DisplayOLED.h
- *
- * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
- * Copyright (c) 2018, 2025 Shelby Merrick
- * http://www.forkineye.com
- */
+#ifndef DISPLAYOLED_H
+#define DISPLAYOLED_H
 
- #ifndef DISPLAY_OLED_H
- #define DISPLAY_OLED_H
- 
- #include "ESPixelStick.h"
- #include "ConstNames.hpp"
- #include <ArduinoJson.h>
- #include <U8g2lib.h>
- #include <Preferences.h>
- #include "network/NetworkMgr.hpp"
- #include "FPPDiscovery.h"
- #include "freertos/FreeRTOS.h"
- #include "freertos/task.h"
- #include "freertos/semphr.h"
- 
- // Constants for timing and display
- #define OLED_TASK_DELAY_MS         250
- #define TOAST_DURATION_MS          5000
- #define TOAST_FLASH_INTERVAL_MS    500
- #define REBOOT_FLASH_INTERVAL_MS   400     // <- Added for reboot flash
- #define NETWORK_UPDATE_INTERVAL_MS 10000
- #define BUTTON_DEBOUNCE_DELAY_MS   1000
- 
- // Enum for OLED display pages
- enum class DisplayPage
- {
-     NETWORK_INFO,
-     RUNNING_STATUS,
-     UPLOAD_STATUS
- };
- 
- // OLED display object (extern)
- extern U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2;
- 
- class c_OLED
- {
- public:
-     c_OLED();
-     void Begin();
-     void InitNow();
-     void End();  // Proper cleanup
-     void Update(bool forceUpdate = false);
-     void UpdateNetworkInfo(bool forceUpdate = false);
-     void UpdateUploadStatus(const String &filename, int progress);
-     void UpdateRunningStatus();
-     void status(int progress, const String &filename);
-     void Flip();
-     void Poll();
-     void ShowToast(const String &message);
-     void ShowRebootScreen(); // <- NEW: Show reboot screen and block display updates
- 
-     bool flipState;
-     bool isUploading;
-     String uploadFilename;
-     int uploadProgress;
-     unsigned long lastUploadUpdate;
- 
-     void GetDriverName(String &name) const
-     {
-         name = "OLED";
-     }
- 
-     // Button interrupt handler
-     static void IRAM_ATTR buttonISR();
- 
- private:
-     // Toast state
-     bool isToastActive = false;
-     unsigned long toastStartTime = 0;
-     unsigned long lastToastFlash = 0;
-     bool toastFlashState = false;
-     String toastMessage;
- 
-     void UpdateUploadStatus();
-     int getSignalStrength(int rssi);
- 
-     DisplayPage currentPage;
-     unsigned long lastPageSwitchTime;
-     unsigned long lastNetworkUpdate;
-     const unsigned long pageSwitchInterval = 7500;
- 
-     bool error_global;
-     String dispIP;
-     String dispHostName;
-     int dispRSSI;
- 
-     // Preferences instance for persistent storage
-     Preferences preferences;
- 
-     // Reboot screen state
-     bool isRebooting = false;            // <- NEW
-     bool rebootFlashState = false;       // <- NEW
-     unsigned long lastRebootFlash = 0;   // <- NEW
- };
- 
- extern c_OLED OLED;
- 
- #endif // DISPLAY_OLED_H
- 
+#include <Arduino.h>
+#include <U8g2lib.h>
+#include <Preferences.h>
+
+enum class DisplayState {
+    Init,
+    Upload,
+    Network,
+    Running,
+    Toast,
+    Reboot
+};
+
+class c_OLED {
+public:
+    c_OLED();
+
+    void Begin();
+    void End();
+    void Poll();
+    void Flip();
+    void ShowToast(const String &message);
+    void ShowRebootScreen();
+    void UpdateUpload(const String &filename, int progress);
+    void SetUploadComplete();
+    void ForceNetworkRefresh();
+
+private:
+    void InitNow();
+    void RefreshDisplay();
+    void RenderInit();
+    void RenderUpload();
+    void RenderNetwork();
+    void RenderRunning();
+    void RenderToast();
+    void RenderReboot();
+    void changeState(DisplayState newState);
+
+    static void OLEDTask(void *);
+    static void IRAM_ATTR buttonISR();
+    static int getSignalStrength(int rssi);
+
+    DisplayState state;
+    unsigned long lastStateUpdate;
+    unsigned long toastStartTime;
+
+    bool isUploading;
+    int uploadProgress;
+    String uploadFilename;
+
+    String dispIP;
+    String dispHostName;
+    int dispRSSI;
+
+    String toastMessage;
+    bool flipState;
+
+    Preferences preferences;
+};
+
+extern c_OLED OLED;
+
+#endif // DISPLAYOLED_H

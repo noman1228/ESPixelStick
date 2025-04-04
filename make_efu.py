@@ -1,3 +1,5 @@
+# make_efu.py
+
 import os
 import struct
 import subprocess
@@ -29,10 +31,8 @@ def make_efu(sketch_bin, spiffs_bin, output_efu):
             raise RuntimeError("[EFU ERROR] Failed to build filesystem image.")
 
     with open(output_efu, 'wb') as f:
-        f.write(SIGNATURE)                         # 'EFU\0'
-        f.write(struct.pack('<H', 256))  # this makes version bytes = 01 00
-
-
+        f.write(SIGNATURE)                      # b'EFU\x00'
+        f.write(struct.pack('<H', 1))           # Version = 1 (not 256!)
 
         print(f"[EFU] Adding sketch: {sketch_bin}")
         write_record(f, RECORD_TYPE['sketch'], sketch_bin)
@@ -41,3 +41,4 @@ def make_efu(sketch_bin, spiffs_bin, output_efu):
         write_record(f, RECORD_TYPE['spiffs'], spiffs_bin)
 
         print(f"[EFU] Created: {output_efu}")
+

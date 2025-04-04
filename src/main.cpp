@@ -233,7 +233,7 @@ void setup()
     // Done with initialization
     IsBooting = false;
     #ifdef SUPPORT_OLED
-    OLED.UpdateNetworkInfo(true);
+        OLED.ForceNetworkRefresh();
     #endif
     // DEBUG_END;
 
@@ -521,7 +521,7 @@ void loop()
     }
 */
 #ifdef SUPPORT_OLED
-    OLED.Poll();
+    OLED.Poll(); 
 #endif
 
 FeedWDT();
@@ -555,13 +555,16 @@ FeedWDT();
     // Reboot handler
     if (NotRebootingValue != RebootCount)
     {
+        #ifdef SUPPORT_OLED
+
+        OLED.ShowRebootScreen();
+        
+        #endif
         if(0 == --RebootCount)
         {
             logcon (String(CN_stars) + CN_minussigns + F ("Internal Reboot Requested. Rebooting Now"));
             delay (REBOOT_DELAY);
-            #ifdef SUPPORT_OLED
-            OLED.ShowRebootScreen();
-            #endif
+
             ESP.restart ();
         }
     }
@@ -590,6 +593,9 @@ bool RebootInProgress()
 
 void RequestReboot(uint32_t LoopDelay, bool SkipDisable /* = false */)
 {
+    #ifdef SUPPORT_OLED
+    OLED.ShowRebootScreen();
+    #endif
     RebootCount = LoopDelay;
 
     if(!SkipDisable)

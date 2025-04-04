@@ -1,41 +1,57 @@
+# post_efu.py
 Import("env")
 import os
-import shutil
 import subprocess
-from make_efu import make_efu  # ✅ CORRECT: use binary EFU format
+from datetime import datetime
 from SCons.Script import AlwaysBuild
+from make_efu import make_efu
 
-def generate_efu(source, target, env):
-    build_dir = env.subst("$PROJECT_BUILD_DIR")
-    variant = env.subst("$PIOENV")
-    project_dir = env.subst("$PROJECT_DIR")
-    sketch_bin = os.path.join(build_dir, variant, "firmware.bin")
-    fs_bin = os.path.join(build_dir, variant, "littlefs.bin")
-    efu_out = os.path.join(build_dir, variant, f"{variant}.efu")
+variant = env.subst("$PIOENV")
+build_dir = env.subst("$PROJECT_BUILD_DIR")
+project_dir = env.subst("$PROJECT_DIR")
 
-    # Check and build FS image using subprocess
-    if not os.path.exists(fs_bin):
-        print("[EFU] Filesystem image not found, building it...")
-        result = subprocess.run(["pio", "run", "-t", "buildfs"], cwd=project_dir)
-        if result.returncode != 0:
-            print("[EFU ERROR] Failed to build LittleFS image.")
-            return
+sketch_bin = os.path.join(build_dir, variant, "firmware.bin")
+fs_bin = os.path.join(build_dir, variant, "littlefs.bin")
+efu_out = os.path.join(build_dir, variant, f"{variant}.efu")
 
+output_dir = os.path.join(project_dir, "firmware", "EFU")
+os.makedirs(output_dir, exist_ok=True)
+
+def after_build(source, target, env):
     if not os.path.exists(sketch_bin):
-        print(f"[EFU ERROR] firmware.bin not found: {sketch_bin}")
+        print("[EFU ERROR] Sketch binary not found.")
         return
 
-    try:
-        make_efu(sketch_bin, fs_bin, efu_out)  # ✅ this is the function to call
-        print(f"[EFU] Successfully created: {efu_out}")
+    if not os.path.exists(fs_bin):
+        print("[EFU] Filesystem image not found, building...")
+        subprocess.run(["pio", "run", "-t", "buildfs"], cwd=project_dir)
 
-        # Optional: copy to output folder
-        output_dir = os.path.join("firmware", "esp32")
-        os.makedirs(output_dir, exist_ok=True)
-        shutil.copy2(efu_out, os.path.join(output_dir, f"{variant}.efu"))
-        print(f"[EFU] Copied to: {output_dir}")
-    except Exception as e:
-        print(f"[EFU ERROR] {e}")
+    if not os.path.exists(fs_bin):
+        print("[EFU ERROR] Filesystem still missing after build attempt.")
+        return
 
-# Always run this, even if PlatformIO skips recompiling
-AlwaysBuild(env.Alias("buildprog", None, generate_efu))
+    # Build raw .efu file
+    print(f"[EFU] Creating EFU: {efu_out}")
+    make_efu(sketch_bin, fs_bin, efu_out)
+
+    # Validate and timestamp copy to firmware/EFU
+    timestamp = datetime.now().strftime('%Y%m%d')
+    new_name = f"{variant}_{timestamp}.efu"
+    final_path = os.path.join(output_dir, new_name)
+
+    efu_tool = os.path.join(project_dir, "efu_tool.py")
+    result = subprocess.run([
+        "python", efu_tool,
+        "--efu", efu_out,
+        "--project", project_dir,
+        "--env", variant,
+        "--output", output_dir
+    ])
+
+    if result.returncode != 0:
+        print("[EFU TOOL] ❌ EFU validation failed!")
+    else:
+        print(f"[EFU TOOL] ✅ EFU validated and saved to {final_path}")
+
+AlwaysBuild(env.Alias("post_efu", "buildprog", after_build))
+

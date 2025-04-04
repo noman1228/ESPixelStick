@@ -1,43 +1,49 @@
 #pragma once
 /*
-* ESPixelStick.h
-*
-* Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2016, 2022 Shelby Merrick
-* http://www.forkineye.com
-*
-*  This program is provided free for you to use in any way that you wish,
-*  subject to the laws and regulations where you are using it.  Due diligence
-*  is strongly suggested before using this code.  Please give credit where due.
-*
-*  The Author makes no warranty of any kind, express or implied, with regard
-*  to this program or the documentation contained in this document.  The
-*  Author shall not be liable in any event for incidental or consequential
-*  damages in connection with, or arising out of, the furnishing, performance
-*  or use of these programs.
-*
-*/
+ * ESPixelStick.h
+ *
+ * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
+ * Copyright (c) 2016, 2022 Shelby Merrick
+ * http://www.forkineye.com
+ *
+ *  This program is provided free for you to use in any way that you wish,
+ *  subject to the laws and regulations where you are using it.  Due diligence
+ *  is strongly suggested before using this code.  Please give credit where due.
+ *
+ *  The Author makes no warranty of any kind, express or implied, with regard
+ *  to this program or the documentation contained in this document.  The
+ *  Author shall not be liable in any event for incidental or consequential
+ *  damages in connection with, or arising out of, the furnishing, performance
+ *  or use of these programs.
+ *
+ */
 
 #include <Arduino.h>
-#include <type_traits> 
+#include <type_traits>
 #if defined(ARDUINO_ARCH_ESP8266)
-#	include <ESP8266WiFi.h>
-#	include <ESPAsyncTCP.h>
-#	include <ESPAsyncUDP.h>
+#include <ESP8266WiFi.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncUDP.h>
 #elif defined(ARDUINO_ARCH_ESP32)
-#   include <AsyncTCP.h>
-#   include <AsyncUDP.h>
-#   include <WiFi.h>
+#include <AsyncTCP.h>
+#include <AsyncUDP.h>
+#include <WiFi.h>
 #else
-#	error "Unsupported CPU type"
+#error "Unsupported CPU type"
 #endif
 
 #ifdef BOARD_HAS_PSRAM
-#   error "PSRAM is not supported by ESPixelStick"
+#warn "PSRAM is not supported by ESPixelStick"
+#warn " "
+#warn "DISABLING PROGRAMATICALLY"
+#undef BOARD_HAS_PSRAM
 #endif // def BOARD_HAS_PSRAM
-
-#define ARDUINOJSON_USE_LONG_LONG 1
+#ifndef ARDUINOJSON_DEFAULT_NESTING_LIMIT
 #define ARDUINOJSON_DEFAULT_NESTING_LIMIT 15
+#endif
+#ifndef ARDUINOJSON_USE_LONG_LONG
+#define ARDUINOJSON_USE_LONG_LONG 1
+#endif
 
 #include <Ticker.h>
 #include <ArduinoJson.h>
@@ -47,19 +53,19 @@
 #include "GPIO_Defs.hpp"
 #include "FastTimer.hpp"
 
-#define REBOOT_DELAY    100     ///< Delay for rebooting once reboot flag is set
-#define LOG_PORT        Serial  ///< Serial port for console logging
-#define CLIENT_TIMEOUT  15      ///< In station/client mode try to connection for 15 seconds
-#define AP_TIMEOUT      120     ///< In AP mode, wait 120 seconds for a connection or reboot
+#define REBOOT_DELAY 100  ///< Delay for rebooting once reboot flag is set
+#define LOG_PORT Serial   ///< Serial port for console logging
+#define CLIENT_TIMEOUT 15 ///< In station/client mode try to connection for 15 seconds
+#define AP_TIMEOUT 120    ///< In AP mode, wait 120 seconds for a connection or reboot
 
-#define MilliSecondsInASecond       1000
-#define MicroSecondsInAmilliSecond  1000
-#define MicroSecondsInASecond       (MicroSecondsInAmilliSecond * MilliSecondsInASecond)
-#define NanoSecondsInAMicroSecond   1000
-#define NanoSecondsInASecond        (MicroSecondsInASecond * NanoSecondsInAMicroSecond)
-#define NanoSecondsInAMilliSecond   (NanoSecondsInAMicroSecond * MicroSecondsInAmilliSecond)
+#define MilliSecondsInASecond 1000
+#define MicroSecondsInAmilliSecond 1000
+#define MicroSecondsInASecond (MicroSecondsInAmilliSecond * MilliSecondsInASecond)
+#define NanoSecondsInAMicroSecond 1000
+#define NanoSecondsInASecond (MicroSecondsInASecond * NanoSecondsInAMicroSecond)
+#define NanoSecondsInAMilliSecond (NanoSecondsInAMicroSecond * MicroSecondsInAmilliSecond)
 
-#define CPU_ClockTimeNS             ((1.0 / float(F_CPU)) * float(NanoSecondsInASecond))
+#define CPU_ClockTimeNS ((1.0 / float(F_CPU)) * float(NanoSecondsInASecond))
 
 // Macro strings
 #define STRINGIFY(X) #X
@@ -72,29 +78,29 @@ extern bool RebootInProgress();
 struct config_t
 {
     // Device
-    String      id;
-    uint32_t    BlankDelay = uint32_t(5);
+    String id;
+    uint32_t BlankDelay = uint32_t(5);
 };
 
-String  serializeCore          (bool pretty = false);
-void    deserializeCoreHandler (JsonDocument& jsonDoc);
-bool    deserializeCore        (JsonObject & json);
-bool    dsDevice               (JsonObject & json);
-bool    dsNetwork              (JsonObject & json);
+String serializeCore(bool pretty = false);
+void deserializeCoreHandler(JsonDocument &jsonDoc);
+bool deserializeCore(JsonObject &json);
+bool dsDevice(JsonObject &json);
+bool dsNetwork(JsonObject &json);
 
-extern  bool IsBooting;
-extern  bool ResetWiFi;
-extern  const String ConfigFileName;
-extern  void FeedWDT ();
-extern  uint32_t DiscardedRxData;
+extern bool IsBooting;
+extern bool ResetWiFi;
+extern const String ConfigFileName;
+extern void FeedWDT();
+extern uint32_t DiscardedRxData;
 
-extern void PrettyPrint (JsonObject& jsonStuff, String Name);
-extern void PrettyPrint (JsonArray& jsonStuff, String Name);
+extern void PrettyPrint(JsonObject &jsonStuff, String Name);
+extern void PrettyPrint(JsonArray &jsonStuff, String Name);
 extern void PrettyPrint(JsonDocument &jsonStuff, String Name);
 
 template <typename T, typename N>
 typename std::enable_if<!std::is_same<T, String>::value, bool>::type
-setFromJSON(T& OutValue, JsonObject& Json, N Name)
+setFromJSON(T &OutValue, JsonObject &Json, N Name)
 {
     bool HasBeenModified = false;
     JsonVariant val = Json[Name];
@@ -108,9 +114,9 @@ setFromJSON(T& OutValue, JsonObject& Json, N Name)
             HasBeenModified = true;
         }
     }
-    else if (val.is<const char*>())
+    else if (val.is<const char *>())
     {
-        const char* strVal = val.as<const char*>();
+        const char *strVal = val.as<const char *>();
         if (strVal)
         {
             T temp = OutValue;
@@ -144,14 +150,14 @@ setFromJSON(T& OutValue, JsonObject& Json, N Name)
 
 // === Specialization for String ===
 template <typename N>
-bool setFromJSON(String& OutValue, JsonObject& Json, N Name)
+bool setFromJSON(String &OutValue, JsonObject &Json, N Name)
 {
     bool HasBeenModified = false;
     JsonVariant val = Json[Name];
 
-    if (val.is<const char*>())
+    if (val.is<const char *>())
     {
-        String temp = val.as<const char*>();
+        String temp = val.as<const char *>();
         if (temp != OutValue)
         {
             OutValue = temp;
@@ -168,19 +174,19 @@ bool setFromJSON(String& OutValue, JsonObject& Json, N Name)
 }
 
 #if defined(ARDUINO_ARCH_ESP8266)
-#   define JsonWrite(j, n, v)  (j)[String(n)] = (v)
+#define JsonWrite(j, n, v) (j)[String(n)] = (v)
 void inline ResetGpio(const gpio_num_t pinId)
 {
-    if(gpio_num_t(33) > pinId)
+    if (gpio_num_t(33) > pinId)
     {
         pinMode(pinId, INPUT);
     }
 }
 #else // defined(ARDUINO_ARCH_ESP32)
-#   define JsonWrite(j, n, v)  (j)[(char*)(n)] = (v)
+#define JsonWrite(j, n, v) (j)[(char *)(n)] = (v)
 void inline ResetGpio(const gpio_num_t pinId)
 {
-    if(GPIO_IS_VALID_OUTPUT_GPIO(pinId))
+    if (GPIO_IS_VALID_OUTPUT_GPIO(pinId))
     {
         pinMatrixOutDetach(pinId, false, false);
         gpio_reset_pin(pinId);
@@ -190,13 +196,13 @@ void inline ResetGpio(const gpio_num_t pinId)
 #endif
 
 extern bool ConsoleUartIsActive;
-#define logcon(msg) \
-{ \
-    String DN; \
-    GetDriverName (DN); \
-    extern void _logcon (String & DriverName, String Message); \
-    _logcon (DN, msg); \
-}
+#define logcon(msg)                                               \
+    {                                                             \
+        String DN;                                                \
+        GetDriverName(DN);                                        \
+        extern void _logcon(String & DriverName, String Message); \
+        _logcon(DN, msg);                                         \
+    }
 
 extern config_t config;
 extern bool ConfigSaveNeeded;

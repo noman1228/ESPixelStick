@@ -205,7 +205,9 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
             LOG_PORT.flush();
             #ifdef SUPPORT_OLED
             int progress = (TotalBytesWritten * 100) / fi.uncompressed_size;
-            OLED.UpdateUploadStatus(FileName, progress);
+            OLED.UpdateUpload(FileName, progress);
+
+
             #endif
 
         } while (BytesRead > 0);
@@ -215,7 +217,7 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
         zip.closeCurrentFile();
         logcon(FileName + F(" - Done."));
         #ifdef SUPPORT_OLED
-        OLED.isUploading = false;  // Ensure Update() recognizes the upload status
+        OLED.SetUploadComplete();
         OLED.ShowToast("Files Ready");
         #endif
     } while (false);
