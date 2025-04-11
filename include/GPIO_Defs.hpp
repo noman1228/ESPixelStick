@@ -78,6 +78,8 @@ typedef enum
 #   include "platforms/GPIO_Defs_ESP32_CAM.hpp"
 #elif defined (BOARD_ESP32_D1_MINI_ETH)
 #   include "platforms/GPIO_Defs_ESP32_D1_MINI_ETH.hpp"
+#elif defined (BOARD_ESP32_WROVER)
+#   include "platforms/GPIO_Defs_ESP32_WROVER.hpp"
 #elif defined (BOARD_ESP32_D1_MINI)
 #   include "platforms/GPIO_Defs_ESP32_D1_MINI.hpp"
 #elif defined (BOARD_ESP32_KA)

@@ -18,7 +18,9 @@
 */
 
 #include <Arduino.h>
-
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 // Core
 #include "ESPixelStick.h"
 #include "EFUpdate.h"
@@ -137,6 +139,9 @@ void TestHeap(uint32_t Id)
 /** Arduino based setup code that is executed at startup. */
 void setup()
 {
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif
 #ifdef DEBUG_GPIO
     ResetGpio(DEBUG_GPIO);
     pinMode(DEBUG_GPIO, OUTPUT);
@@ -504,6 +509,7 @@ String serializeCore(bool pretty)
 // uint32_t HeapTime = 100;
 void loop()
 {
+
     // DEBUG_START;
 /*
     if(millis() > HeapTime)
@@ -513,7 +519,10 @@ void loop()
     }
 */
     FeedWDT ();
-
+#ifdef SUPPORT_OLED
+    OLED.Poll();
+    FeedWDT();
+#endif
     // Keep the Network Open
     NetworkMgr.Poll ();
 
