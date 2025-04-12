@@ -25,7 +25,9 @@
 #include "network/NetworkMgr.hpp"
 #include "output/OutputMgr.hpp"
 #include "UnzipFiles.hpp"
-
+#ifdef SUPPORT_OLED
+    #include "service/DisplayOLED.h"
+#endif
 SdFs sd;
 const int8_t DISABLE_CS_PIN = -1;
 
