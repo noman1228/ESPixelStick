@@ -54,14 +54,13 @@
      void Flip();
      void Poll();
      void ShowToast(const String &message);
-     void ShowRebootScreen(); // <- NEW: Show reboot screen and block display updates
- 
+     void ShowRebootScreen(); 
      bool flipState;
      bool isUploading;
      String uploadFilename;
      int uploadProgress;
      unsigned long lastUploadUpdate;
- 
+     bool isRebooting;
      void GetDriverName(String &name) const
      {
          name = "OLED";
@@ -74,8 +73,6 @@
      // Toast state
      bool isToastActive = false;
      unsigned long toastStartTime = 0;
-     unsigned long lastToastFlash = 0;
-     bool toastFlashState = false;
      String toastMessage;
  
      void UpdateUploadStatus();
@@ -85,19 +82,15 @@
      unsigned long lastPageSwitchTime;
      unsigned long lastNetworkUpdate;
      const unsigned long pageSwitchInterval = 7500;
- 
-     bool error_global;
      String dispIP;
      String dispHostName;
      int dispRSSI;
  
      // Preferences instance for persistent storage
-     Preferences preferences;
- 
+     Preferences preferences; 
      // Reboot screen state
-     bool isRebooting = false;            // <- NEW
-     bool rebootFlashState = false;       // <- NEW
-     unsigned long lastRebootFlash = 0;   // <- NEW
+     
+
  };
  
  extern c_OLED OLED;

@@ -4,12 +4,10 @@
 
 // Constants for timing and display
 #define TOAST_DURATION_MS          5000
-#define TOAST_FLASH_INTERVAL_MS    500
-#define REBOOT_FLASH_INTERVAL_MS   400
 #define NETWORK_UPDATE_INTERVAL_MS 10000
 #define BUTTON_DEBOUNCE_DELAY_MS   1000
 #define VERSION_STRING             "4.x-dev"
-
+bool isRebooting = false;
 // Display mutex and handles
 static SemaphoreHandle_t displayMutex = nullptr;
 static TaskHandle_t oledTaskHandle = nullptr;
@@ -34,16 +32,10 @@ c_OLED::c_OLED()
       lastNetworkUpdate(0),
       isUploading(false),
       uploadProgress(0),
-      error_global(false),
       lastUploadUpdate(0),
       dispRSSI(0),
       isToastActive(false),
       toastStartTime(0),
-      lastToastFlash(0),
-      toastFlashState(false),
-      isRebooting(false),
-      rebootFlashState(false),
-      lastRebootFlash(0),
       flipState(false),
       preferences() {}
 
@@ -76,6 +68,7 @@ void c_OLED::Begin()
 
     InitNow();
 }
+static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxWidth, uint8_t xOrigin, uint8_t yOrigin);
 
 void c_OLED::InitNow()
 {
@@ -202,15 +195,8 @@ void c_OLED::UpdateNetworkInfo(bool forceUpdate)
 
 void c_OLED::Update(bool forceUpdate)
 {
-    if (isRebooting)
-    {
-        unsigned long now = millis();
-        if (now - lastRebootFlash >= REBOOT_FLASH_INTERVAL_MS)
-        {
-            rebootFlashState = !rebootFlashState;
-            u8g2.setDisplayRotation(rebootFlashState ? U8G2_R2 : U8G2_R0);
-            lastRebootFlash = now;
-
+    if (isRebooting)    {
+        unsigned long now = millis();          
             if (displayMutex != nullptr && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE)
             {
                 u8g2.clearBuffer();
@@ -220,8 +206,7 @@ void c_OLED::Update(bool forceUpdate)
                 u8g2.drawStr(15, 29, "REBOOTING");
                 u8g2.sendBuffer();
                 xSemaphoreGive(displayMutex);
-            }
-        }
+            }        
         return;
     }
 
@@ -233,24 +218,16 @@ void c_OLED::Update(bool forceUpdate)
     {
         if (now - toastStartTime >= TOAST_DURATION_MS) {
             isToastActive = false;
-            toastFlashState = false;
             u8g2.setDisplayRotation(flipState ? U8G2_R2 : U8G2_R0);
             xSemaphoreGive(displayMutex);
             Update(true);
             return;
         }
-
-        if (now - lastToastFlash >= TOAST_FLASH_INTERVAL_MS) {
-            toastFlashState = !toastFlashState;
-            u8g2.setDisplayRotation(toastFlashState ? U8G2_R2 : U8G2_R0);
-            lastToastFlash = now;
-        }
-
         u8g2.clearBuffer();
-        u8g2.setFont(u8g2_font_ncenB08_tr);
-        u8g2.drawStr(10, 20, toastMessage.c_str());
-        u8g2.sendBuffer();
+        u8g2.setFont(u8g2_font_ncenB08_tr); // or whatever your favorite is
+        DrawCenteredWrappedText(u8g2, toastMessage, 120, 0, 0);
 
+        u8g2.sendBuffer();
         xSemaphoreGive(displayMutex);
         return;
     }
@@ -276,13 +253,60 @@ void c_OLED::Update(bool forceUpdate)
 
     xSemaphoreGive(displayMutex);
 }
+void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxWidth, uint8_t xOrigin, uint8_t yOrigin)
+{
+    const uint8_t lineHeight = u8g2.getFontAscent() - u8g2.getFontDescent() + 2;
+    std::vector<String> lines;
+
+    String currentLine = "";
+    String currentWord = "";
+
+    for (uint16_t i = 0; i < text.length(); i++) {
+        char c = text.charAt(i);
+        if (c == ' ' || c == '\n') {
+            if (u8g2.getStrWidth((currentLine + currentWord).c_str()) > maxWidth) {
+                lines.push_back(currentLine);
+                currentLine = currentWord + " ";
+            } else {
+                currentLine += currentWord + " ";
+            }
+            currentWord = "";
+            if (c == '\n') {
+                lines.push_back(currentLine);
+                currentLine = "";
+            }
+        } else {
+            currentWord += c;
+        }
+    }
+
+    if (!currentWord.isEmpty()) {
+        if (u8g2.getStrWidth((currentLine + currentWord).c_str()) > maxWidth) {
+            lines.push_back(currentLine);
+            currentLine = currentWord;
+        } else {
+            currentLine += currentWord;
+        }
+    }
+    if (!currentLine.isEmpty()) lines.push_back(currentLine);
+
+    // Calculate total height
+    uint8_t totalHeight = lineHeight * lines.size();
+    uint8_t startY = yOrigin + ((32 - totalHeight) / 2);
+
+    for (size_t i = 0; i < lines.size(); i++) {
+        uint8_t strWidth = u8g2.getStrWidth(lines[i].c_str());
+        uint8_t x = xOrigin + ((128 - strWidth) / 2);
+        uint8_t y = startY + (i * lineHeight);
+        u8g2.drawStr(x, y, lines[i].c_str());
+    }
+}
 
 void c_OLED::ShowRebootScreen()
 {
     if (displayMutex == nullptr || xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) != pdTRUE) return;
     isRebooting = true;
-    lastRebootFlash = millis();
-    rebootFlashState = false;
+    ESP.restart();
     xSemaphoreGive(displayMutex);
 }
 
@@ -310,6 +334,7 @@ void c_OLED::Flip()
     flipState = !flipState;
     u8g2.setDisplayRotation(flipState ? U8G2_R2 : U8G2_R0);
     preferences.putBool("flipState", flipState);
+    u8g2.updateDisplay();
     xSemaphoreGive(displayMutex);
 }
 
@@ -319,8 +344,6 @@ void c_OLED::ShowToast(const String &message)
     toastMessage = message;
     isToastActive = true;
     toastStartTime = millis();
-    lastToastFlash = millis();
-    toastFlashState = false;
     xSemaphoreGive(displayMutex);
 }
 

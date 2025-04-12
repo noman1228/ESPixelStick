@@ -550,6 +550,10 @@ void loop()
     // Reboot handler
     if (NotRebootingValue != RebootCount)
     {
+        #ifdef SUPPORT_OLED
+        OLED.isRebooting = true;
+        OLED.ShowRebootScreen();
+        #endif
         if(0 == --RebootCount)
         {
             logcon (String(CN_stars) + CN_minussigns + F ("Internal Reboot Requested. Rebooting Now"));
@@ -584,11 +588,10 @@ void RequestReboot(uint32_t LoopDelay, bool SkipDisable /* = false */)
 {
     RebootCount = LoopDelay;
 
-    if(!SkipDisable)
-    {
+
         InputMgr.SetOperationalState(false);
         OutputMgr.PauseOutputs(true);
-    }
+    
 
 } // RequestReboot
 
