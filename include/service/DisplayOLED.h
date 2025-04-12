@@ -103,37 +103,5 @@
  extern c_OLED OLED;
  
  #endif // DISPLAY_OLED_H
- void GetDriverName(String &name)
- {
-     name = "CONFIG";
- }
- void ReceiveSerialConfig()
-{
-    const unsigned long timeout = 8000;
-    unsigned long start = millis();
 
-    if (!Serial.available()) return;
 
-    logcon(F("Waiting for serial JSON config..."));
-
-    // Wait for JSON input (non-blocking)
-    while (!Serial.available())
-    {
-        if (millis() - start > timeout)
-        {
-            logcon(F("Timeout waiting for serial config"));
-            return;
-        }
-        delay(100);
-        FeedWDT();
-    }
-
-    String json = Serial.readStringUntil('\n');
-
-    logcon(F("Received serial config:"));
-    logcon(json);
-
-    // Save raw JSON and schedule reload
-    FileMgr.SaveFlashFile("/config.json", json);
-
-}

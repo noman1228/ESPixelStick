@@ -139,17 +139,14 @@ void TestHeap(uint32_t Id)
 /** Arduino based setup code that is executed at startup. */
 void setup()
 {
-#ifdef SUPPORT_OLED
-    OLED.Begin();
-    ReceiveSerialConfig();    // ← 🔥 add this right here
-#endif
+
 #ifdef DEBUG_GPIO
     ResetGpio(DEBUG_GPIO);
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
 
-    config.BlankDelay = 5;
+    config.BlankDelay = 1;
 #ifdef ARDUINO_ARCH_ESP32
     // disable brownout detector
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
