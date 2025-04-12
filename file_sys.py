@@ -7,7 +7,7 @@ from pathlib import Path
 from colorama import Fore, Style
 
 # --- CONFIG ---
-PROJECT_DIR = Path(os.path.join(os.getcwd(), "file_sys.py")).parent
+PROJECT_DIR = Path(__file__).parent
 ENV_NAME = "esp32_bigboi"
 PARTITIONS_CSV = PROJECT_DIR / "ESP32_partitions.csv"
 MYENV_TXT = PROJECT_DIR / "MyEnv.txt"
@@ -35,7 +35,7 @@ def extract_flash_config(env_txt_path):
     flash_mode = "dio"
     flash_freq = "40m"
 
-    with open(os.path.join("MyEnv.txt"), "r") as f:
+    with open(env_txt_path, "r") as f:
         for line in f:
             if "'BOARD_FLASH_MODE'" in line:
                 flash_mode = line.split(":")[1].strip().strip("',\"")

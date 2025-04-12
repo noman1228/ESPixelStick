@@ -28,5 +28,5 @@ def convert_line_endings(directory):
                 print(f"Error processing {file_path}: {e}")
 
 if __name__ == "__main__":
-    script_directory = os.path.dirname(os.path.abspath(os.path.join(os.getcwd(), "scripts", "LineEndings.py")))
+    script_directory = os.path.dirname(os.path.abspath(__file__))
     convert_line_endings(script_directory)

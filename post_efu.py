@@ -1,3 +1,4 @@
+# post_efu.py
 Import("env")
 import os
 import subprocess
@@ -29,16 +30,18 @@ def after_build(source, target, env):
         print("[EFU ERROR] Filesystem still missing after build attempt.")
         return
 
+    # Build raw .efu file
     print(f"[EFU] Creating EFU: {efu_out}")
     make_efu(sketch_bin, fs_bin, efu_out)
 
+    # Validate and timestamp copy to firmware/EFU
     timestamp = datetime.now().strftime('%Y%m%d')
     new_name = f"{variant}_{timestamp}.efu"
     final_path = os.path.join(output_dir, new_name)
 
     efu_tool = os.path.join(project_dir, "efu_tool.py")
     result = subprocess.run([
-        env.get("PYTHONEXE", "python"), efu_tool,
+        "C:\\Users\\jay\\.platformio\\python3\\python.EXE", efu_tool,
         "--efu", efu_out,
         "--project", project_dir,
         "--env", variant,
@@ -51,3 +54,4 @@ def after_build(source, target, env):
         print(f"[EFU TOOL] ✅ EFU validated and saved to {final_path}")
 
 AlwaysBuild(env.Alias("post_efu", "buildprog", after_build))
+
