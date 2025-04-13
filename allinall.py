@@ -39,7 +39,7 @@ def extract_flash_config(env_txt_path):
         sys.exit(1)
 
     flash_mode = "dio"
-    flash_freq = "40m"
+    flash_freq = "80m"
 
     with open(env_txt_path, "r") as f:
         for line in f:
@@ -127,7 +127,7 @@ def flash_all_images(port, flash_mode, flash_freq, fs_offset):
         "--port", port,
         "--baud", "460800",
         "write_flash",
-        "--flash_mode", flash_mode,
+        "--flash_mode", "keep",
         "--flash_freq", flash_freq,
         "--flash_size", "detect",
         "0x1000", str(BOOTLOADER_BIN),
