@@ -20,8 +20,25 @@ GULP_SCRIPT = PROJECT_DIR / "gulpme.bat"
 BOOTLOADER_BIN = BUILD_DIR / "bootloader.bin"
 PARTITIONS_BIN = BUILD_DIR / "partitions.bin"
 FIRMWARE_BIN = BUILD_DIR / "firmware.bin"
+GULP_STAMP_FILE = PROJECT_DIR / ".gulp_stamp"
 
 # --- FUNCTIONS ---
+import psutil  # Add this to the top if not already
+
+def kill_serial_monitors():
+    print(f"{Fore.YELLOW}⚠ Closing any open serial monitor processes...{Style.RESET_ALL}")
+    try:
+        current_pid = os.getpid()
+
+        for proc in psutil.process_iter(['pid', 'name']):
+            name = proc.info['name']
+            pid = proc.info['pid']
+            if name and pid != current_pid and name.lower() in ("platformio.exe", "platformio-terminal.exe"):
+                subprocess.run(["taskkill", "/f", "/pid", str(pid)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        print(f"{Fore.GREEN}✔ Any known PlatformIO monitors closed.{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"{Fore.RED}✘ Could not close serial monitor: {e}{Style.RESET_ALL}")
 
 def find_serial_port():
     print("🔍 Searching for available serial ports...")
@@ -86,7 +103,18 @@ def build_all(env_name):
     subprocess.run(["platformio", "run", "-e", env_name], check=True)
     subprocess.run(["platformio", "run", "-t", "buildfs", "-e", env_name], check=True)
 
-def run_gulp():
+def run_gulp_if_needed():
+    today = time.strftime("%Y-%m-%d")
+
+    # If the stamp file exists and matches today's date, skip Gulp
+    if GULP_STAMP_FILE.exists():
+        with open(GULP_STAMP_FILE, "r") as f:
+            last_run = f.read().strip()
+            if last_run == today:
+                print(f"{Fore.YELLOW}⏭ Gulp already run today ({today}), skipping...{Style.RESET_ALL}")
+                return
+
+    # Otherwise, run Gulp
     print(f"{Fore.CYAN}🛠 Running Gulp: {GULP_SCRIPT}{Style.RESET_ALL}")
     if not GULP_SCRIPT.exists():
         print(f"{Fore.RED}✘ gulpme.bat not found at {GULP_SCRIPT}{Style.RESET_ALL}")
@@ -99,8 +127,10 @@ def run_gulp():
         print(f"{Fore.RED}✘ Expected output folder 'data/' not found after Gulp run.{Style.RESET_ALL}")
         sys.exit(1)
 
-    print(f"{Fore.GREEN}✔ Gulp finished. Found data directory: {data_dir}{Style.RESET_ALL}")
+    with open(GULP_STAMP_FILE, "w") as f:
+        f.write(today)
 
+    print(f"{Fore.GREEN}✔ Gulp finished. Found data directory: {data_dir}{Style.RESET_ALL}")
 
 def enter_bootloader(port):
     print(f"{Fore.CYAN}⏎ Forcing board into bootloader mode on {port}...{Style.RESET_ALL}")
@@ -116,8 +146,14 @@ def enter_bootloader(port):
         print(f"{Fore.GREEN}✔ Bootloader mode triggered.{Style.RESET_ALL}")
     except Exception as e:
         print(f"{Fore.RED}✘ Could not trigger bootloader: {e}{Style.RESET_ALL}")
+def launch_serial_monitor(port, baud=115200):
+    print(f"{Fore.CYAN}📡 Launching serial monitor on {port}...{Style.RESET_ALL}")
+    try:
+        subprocess.run(["platformio", "device", "monitor", "--port", port, "--baud", str(baud)])
+    except Exception as e:
+        print(f"{Fore.RED}✘ Could not launch serial monitor: {e}{Style.RESET_ALL}")
 
-def flash_all_images(port, flash_mode, flash_freq, fs_offset):
+def flash_all_images(port, flash_mode, flash_freq, fs_offset, max_retries=1, retry_delay=10):
     print(f"{Fore.CYAN}🚀 Flashing all firmware and filesystem images to {port}...{Style.RESET_ALL}")
 
     cmd = [
@@ -136,16 +172,34 @@ def flash_all_images(port, flash_mode, flash_freq, fs_offset):
         f"0x{fs_offset:X}", str(IMAGE_PATH)
     ]
 
-    subprocess.run(cmd, check=True)
-    print(f"{Fore.GREEN}✅ Full flash complete!{Style.RESET_ALL}")
+    attempt = 0
+    while attempt <= max_retries:
+        try:
+            subprocess.run(cmd, check=True)
+            print(f"{Fore.GREEN}✅ Full flash complete!{Style.RESET_ALL}")
+            return
+        except subprocess.CalledProcessError as e:
+            print(f"{Fore.RED}✘ Flash attempt {attempt + 1} failed with return code {e.returncode}.{Style.RESET_ALL}")
+            if attempt < max_retries:
+                print(f"{Fore.YELLOW}🔁 Retrying in {retry_delay} seconds...{Style.RESET_ALL}")
+                time.sleep(retry_delay)
+                enter_bootloader(port)
+            else:
+                print(f"{Fore.RED}💥 All flash attempts failed. Giving up.{Style.RESET_ALL}")
+                sys.exit(1)
+        attempt += 1
 
-# --- MAIN ---
+
+
 if __name__ == "__main__":
+    kill_serial_monitors()
     serial_port = find_serial_port()
-    run_gulp()
+    run_gulp_if_needed()
     build_all(ENV_NAME)
     check_build_artifacts()
     fs_offset, _ = extract_filesystem_partition(PARTITIONS_CSV)
     flash_mode, flash_freq = extract_flash_config(MYENV_TXT)
     enter_bootloader(serial_port)
-    flash_all_images(serial_port, flash_mode, flash_freq, fs_offset)
+    flash_all_images(serial_port, flash_mode, flash_freq, fs_offset, max_retries=1)
+    launch_serial_monitor(serial_port)
+
