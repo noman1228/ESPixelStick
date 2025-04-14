@@ -18,9 +18,9 @@
 *
 */
 
+
 //Output Manager
-//Output Manager
-#define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_2
+#define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_4
 #define DEFAULT_RMT_1_GPIO     gpio_num_t::GPIO_NUM_13
 
 #define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_26
@@ -33,7 +33,7 @@
 #define DEFAULT_RMT_7_GPIO      gpio_num_t::GPIO_NUM_14
 
 #define BUTTON_GPIO1            gpio_num_t::GPIO_NUM_34
-#define STATUS_LED1             gpio_num_t::GPIO_NUM_4
+#define STATUS_LED1             gpio_num_t::GPIO_NUM_2
 #define STATUS_LED2             gpio_num_t::GPIO_NUM_0
 
 // File Manager
