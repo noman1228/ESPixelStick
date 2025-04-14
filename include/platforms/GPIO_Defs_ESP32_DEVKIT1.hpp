@@ -20,8 +20,8 @@
 
 //Output Manager
 //Output Manager
-#define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_2
-#define DEFAULT_RMT_1_GPIO     gpio_num_t::GPIO_NUM_27
+#define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_27
+
 
 
 #define BUTTON_GPIO1            gpio_num_t::GPIO_NUM_34

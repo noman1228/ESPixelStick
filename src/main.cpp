@@ -139,7 +139,10 @@ void TestHeap(uint32_t Id)
 /** Arduino based setup code that is executed at startup. */
 void setup()
 {
-
+    #ifdef SUPPORT_OLED
+    OLED.Begin();
+    OLED.InitNow();
+    #endif
 #ifdef DEBUG_GPIO
     ResetGpio(DEBUG_GPIO);
     pinMode(DEBUG_GPIO, OUTPUT);
@@ -516,7 +519,7 @@ void loop()
         HeapTime += 5000;
     }
 */
-    FeedWDT ();
+FeedWDT ();
 #ifdef SUPPORT_OLED
     OLED.Poll();
     FeedWDT();
