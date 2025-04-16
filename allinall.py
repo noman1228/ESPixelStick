@@ -8,54 +8,63 @@ import serial
 import psutil
 from pathlib import Path
 from colorama import Fore, Style
-import serial.tools.list_ports
-def has_changed_since_stamp(target_path, stamp_path):
-    if not stamp_path.exists():
-        return True
-    stamp_time = stamp_path.stat().st_mtime
-    for root, _, files in os.walk(target_path):
-        for file in files:
-            full_path = Path(root) / file
-            if full_path.stat().st_mtime > stamp_time:
-                return True
-    return False
+import serial
+import configparser
+import psutil  # Add this to the top if not already
+import threading
 
-# --- CONFIG ---
-PROJECT_DIR = Path(os.path.join(os.getcwd(), "file_sys.py")).parent
-PARTITIONS_CSV = PROJECT_DIR / "ESP32_partitions.csv"
-MYENV_TXT = PROJECT_DIR / "MyEnv.txt"
-BUILD_ROOT = PROJECT_DIR / ".pio" / "build"
+
+# --- ENVIRONMENT DETECTION ---
+def find_platformio_root():
+    current_dir = Path.cwd()
+    while current_dir != current_dir.parent:
+        if (current_dir / "platformio.ini").exists():
+            return current_dir
+        current_dir = current_dir.parent
+    raise FileNotFoundError("platformio.ini not found in any parent directory.")
+
+def get_env_name():
+    root = find_platformio_root()
+    build_dir = root / ".pio" / "build"
+
+    # Try detecting most recently built env
+    if build_dir.exists():
+        env_dirs = [d for d in build_dir.iterdir() if d.is_dir()]
+        if env_dirs:
+            env_dirs.sort(key=lambda d: d.stat().st_mtime, reverse=True)
+            return env_dirs[0].name
+
+    # Fallback: try platformio.ini
+    ini_path = root / "platformio.ini"
+    config = configparser.ConfigParser()
+    config.read(ini_path)
+
+    if "platformio" in config and "default_envs" in config["platformio"]:
+        return config["platformio"]["default_envs"].split(",")[0].strip()
+
+    # Fallback #2: first [env:*] block
+    for section in config.sections():
+        if section.startswith("env:"):
+            return section.split("env:")[1]
+
+    raise RuntimeError("Couldn't determine PlatformIO environment.")
+
+# --- PROJECT PATHS ---
+PROJECT_DIR = find_platformio_root()
+ENV_NAME = get_env_name()
 GULP_SCRIPT = PROJECT_DIR / "gulpme.bat"
 GULP_STAMP_FILE = PROJECT_DIR / ".gulp_stamp"
+PARTITIONS_CSV = PROJECT_DIR / "ESP32_partitions.csv"
+MYENV_TXT = PROJECT_DIR / "MyEnv.txt"
+BUILD_DIR = PROJECT_DIR / ".pio" / "build" / ENV_NAME
+IMAGE_PATH = BUILD_DIR / "littlefs.bin"
 ESPNOW_TOOL = PROJECT_DIR / ".pio" / "packages" / "tool-esptoolpy" / "esptool.py"
+BOOTLOADER_BIN = BUILD_DIR / "bootloader.bin"
+PARTITIONS_BIN = BUILD_DIR / "partitions.bin"
+FIRMWARE_BIN = BUILD_DIR / "firmware.bin"
 
 # --- FUNCTIONS ---
-def detect_active_environment(build_dir_root):
-    if not build_dir_root.exists():
-        print(f"{Fore.RED}✘ Build directory not found: {build_dir_root}{Style.RESET_ALL}")
-        sys.exit(1)
 
-    envs = [d.name for d in build_dir_root.iterdir() if d.is_dir()]
-    if not envs:
-        print(f"{Fore.RED}✘ No environments found in build directory.{Style.RESET_ALL}")
-        sys.exit(1)
-
-    if len(envs) == 1:
-        return envs[0]
-
-    print(f"{Fore.YELLOW}⚠ Multiple environments detected:{Style.RESET_ALL}")
-    for idx, env in enumerate(envs):
-        print(f"{Fore.CYAN}[{idx+1}]{Style.RESET_ALL} {env}")
-
-    print(f"\nType the number of the environment to use, or type '{Fore.GREEN}all{Style.RESET_ALL}' to run all.")
-
-    while True:
-        choice = input(f"{Fore.MAGENTA}Select environment: {Style.RESET_ALL}").strip().lower()
-        if choice == 'all':
-            return envs
-        if choice.isdigit() and 1 <= int(choice) <= len(envs):
-            return envs[int(choice) - 1]
-        print(f"{Fore.RED}Invalid choice. Try again.{Style.RESET_ALL}")
 
 def kill_serial_monitors():
     print(f"{Fore.YELLOW}⚠ Closing any open serial monitor processes...{Style.RESET_ALL}")
@@ -280,6 +289,21 @@ def run_gulp_if_needed():
         print(f"{Fore.YELLOW}⏭ data/ unchanged. Skipping Gulp.{Style.RESET_ALL}")
 
 
+def erase_flash(port):
+    print(f"{Fore.MAGENTA}💣 Erasing full flash on {port}...{Style.RESET_ALL}")
+    try:
+        subprocess.run([
+            sys.executable,
+            str(ESPNOW_TOOL),
+            "--chip", "esp32",
+            "--port", port,
+            "--baud", "460800",
+            "erase_flash"
+        ], check=True)
+        print(f"{Fore.GREEN}✔ Flash erase complete.{Style.RESET_ALL}")
+    except subprocess.CalledProcessError as e:
+        print(f"{Fore.RED}✘ Flash erase failed with return code {e.returncode}.{Style.RESET_ALL}")
+
 def enter_bootloader(port):
     print(f"{Fore.CYAN}⏎ Forcing board into bootloader mode on {port}...{Style.RESET_ALL}")
     try:
@@ -343,40 +367,23 @@ if __name__ == "__main__":
     kill_serial_monitors()
     serial_port = find_serial_port()
 
-    env_selection = detect_active_environment(BUILD_ROOT)
+    run_gulp_if_needed()
 
-    if isinstance(env_selection, list):
-        for ENV_NAME in env_selection:
-            BUILD_DIR = BUILD_ROOT / ENV_NAME
-            BOOTLOADER_BIN = BUILD_DIR / "bootloader.bin"
-            PARTITIONS_BIN = BUILD_DIR / "partitions.bin"
-            FIRMWARE_BIN = BUILD_DIR / "firmware.bin"
-            IMAGE_PATH = BUILD_DIR / "littlefs.bin"
+    enter_bootloader(serial_port)
+    erase_thread = threading.Thread(target=erase_flash, args=(serial_port,))
+    erase_thread.start()
 
-            print(f"\n{Fore.BLUE}=== Processing environment: {ENV_NAME} ==={Style.RESET_ALL}")
-            run_gulp_if_needed()
-            build_if_needed(ENV_NAME)
-            check_build_artifacts()
-            fs_offset, _ = extract_filesystem_partition(PARTITIONS_CSV)
-            flash_mode, flash_freq = extract_flash_config(MYENV_TXT)
-            enter_bootloader(serial_port)
-            flash_all_images(serial_port, flash_mode, flash_freq, fs_offset, max_retries=1)
+    print(f"{Fore.CYAN}🗂 Building filesystem image...{Style.RESET_ALL}")
+    subprocess.run(["platformio", "run", "-t", "buildfs", "-e", ENV_NAME], check=True)
 
-        launch_serial_monitor(serial_port)
+    erase_thread.join()
 
-    else:
-        ENV_NAME = env_selection
-        BUILD_DIR = BUILD_ROOT / ENV_NAME
-        BOOTLOADER_BIN = BUILD_DIR / "bootloader.bin"
-        PARTITIONS_BIN = BUILD_DIR / "partitions.bin"
-        FIRMWARE_BIN = BUILD_DIR / "firmware.bin"
-        IMAGE_PATH = BUILD_DIR / "littlefs.bin"
+    print(f"{Fore.CYAN}🔨 Building firmware...{Style.RESET_ALL}")
+    subprocess.run(["platformio", "run", "-e", ENV_NAME], check=True)
 
-        run_gulp_if_needed()
-        build_if_needed(ENV_NAME)
-        check_build_artifacts()
-        fs_offset, _ = extract_filesystem_partition(PARTITIONS_CSV)
-        flash_mode, flash_freq = extract_flash_config(MYENV_TXT)
-        enter_bootloader(serial_port)
-        flash_all_images(serial_port, flash_mode, flash_freq, fs_offset, max_retries=1)
-        launch_serial_monitor(serial_port)
+    check_build_artifacts()
+    fs_offset, _ = extract_filesystem_partition(PARTITIONS_CSV)
+    flash_mode, flash_freq = extract_flash_config(MYENV_TXT)
+
+    flash_all_images(serial_port, flash_mode, flash_freq, fs_offset, max_retries=1)
+    launch_serial_monitor(serial_port)
