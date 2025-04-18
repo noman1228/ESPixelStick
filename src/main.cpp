@@ -141,7 +141,6 @@ void setup()
 {
     #ifdef SUPPORT_OLED
     OLED.Begin();
-    OLED.InitNow();
     #endif
 #ifdef DEBUG_GPIO
     ResetGpio(DEBUG_GPIO);

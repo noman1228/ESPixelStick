@@ -74,7 +74,7 @@ def find_serial_port():
     print("🔍 Searching for available serial ports...")
     ports = serial.tools.list_ports.comports()
     for port in ports:
-        if any(chip in port.description for chip in ("USB", "UART", "CP210", "CH340")):
+        if any(chip in port.description for chip in ("USB", "UART", "CP210", "CH340", "ESP32")):
             print(f"{Fore.GREEN}✔ Found port: {port.device}{Style.RESET_ALL}")
             return port.device
     print(f"{Fore.RED}✘ No suitable ESP32 device found. Is it plugged in?{Style.RESET_ALL}")
@@ -223,6 +223,43 @@ def build_all(env_name):
     print(f"{Fore.CYAN}🔨 Building firmware and filesystem for {env_name}...{Style.RESET_ALL}")
     subprocess.run(["platformio", "run", "-e", env_name], check=True)
     subprocess.run(["platformio", "run", "-t", "buildfs", "-e", env_name], check=True)
+from pathlib import Path
+import os
+import configparser
+
+def find_platformio_root():
+    current_dir = Path.cwd()
+    while current_dir != current_dir.parent:
+        if (current_dir / "platformio.ini").exists():
+            return current_dir
+        current_dir = current_dir.parent
+    raise FileNotFoundError("platformio.ini not found in any parent directory.")
+
+def get_env_name():
+    root = find_platformio_root()
+    build_dir = root / ".pio" / "build"
+
+    # Try detecting most recently built env
+    if build_dir.exists():
+        env_dirs = [d for d in build_dir.iterdir() if d.is_dir()]
+        if env_dirs:
+            env_dirs.sort(key=lambda d: d.stat().st_mtime, reverse=True)
+            return env_dirs[0].name
+
+    # Fallback: try platformio.ini
+    ini_path = root / "platformio.ini"
+    config = configparser.ConfigParser()
+    config.read(ini_path)
+
+    if "platformio" in config and "default_envs" in config["platformio"]:
+        return config["platformio"]["default_envs"].split(",")[0].strip()
+
+    # Fallback #2: just grab the first [env:...] block
+    for section in config.sections():
+        if section.startswith("env:"):
+            return section.split("env:")[1]
+
+    raise RuntimeError("Couldn't determine PlatformIO environment.")
 
 def run_gulp_if_needed():
     data_dir = PROJECT_DIR / "data"
@@ -275,7 +312,7 @@ def flash_all_images(port, flash_mode, flash_freq, fs_offset, max_retries=1, ret
         "--port", port,
         "--baud", "460800",
         "write_flash",
-        "--flash_mode", "keep",
+        "--flash_mode", flash_mode,
         "--flash_freq", flash_freq,
         "--flash_size", "detect",
         "0x1000", str(BOOTLOADER_BIN),

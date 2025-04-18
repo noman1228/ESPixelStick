@@ -222,6 +222,45 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
 #endif
             LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
             LOG_PORT.flush();
+#ifdef SUPPORT_OLED
+    OLED.uploadFilename = FileName;
+    OLED.uploadProgress = 0;
+#endif
+
+#ifdef SUPPORT_OLED
+    OLED.uploadFilename = FileName;
+    OLED.uploadProgress = 0;
+#endif
+
+do
+{
+    BytesRead = zip.readCurrentFile(pOutputBuffer, BufferSize);
+    if(BytesRead <= 0)
+    {
+        break;
+    }
+
+    if(BytesRead != FileMgr.WriteSdFile(FileHandle, pOutputBuffer, BytesRead))
+    {
+        logcon(String(F("Failed to write data to '")) + FileName + "'");
+
+#ifdef SUPPORT_OLED
+        OLED.ShowToast("SD Write Error");
+#endif
+        break;
+    }
+
+    TotalBytesWritten += BytesRead;
+
+#ifdef SUPPORT_OLED
+    OLED.uploadProgress = (uint8_t)((TotalBytesWritten * 100) / fi.uncompressed_size);
+#endif
+
+    LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
+    LOG_PORT.flush();
+
+} while (BytesRead > 0);
+
 
         } while (BytesRead > 0);
 

@@ -50,7 +50,6 @@
      void UpdateNetworkInfo(bool forceUpdate = false);
      void UpdateUploadStatus(const String &filename, int progress);
      void UpdateRunningStatus();
-     void status(int progress, const String &filename);
      void Flip();
      void Poll();
      void ShowToast(const String &message);
@@ -73,11 +72,8 @@
      // Toast state
      bool isToastActive = false;
      unsigned long toastStartTime = 0;
-     String toastMessage;
- 
-     void UpdateUploadStatus();
-     int getSignalStrength(int rssi);
- 
+     String toastMessage; 
+     int getSignalStrength(int rssi); 
      DisplayPage currentPage;
      unsigned long lastPageSwitchTime;
      unsigned long lastNetworkUpdate;
