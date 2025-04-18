@@ -26,15 +26,16 @@
 #define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_26
 #define DEFAULT_RMT_3_GPIO      gpio_num_t::GPIO_NUM_33
 
-#define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_32
-#define DEFAULT_RMT_5_GPIO      gpio_num_t::GPIO_NUM_25
+//#define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_32
+//#define DEFAULT_RMT_5_GPIO      gpio_num_t::GPIO_NUM_25
 
-#define DEFAULT_RMT_6_GPIO      gpio_num_t::GPIO_NUM_27
-#define DEFAULT_RMT_7_GPIO      gpio_num_t::GPIO_NUM_14
+//#define DEFAULT_RMT_6_GPIO      gpio_num_t::GPIO_NUM_27
+//#define DEFAULT_RMT_7_GPIO      gpio_num_t::GPIO_NUM_14
 
 #define BUTTON_GPIO1            gpio_num_t::GPIO_NUM_34
-#define STATUS_LED1             gpio_num_t::GPIO_NUM_2
-#define STATUS_LED2             gpio_num_t::GPIO_NUM_0
+//#define STATUS_LED1             gpio_num_t::GPIO_NUM_2
+//#define STATUS_LED2             gpio_num_t::GPIO_NUM_0
+
 
 // File Manager
 #define SUPPORT_SD

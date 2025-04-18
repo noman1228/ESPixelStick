@@ -19,7 +19,10 @@
  #include "freertos/FreeRTOS.h"
  #include "freertos/task.h"
  #include "freertos/semphr.h"
- 
+ #include <U8g2lib.h>
+
+
+
  // Constants for timing and display
  #define OLED_TASK_DELAY_MS         250
  #define TOAST_DURATION_MS          5000

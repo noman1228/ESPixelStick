@@ -11,7 +11,7 @@
 bool isRebooting = false;
 static SemaphoreHandle_t displayMutex = nullptr;
 static TaskHandle_t oledTaskHandle = nullptr;
-U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0);
+U8G2_SSD1306_128X32_WINSTAR_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE, /* clock=*/SCL, /* data=*/SDA);
 
 static void OLEDTask(void *)
 {
@@ -33,6 +33,8 @@ c_OLED::c_OLED()
 
 void c_OLED::Begin()
 {
+    u8g2.setFont(u8g2_font_10x20_tf);  // about 20px tall
+u8g2.setFont(u8g2_font_6x10_tf);   // about 10px tall
     displayMutex = xSemaphoreCreateMutex();
     if (!displayMutex) return;
 
@@ -53,42 +55,72 @@ void c_OLED::Begin()
 
 static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxWidth, uint8_t xOrigin, uint8_t yOrigin)
 {
-    const uint8_t lineHeight = u8g2.getFontAscent() - u8g2.getFontDescent() + 2;
-    std::vector<String> lines;
-    String currentLine = "", currentWord = "";
+    const uint8_t DISPLAY_WIDTH = 128;
+    const uint8_t DISPLAY_HEIGHT = 32;
 
-    for (uint16_t i = 0; i < text.length(); i++) {
-        char c = text.charAt(i);
-        if (c == ' ' || c == '\n') {
+    // Font selector lambda
+    auto setFont = [&](bool large) {
+        if (large) u8g2.setFont(u8g2_font_10x20_tf);
+        else       u8g2.setFont(u8g2_font_6x10_tf);
+    };
+
+    std::vector<String> lines;
+    uint8_t lineHeight = 0;
+    bool fontFit = false;
+
+    for (int attempt = 0; attempt < 2; attempt++) {
+        setFont(attempt == 0);  // Try large first
+
+        lines.clear();
+        String currentLine = "", currentWord = "";
+
+        for (uint16_t i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == ' ' || c == '\n') {
+                if (u8g2.getStrWidth((currentLine + currentWord).c_str()) > maxWidth) {
+                    lines.push_back(currentLine);
+                    currentLine = currentWord + " ";
+                } else {
+                    currentLine += currentWord + " ";
+                }
+                currentWord = "";
+                if (c == '\n') { lines.push_back(currentLine); currentLine = ""; }
+            } else {
+                currentWord += c;
+            }
+        }
+
+        if (!currentWord.isEmpty()) {
             if (u8g2.getStrWidth((currentLine + currentWord).c_str()) > maxWidth) {
                 lines.push_back(currentLine);
-                currentLine = currentWord + " ";
+                currentLine = currentWord;
             } else {
-                currentLine += currentWord + " ";
+                currentLine += currentWord;
             }
-            currentWord = "";
-            if (c == '\n') { lines.push_back(currentLine); currentLine = ""; }
-        } else {
-            currentWord += c;
+        }
+        if (!currentLine.isEmpty()) lines.push_back(currentLine);
+
+        lineHeight = u8g2.getAscent() - u8g2.getDescent() + 2;
+        uint8_t totalHeight = lineHeight * lines.size();
+
+        if (totalHeight <= DISPLAY_HEIGHT) {
+            fontFit = true;
+            break;
         }
     }
 
-    if (!currentWord.isEmpty()) {
-        if (u8g2.getStrWidth((currentLine + currentWord).c_str()) > maxWidth) {
-            lines.push_back(currentLine);
-            currentLine = currentWord;
-        } else {
-            currentLine += currentWord;
-        }
+    if (!fontFit) {
+        // Worst case fallback
+        setFont(false);
+        lineHeight = u8g2.getAscent() - u8g2.getDescent() + 2;
     }
-    if (!currentLine.isEmpty()) lines.push_back(currentLine);
 
     uint8_t totalHeight = lineHeight * lines.size();
-    uint8_t startY = yOrigin + ((32 - totalHeight) / 2);
+    uint8_t startY = yOrigin + ((DISPLAY_HEIGHT - totalHeight) / 2);
 
     for (size_t i = 0; i < lines.size(); i++) {
         uint8_t strWidth = u8g2.getStrWidth(lines[i].c_str());
-        uint8_t x = xOrigin + ((128 - strWidth) / 2);
+        uint8_t x = xOrigin + ((DISPLAY_WIDTH - strWidth) / 2);
         uint8_t y = startY + (i * lineHeight);
         u8g2.drawStr(x, y, lines[i].c_str());
     }

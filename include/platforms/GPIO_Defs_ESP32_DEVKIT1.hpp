@@ -24,10 +24,6 @@
 
 
 
-#define BUTTON_GPIO1            gpio_num_t::GPIO_NUM_34
-#define STATUS_LED1             gpio_num_t::GPIO_NUM_27
-#define STATUS_LED2             gpio_num_t::GPIO_NUM_0
-
 // File Manager
 #define SUPPORT_SD
 #define SD_CARD_MISO_PIN        gpio_num_t::GPIO_NUM_19
