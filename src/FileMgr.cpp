@@ -1694,7 +1694,7 @@ void c_FileMgr::LockSd()
 #ifdef ARDUINO_ARCH_ESP32
     xSemaphoreTake( SdAccessSemaphore, TickType_t(-1) );
 #endif // def ARDUINO_ARCH_ESP32
-
+}
 void c_FileMgr::UnLockSd()
 {
     // DEBUG_START;
