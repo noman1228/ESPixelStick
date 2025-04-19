@@ -45,7 +45,8 @@ folders_to_toggle = [
     "*.py",
     "_*_",
     "*.vscode*",
-    ".gulp_stamp"
+    ".gulp_stamp",
+    "*.build*"
 ]
 
 # Load the settings file
