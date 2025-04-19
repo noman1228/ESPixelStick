@@ -1672,14 +1672,12 @@ bool c_FileMgr::SeekSdFile(const FileId &FileHandle, uint64_t position, SeekMode
 
 void c_FileMgr::LockSd()
 {
+    // DEBUG_START;
 
-    while (true == SdAccessSemaphore)
-    {
-        delay(10);
-    }
-    SdAccessSemaphore = true;
+#ifdef ARDUINO_ARCH_ESP32
+    xSemaphoreTake( SdAccessSemaphore, TickType_t(-1) );
+#endif // def ARDUINO_ARCH_ESP32
 }
-
 void c_FileMgr::UnLockSd()
 {
 
