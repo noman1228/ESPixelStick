@@ -193,10 +193,18 @@ def build_if_needed(env_name):
 
 def check_build_artifacts():
     required = [BOOTLOADER_BIN, PARTITIONS_BIN, FIRMWARE_BIN, IMAGE_PATH]
-    for f in required:
-        if not f.exists():
-            print(f"{Fore.RED}✘ Missing file: {f}{Style.RESET_ALL}")
-            sys.exit(1)
+    missing = [f for f in required if not f.exists()]
+
+    if missing:
+        print(f"{Fore.YELLOW}⚠ Missing build artifacts detected. Forcing rebuild...{Style.RESET_ALL}")
+        build_all(ENV_NAME)
+        for f in required:
+            if not f.exists():
+                print(f"{Fore.RED}✘ Still missing: {f}{Style.RESET_ALL}")
+                sys.exit(1)
+    else:
+        print(f"{Fore.GREEN}✔ All required build artifacts found.{Style.RESET_ALL}")
+
 
 def extract_filesystem_partition(csv_path):
     if not csv_path.exists():
