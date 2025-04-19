@@ -9,16 +9,7 @@ import psutil
 from pathlib import Path
 from colorama import Fore, Style
 import serial.tools.list_ports
-def has_changed_since_stamp(target_path, stamp_path):
-    if not stamp_path.exists():
-        return True
-    stamp_time = stamp_path.stat().st_mtime
-    for root, _, files in os.walk(target_path):
-        for file in files:
-            full_path = Path(root) / file
-            if full_path.stat().st_mtime > stamp_time:
-                return True
-    return False
+import configparser
 
 # --- CONFIG ---
 PROJECT_DIR = Path(os.path.join(os.getcwd(), "file_sys.py")).parent
@@ -30,6 +21,79 @@ GULP_STAMP_FILE = PROJECT_DIR / ".gulp_stamp"
 ESPNOW_TOOL = PROJECT_DIR / ".pio" / "packages" / "tool-esptoolpy" / "esptool.py"
 
 # --- FUNCTIONS ---
+def copy_and_prepare_binaries(env_name):
+    from shutil import copyfile
+    output_dir = PROJECT_DIR / "firmware" / "esp32"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    env_file = PROJECT_DIR / "MyEnv.txt"
+    if not env_file.exists():
+        print(f"{Fore.RED}✘ MyEnv.txt not found. Run a PlatformIO build with CustomTargets.py enabled first.{Style.RESET_ALL}")
+        return
+
+    board_flash_mode = "dio"
+    board_flash_freq = "80m"
+    board_mcu = "esp32"
+
+    with open(env_file, "r") as f:
+        for line in f.readlines():
+            if "BOARD_FLASH_MODE" in line:
+                board_flash_mode = line.split(":")[1].strip().strip("',\"")
+            elif "BOARD_F_FLASH" in line:
+                hz = line.split(":")[1].strip().strip("',\"").rstrip("L")
+                board_flash_freq = f"{int(hz) // 1000000}m"
+            elif "BOARD_MCU" in line:
+                board_mcu = line.split(":")[1].strip().strip("',\"")
+
+    boot = BUILD_DIR / "bootloader.bin"
+    app = BUILD_DIR / "firmware.bin"
+    part = BUILD_DIR / "partitions.bin"
+    app0 = next(BUILD_DIR.glob("*boot_app0.bin"), None)
+    fs = BUILD_DIR / "littlefs.bin"
+
+    dst_prefix = output_dir / f"{env_name}"
+    paths = {
+        "bootloader": (boot, dst_prefix.with_name(dst_prefix.name + "-bootloader.bin")),
+        "application": (app, dst_prefix.with_name(dst_prefix.name + "-app.bin")),
+        "partitions": (part, dst_prefix.with_name(dst_prefix.name + "-partitions.bin")),
+        "fs": (fs, dst_prefix.with_name(dst_prefix.name + "-littlefs.bin")),
+    }
+    if app0:
+        paths["boot_app0"] = (app0, dst_prefix.with_name(dst_prefix.name + "-boot_app0.bin"))
+
+    for label, (src, dst) in paths.items():
+        if src.exists():
+            print(f"{Fore.GREEN}✔ Copying {label} → {dst.name}{Style.RESET_ALL}")
+            copyfile(src, dst)
+        else:
+            print(f"{Fore.YELLOW}⚠ Missing {label} at {src}{Style.RESET_ALL}")
+
+    merged_bin = dst_prefix.with_name(dst_prefix.name + "-merged.bin")
+    esptool_cmd = [
+        "esptool.py", "--chip", board_mcu, "merge_bin",
+        "-o", str(merged_bin),
+        "--flash_mode", board_flash_mode,
+        "--flash_freq", board_flash_freq,
+        "--flash_size", "4MB",
+        "0x0000", str(paths["bootloader"][1]),
+        "0x8000", str(paths["partitions"][1]),
+        "0xe000", str(paths["boot_app0"][1]) if "boot_app0" in paths else "",
+        "0x10000", str(paths["application"][1]),
+        "0x3B0000", str(paths["fs"][1]),
+    ]
+    print(f"{Fore.CYAN}🔧 Generating merged image: {merged_bin.name}{Style.RESET_ALL}")
+    subprocess.run([arg for arg in esptool_cmd if arg], check=False)
+def has_changed_since_stamp(target_path, stamp_path):
+    if not stamp_path.exists():
+        return True
+    stamp_time = stamp_path.stat().st_mtime
+    for root, _, files in os.walk(target_path):
+        for file in files:
+            full_path = Path(root) / file
+            if full_path.stat().st_mtime > stamp_time:
+                return True
+    return False
+
 def detect_active_environment(build_dir_root):
     if not build_dir_root.exists():
         print(f"{Fore.RED}✘ Build directory not found: {build_dir_root}{Style.RESET_ALL}")
@@ -80,25 +144,59 @@ def find_serial_port():
     print(f"{Fore.RED}✘ No suitable ESP32 device found. Is it plugged in?{Style.RESET_ALL}")
     sys.exit(1)
 
-def extract_flash_config(env_txt_path):
-    if not env_txt_path.exists():
-        print(f"{Fore.RED}✘ MyEnv.txt not found: {env_txt_path}{Style.RESET_ALL}")
+def run_gulp_if_needed():
+    data_dir = PROJECT_DIR / "data"
+    if not data_dir.exists():
+        print(f"{Fore.RED}✘ data/ directory missing — cannot run Gulp.{Style.RESET_ALL}")
         sys.exit(1)
 
-    flash_mode = "dio"
-    flash_freq = "80m"
+    if has_changed_since_stamp(data_dir, GULP_STAMP_FILE):
+        print(f"{Fore.CYAN}🛠 Running Gulp: {GULP_SCRIPT}{Style.RESET_ALL}")
+        if not GULP_SCRIPT.exists():
+            print(f"{Fore.RED}✘ gulpme.bat not found at {GULP_SCRIPT}{Style.RESET_ALL}")
+            sys.exit(1)
+        subprocess.run([str(GULP_SCRIPT)], shell=True, check=True)
+        with open(GULP_STAMP_FILE, "w") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S"))
+        print(f"{Fore.GREEN}✔ Gulp finished and stamp updated.{Style.RESET_ALL}")
+    else:
+        print(f"{Fore.YELLOW}⏭ data/ unchanged. Skipping Gulp.{Style.RESET_ALL}")
 
-    with open(env_txt_path, "r") as f:
-        for line in f:
-            if "'BOARD_FLASH_MODE'" in line:
-                flash_mode = line.split(":")[1].strip().strip("',\"")
-            elif "'BOARD_F_FLASH'" in line:
-                raw = line.split(":")[1].strip().strip("',\"").rstrip("L")
-                freq_hz = int(raw)
-                flash_freq = f"{freq_hz // 1000000}m"
+def erase_flash():
+    print(f"{Fore.MAGENTA}💥 Erasing entire flash...{Style.RESET_ALL}")
+    subprocess.run([
+        sys.executable, str(ESPNOW_TOOL),
+        "--chip", "esp32",
+        "--port", serial_port,
+        "erase_flash"
+    ], check=True)
 
-    print(f"{Fore.GREEN}✔ Using flash mode: {flash_mode}, flash freq: {flash_freq}{Style.RESET_ALL}")
-    return flash_mode, flash_freq
+def build_all(env_name):
+    print(f"{Fore.CYAN}🔨 Building firmware and filesystem for {env_name}...{Style.RESET_ALL}")
+    subprocess.run(["platformio", "run", "-e", env_name], check=True)
+    subprocess.run(["platformio", "run", "-t", "buildfs", "-e", env_name], check=True)
+
+def build_if_needed(env_name):
+    source_dirs = [PROJECT_DIR / "src", PROJECT_DIR / "include"]
+    stamp_file = PROJECT_DIR / f".build_stamp_{env_name}"
+
+    needs_build = any(has_changed_since_stamp(path, stamp_file) for path in source_dirs)
+
+    if needs_build:
+        print(f"{Fore.CYAN}🔨 Code changed. Starting full build...{Style.RESET_ALL}")
+        erase_flash()
+        build_all(env_name)
+        with open(stamp_file, "w") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S"))
+    else:
+        print(f"{Fore.YELLOW}⏭ Code unchanged. Skipping build.{Style.RESET_ALL}")
+
+def check_build_artifacts():
+    required = [BOOTLOADER_BIN, PARTITIONS_BIN, FIRMWARE_BIN, IMAGE_PATH]
+    for f in required:
+        if not f.exists():
+            print(f"{Fore.RED}✘ Missing file: {f}{Style.RESET_ALL}")
+            sys.exit(1)
 
 def extract_filesystem_partition(csv_path):
     if not csv_path.exists():
@@ -121,186 +219,40 @@ def extract_filesystem_partition(csv_path):
     print(f"{Fore.RED}✘ Could not find a SPIFFS or LittleFS partition in {csv_path}{Style.RESET_ALL}")
     sys.exit(1)
 
-def check_build_artifacts():
-    required = [BOOTLOADER_BIN, PARTITIONS_BIN, FIRMWARE_BIN, IMAGE_PATH]
-    for f in required:
-        if not f.exists():
-            print(f"{Fore.RED}✘ Missing file: {f}{Style.RESET_ALL}")
-            sys.exit(1)
-
-def erase_flash():
-    print(f"{Fore.MAGENTA}💥 Erasing entire flash...{Style.RESET_ALL}")
-    subprocess.run([
-        sys.executable, str(ESPNOW_TOOL),
-        "--chip", "esp32",
-        "--port", serial_port,
-        "erase_flash"
-    ], check=True)
-            
-def copy_and_prepare_binaries(env_name):
-    from shutil import copyfile
-    import json
-
-    output_dir = PROJECT_DIR / "firmware" / "esp32"  # or use BOARD_MCU dynamically
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    env_file = PROJECT_DIR / "MyEnv.txt"
-    if not env_file.exists():
-        print(f"{Fore.RED}✘ MyEnv.txt not found. Run a PlatformIO build with CustomTargets.py enabled first.{Style.RESET_ALL}")
-        return
-
-    # Pull board info
-    board_flash_mode = "dio"
-    board_flash_freq = "80m"
-    board_mcu = "esp32"
-
-    with open(env_file, "r") as f:
-        for line in f.readlines():
-            if "BOARD_FLASH_MODE" in line:
-                board_flash_mode = line.split(":")[1].strip().strip("',\"")
-            elif "BOARD_F_FLASH" in line:
-                hz = line.split(":")[1].strip().strip("',\"").rstrip("L")
-                board_flash_freq = f"{int(hz) // 1000000}m"
-            elif "BOARD_MCU" in line:
-                board_mcu = line.split(":")[1].strip().strip("',\"")
-
-    # Define paths
-    boot = BUILD_DIR / "bootloader.bin"
-    app = BUILD_DIR / "firmware.bin"
-    part = BUILD_DIR / "partitions.bin"
-    app0 = next((BUILD_DIR.glob("*boot_app0.bin")), None)
-    fs = BUILD_DIR / "littlefs.bin"
-
-    dst_prefix = output_dir / f"{env_name}"
-    paths = {
-        "bootloader": (boot, dst_prefix.with_name(dst_prefix.name + "-bootloader.bin")),
-        "application": (app, dst_prefix.with_name(dst_prefix.name + "-app.bin")),
-        "partitions": (part, dst_prefix.with_name(dst_prefix.name + "-partitions.bin")),
-        "fs": (fs, dst_prefix.with_name(dst_prefix.name + "-littlefs.bin")),
-    }
-    if app0:
-        paths["boot_app0"] = (app0, dst_prefix.with_name(dst_prefix.name + "-boot_app0.bin"))
-
-    for label, (src, dst) in paths.items():
-        if src.exists():
-            print(f"{Fore.GREEN}✔ Copying {label} → {dst.name}{Style.RESET_ALL}")
-            copyfile(src, dst)
-        else:
-            print(f"{Fore.YELLOW}⚠ Missing {label} at {src}{Style.RESET_ALL}")
-
-    # Optionally: merged image
-    merged_bin = dst_prefix.with_name(dst_prefix.name + "-merged.bin")
-    esptool_cmd = [
-        "esptool.py", "--chip", board_mcu, "merge_bin",
-        "-o", str(merged_bin),
-        "--flash_mode", board_flash_mode,
-        "--flash_freq", board_flash_freq,
-        "--flash_size", "4MB",
-        "0x0000", str(paths["bootloader"][1]),
-        "0x8000", str(paths["partitions"][1]),
-        "0xe000", str(paths["boot_app0"][1]) if "boot_app0" in paths else "",
-        "0x10000", str(paths["application"][1]),
-        "0x3B0000", str(paths["fs"][1]),
-    ]
-    print(f"{Fore.CYAN}🔧 Generating merged image: {merged_bin.name}{Style.RESET_ALL}")
-    subprocess.run([arg for arg in esptool_cmd if arg], check=False)
-def build_if_needed(env_name):
-    source_dirs = [PROJECT_DIR / "src", PROJECT_DIR / "include"]
-    stamp_file = PROJECT_DIR / f".build_stamp_{env_name}"
-
-    needs_build = any(has_changed_since_stamp(path, stamp_file) for path in source_dirs)
-
-    if needs_build:
-        print(f"{Fore.CYAN}🔨 Code changed. Starting full build...{Style.RESET_ALL}")
-        erase_flash()
-        build_all(env_name)
-        with open(stamp_file, "w") as f:
-            f.write(time.strftime("%Y-%m-%d %H:%M:%S"))
-    else:
-        print(f"{Fore.YELLOW}⏭ Code unchanged. Skipping build.{Style.RESET_ALL}")
-
-def build_all(env_name):
-    print(f"{Fore.CYAN}🔨 Building firmware and filesystem for {env_name}...{Style.RESET_ALL}")
-    subprocess.run(["platformio", "run", "-e", env_name], check=True)
-    subprocess.run(["platformio", "run", "-t", "buildfs", "-e", env_name], check=True)
-from pathlib import Path
-import os
-import configparser
-
-def find_platformio_root():
-    current_dir = Path.cwd()
-    while current_dir != current_dir.parent:
-        if (current_dir / "platformio.ini").exists():
-            return current_dir
-        current_dir = current_dir.parent
-    raise FileNotFoundError("platformio.ini not found in any parent directory.")
-
-def get_env_name():
-    root = find_platformio_root()
-    build_dir = root / ".pio" / "build"
-
-    # Try detecting most recently built env
-    if build_dir.exists():
-        env_dirs = [d for d in build_dir.iterdir() if d.is_dir()]
-        if env_dirs:
-            env_dirs.sort(key=lambda d: d.stat().st_mtime, reverse=True)
-            return env_dirs[0].name
-
-    # Fallback: try platformio.ini
-    ini_path = root / "platformio.ini"
-    config = configparser.ConfigParser()
-    config.read(ini_path)
-
-    if "platformio" in config and "default_envs" in config["platformio"]:
-        return config["platformio"]["default_envs"].split(",")[0].strip()
-
-    # Fallback #2: just grab the first [env:...] block
-    for section in config.sections():
-        if section.startswith("env:"):
-            return section.split("env:")[1]
-
-    raise RuntimeError("Couldn't determine PlatformIO environment.")
-
-def run_gulp_if_needed():
-    data_dir = PROJECT_DIR / "data"
-    if not data_dir.exists():
-        print(f"{Fore.RED}✘ data/ directory missing — cannot run Gulp.{Style.RESET_ALL}")
+def extract_flash_config(env_txt_path):
+    if not env_txt_path.exists():
+        print(f"{Fore.RED}✘ MyEnv.txt not found: {env_txt_path}{Style.RESET_ALL}")
         sys.exit(1)
 
-    if has_changed_since_stamp(data_dir, GULP_STAMP_FILE):
-        print(f"{Fore.CYAN}🛠 Running Gulp: {GULP_SCRIPT}{Style.RESET_ALL}")
-        if not GULP_SCRIPT.exists():
-            print(f"{Fore.RED}✘ gulpme.bat not found at {GULP_SCRIPT}{Style.RESET_ALL}")
-            sys.exit(1)
-        subprocess.run([str(GULP_SCRIPT)], shell=True, check=True)
-        with open(GULP_STAMP_FILE, "w") as f:
-            f.write(time.strftime("%Y-%m-%d %H:%M:%S"))
-        print(f"{Fore.GREEN}✔ Gulp finished and stamp updated.{Style.RESET_ALL}")
-    else:
-        print(f"{Fore.YELLOW}⏭ data/ unchanged. Skipping Gulp.{Style.RESET_ALL}")
+    flash_mode = "dio"
+    flash_freq = "80m"
 
+    with open(env_txt_path, "r") as f:
+        for line in f:
+            if "'BOARD_FLASH_MODE'" in line:
+                flash_mode = line.split(":")[1].strip().strip("',\"")
+            elif "'BOARD_F_FLASH'" in line:
+                raw = line.split(":")[1].strip().strip("',\"").rstrip("L")
+                freq_hz = int(raw)
+                flash_freq = f"{freq_hz // 1000000}m"
+
+    print(f"{Fore.GREEN}✔ Using flash mode: {flash_mode}, flash freq: {flash_freq}{Style.RESET_ALL}")
+    return flash_mode, flash_freq
 
 def enter_bootloader(port):
     print(f"{Fore.CYAN}⏎ Forcing board into bootloader mode on {port}...{Style.RESET_ALL}")
     try:
         with serial.Serial(port, 115200) as ser:
-            ser.dtr = False  # EN = High
-            ser.rts = True   # IO0 = Low
+            ser.dtr = False
+            ser.rts = True
             time.sleep(0.1)
-            ser.dtr = True   # EN = Low -> reset
+            ser.dtr = True
             time.sleep(0.1)
-            ser.dtr = False  # EN = High
+            ser.dtr = False
             time.sleep(0.2)
         print(f"{Fore.GREEN}✔ Bootloader mode triggered.{Style.RESET_ALL}")
     except Exception as e:
         print(f"{Fore.RED}✘ Could not trigger bootloader: {e}{Style.RESET_ALL}")
-
-def launch_serial_monitor(port, baud=115200):
-    print(f"{Fore.CYAN}📡 Launching serial monitor on {port}...{Style.RESET_ALL}")
-    try:
-        subprocess.run(["platformio", "device", "monitor", "--port", port, "--baud", str(baud)])
-    except Exception as e:
-        print(f"{Fore.RED}✘ Could not launch serial monitor: {e}{Style.RESET_ALL}")
 
 def flash_all_images(port, flash_mode, flash_freq, fs_offset, max_retries=1, retry_delay=10):
     print(f"{Fore.CYAN}🚀 Flashing all firmware and filesystem images to {port}...{Style.RESET_ALL}")
@@ -338,6 +290,13 @@ def flash_all_images(port, flash_mode, flash_freq, fs_offset, max_retries=1, ret
                 sys.exit(1)
         attempt += 1
 
+def launch_serial_monitor(port, baud=115200):
+    print(f"{Fore.CYAN}📡 Launching serial monitor on {port}...{Style.RESET_ALL}")
+    try:
+        subprocess.run(["platformio", "device", "monitor", "--port", port, "--baud", str(baud)])
+    except Exception as e:
+        print(f"{Fore.RED}✘ Could not launch serial monitor: {e}{Style.RESET_ALL}")
+
 # --- MAIN ---
 if __name__ == "__main__":
     kill_serial_monitors()
@@ -361,6 +320,7 @@ if __name__ == "__main__":
             flash_mode, flash_freq = extract_flash_config(MYENV_TXT)
             enter_bootloader(serial_port)
             flash_all_images(serial_port, flash_mode, flash_freq, fs_offset, max_retries=1)
+            copy_and_prepare_binaries(ENV_NAME)
 
         launch_serial_monitor(serial_port)
 
