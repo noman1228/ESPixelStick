@@ -22,8 +22,6 @@
 //Output Manager
 #define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_4
 
-
-
 #define BUTTON_GPIO1            gpio_num_t::GPIO_NUM_34
 #define STATUS_LED1             gpio_num_t::GPIO_NUM_27
 #define STATUS_LED2             gpio_num_t::GPIO_NUM_0

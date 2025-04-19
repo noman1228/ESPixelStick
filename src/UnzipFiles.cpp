@@ -116,6 +116,7 @@ void UnzipFiles::ProcessZipFile(String & FileName)
 #ifdef SUPPORT_OLED
     OLED.isUploading = true;
     OLED.uploadFilename = String(FileName);
+    OLED.Update(true);
 #endif
 
     int returnCode = zip.openZIP(FileName.c_str(), _OpenZipFile, _CloseZipFile, _ReadZipFile, _SeekZipFile);
@@ -154,6 +155,8 @@ void UnzipFiles::ProcessZipFile(String & FileName)
 #ifdef SUPPORT_OLED
         OLED.uploadProgress = 100; // or 0, up to you
         OLED.isUploading = false;
+        OLED.Update(true);
+        OLED.isUploading = false;
 #endif
     }
     else
@@ -185,6 +188,8 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
 // DEBUG_V(String("ReturnCode: ") + String(ReturnCode));
 #ifdef SUPPORT_OLED
             OLED.ShowToast(String(FileName + F(" Failed.")));
+            OLED.Update(true);
+            OLED.isUploading = false;
 #endif
             logcon(FileName + F(" Failed."));
             break;
@@ -198,6 +203,8 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
             logcon(String("Could not open '") + FileName + "' for writting");
 #ifdef SUPPORT_OLED
             OLED.ShowToast("Could not open");
+            OLED.Update(true);
+            OLED.isUploading = false;
 #endif
 
             break;
@@ -212,13 +219,18 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
                 logcon(String(F("Failed to write data to '")) + FileName + "'");
 #ifdef SUPPORT_OLED
                 OLED.ShowToast("SD Write Error");
+                OLED.Update(true);
+                OLED.isUploading = false;
 #endif
 
                 break;
             }
             TotalBytesWritten += BytesRead;
 #ifdef SUPPORT_OLED
+            OLED.isUploading = true;
+            OLED.uploadFilename = FileName;
             OLED.uploadProgress = (uint8_t)((TotalBytesWritten * 100) / fi.uncompressed_size);
+            OLED.Update(true);
 #endif
             LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
             LOG_PORT.flush();
@@ -268,6 +280,13 @@ do
         FileMgr.CloseSdFile(FileHandle);
         zip.closeCurrentFile();
         logcon(FileName + F(" - Done."));
+        #ifdef SUPPORT_OLED
+    OLED.uploadProgress = 100;
+    OLED.Update(true);
+        OLED.isUploading = false;
+        OLED.ShowToast(String(FileName + " - DONE"));
+        OLED.Update(true);
+#endif
     } while(false);
 
     // DEBUG_V(String("Close Filename: ") + FileName);
