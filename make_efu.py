@@ -1,5 +1,6 @@
 # make_efu.py
-
+# Broke down the java flasher and reverse-engineered the easy way.
+# https://github.com/forkineye/ESPSFlashTool
 import os
 import struct
 import subprocess

@@ -1,7 +1,10 @@
 # FullBuild.py - Jason Theriault 2025
 # Does a bit of snooping and builds what needs to be built. Define your envs and hit go
 # jacked a few things from OG ESPixelStick Scripts, even uses them
-# --- IMPORTS ---
+# #mybrotherinchrist this has been a savior
+
+
+# --- IMPORTS --- (no Tariffs)
 import os
 import sys
 import csv
@@ -32,7 +35,7 @@ ESPNOW_TOOL = next(
     "esptool.py"
 )
 
-# --- FILESYSTEM SUPPORT CHECK ---
+# --- FILESYSTEM SUPPORT CHECK --- (need all the support we can get)
 def should_use_filesystem():
     if NO_FS_STAMP.exists():
         return False
@@ -49,7 +52,7 @@ def should_use_filesystem():
     print(f"{Fore.YELLOW}⏭ No data/ directory present. Filesystem will be skipped.{Style.RESET_ALL}")
     NO_FS_STAMP.write_text("no_fs")
     return False
-# --- BUILD ---
+# --- BUILD --- (You build me up)
 def build_all(env_name):
     print(f"{Fore.CYAN}🔨 Building firmware for {env_name}...{Style.RESET_ALL}")
     subprocess.run(["platformio", "run", "-e", env_name], check=True)
@@ -61,7 +64,7 @@ def build_all(env_name):
     else:
         print(f"{Fore.YELLOW}⏭ Skipping filesystem build for {env_name}.{Style.RESET_ALL}")
 
-# --- COPY BINARIES ---
+# --- COPY BINARIES --- (Trump says there's only one though)
 def copy_and_prepare_binaries(env_name):
     from shutil import copyfile
     output_dir = PROJECT_DIR / "firmware" / "esp32"
@@ -133,7 +136,7 @@ def copy_and_prepare_binaries(env_name):
     print(f"{Fore.CYAN}🔧 Generating merged image: {merged_bin.name}{Style.RESET_ALL}")
     subprocess.run(esptool_cmd, check=False)
 
-# --- FLASH IMAGES ---
+# --- FLASH IMAGES --- (we're going streaking in the quad)
 def flash_all_images(port, flash_mode, flash_freq, fs_offset, max_retries=1, retry_delay=10):
     print(f"{Fore.CYAN}🚀 Flashing all firmware and filesystem images to {port}...{Style.RESET_ALL}")
 
@@ -211,7 +214,7 @@ def detect_active_environment(build_dir_root):
             return envs[int(choice) - 1]
         print(f"{Fore.RED}Invalid choice. Try again.{Style.RESET_ALL}")
 
-def kill_serial_monitors():
+def kill_serial_monitors(): # easily the next big NetFlix title
     print(f"{Fore.YELLOW}⚠ Closing any open serial monitor processes...{Style.RESET_ALL}")
     try:
         current_pid = os.getpid()
@@ -285,7 +288,7 @@ def erase_flash():
     ], check=True)
 
 
-def build_if_needed(env_name):
+def build_if_needed(env_name): #HereWEgoAgain
     global BUILD_DIR, BOOTLOADER_BIN, PARTITIONS_BIN, FIRMWARE_BIN, IMAGE_PATH
     BUILD_DIR = BUILD_ROOT / env_name
     BOOTLOADER_BIN = BUILD_DIR / "bootloader.bin"
