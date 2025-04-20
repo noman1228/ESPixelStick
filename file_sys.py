@@ -1,3 +1,7 @@
+# file_sys.py - Jason Theriault 2025
+# Hacked our way out of a lazy mouse move again
+# can't be bothered to move to a few different spots for filesystem
+# so let's automate
 import os
 import sys
 import csv
@@ -6,9 +10,54 @@ import serial.tools.list_ports
 from pathlib import Path
 from colorama import Fore, Style
 
+# --- ENVIRONMENT DETECTION ---
+def find_platformio_root():
+    current_dir = os.getcwd()
+    while current_dir:
+        if os.path.exists(os.path.join(current_dir, "platformio.ini")):
+            return current_dir
+        parent_dir = os.path.dirname(current_dir)
+        if parent_dir == current_dir:
+            break
+        current_dir = parent_dir
+    return None
+
+def get_last_used_env():
+    build_dir = Path(find_platformio_root()) / ".pio" / "build"
+    if not build_dir.exists():
+        return None
+    env_dirs = [d for d in build_dir.iterdir() if d.is_dir()]
+    if not env_dirs:
+        return None
+    env_dirs.sort(key=lambda d: d.stat().st_mtime, reverse=True)
+    return env_dirs[0].name
+
+def get_all_envs_from_ini():
+    pio_ini = Path(find_platformio_root()) / "platformio.ini"
+    envs = []
+    if pio_ini.exists():
+        with open(pio_ini, "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                if line.startswith("[env:"):
+                    env_name = line.split(":")[1].strip(" ]\n")
+                    envs.append(env_name)
+    return envs
+
+def get_active_env_from_ini():
+    pio_ini = Path(find_platformio_root()) / "platformio.ini"
+    if not pio_ini.exists():
+        return None
+    with open(pio_ini, "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            if line.startswith("env_default"):
+                return line.split("=")[-1].strip()
+    return None
+
 # --- CONFIG ---
-PROJECT_DIR = Path(__file__).parent
-ENV_NAME = "esp32_bigboi"
+PROJECT_DIR = Path(find_platformio_root())
+ENV_NAME = get_last_used_env() or get_active_env_from_ini() or "unknown_env"
 PARTITIONS_CSV = PROJECT_DIR / "ESP32_partitions.csv"
 MYENV_TXT = PROJECT_DIR / "MyEnv.txt"
 IMAGE_PATH = PROJECT_DIR / ".pio" / "build" / ENV_NAME / "littlefs.bin"
@@ -16,7 +65,6 @@ ESPNOW_TOOL = PROJECT_DIR / ".pio" / "packages" / "tool-esptoolpy" / "esptool.py
 GULP_SCRIPT = PROJECT_DIR / "gulpme.bat"
 
 # --- FUNCTIONS ---
-
 def find_serial_port():
     print("🔍 Searching for available serial ports...")
     ports = serial.tools.list_ports.comports()

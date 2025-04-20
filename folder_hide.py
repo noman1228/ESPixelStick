@@ -1,3 +1,6 @@
+# folder_hide.py - Jason Theriault 2025
+# Simply hides annoying messes in vsCode
+# Change what you don't do wanna see
 import json
 import os
 import sys
