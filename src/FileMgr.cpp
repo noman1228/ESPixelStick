@@ -99,10 +99,15 @@ void ftp_transferCallback(FtpTransferOperation ftpOperation, const char *name, u
 
 c_FileMgr::c_FileMgr()
 {
-    SdAccessSemaphore = false;
-}
+#ifdef ARDUINO_ARCH_ESP32
+    SdAccessSemaphore = xSemaphoreCreateBinary();
+    UnLockSd();
+#endif // def ARDUINO_ARCH_ESP32
+} // c_FileMgr
 
-c_FileMgr::~c_FileMgr()
+//-----------------------------------------------------------------------------
+///< deallocate any resources and put the output channels into a safe state
+c_FileMgr::~c_FileMgr ()
 {
 }
 
@@ -244,8 +249,13 @@ void dateTime(uint16_t *date, uint16_t *time, uint8_t *ms10)
 
 void c_FileMgr::SetSpiIoPins()
 {
+    // DEBUG_START;
 
-#if defined(SUPPORT_SD) || defined(SUPPORT_SD_MMC)
+#ifdef ARDUINO_ARCH_ESP8266
+    ESP.wdtDisable();
+#endif // def ARDUINO_ARCH_ESP8266
+
+#if defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
     if (SdCardInstalled)
     {
 
@@ -340,10 +350,17 @@ void c_FileMgr::SetSpiIoPins()
 
 #else
     SdCardInstalled = false;
-#endif
-}
+#endif // defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
 
-void c_FileMgr::SetSdSpeed()
+#ifdef ARDUINO_ARCH_ESP8266
+    ESP.wdtEnable(uint32_t(0));
+#endif // def ARDUINO_ARCH_ESP8266
+    // DEBUG_END;
+
+} // SetSpiIoPins
+
+//-----------------------------------------------------------------------------
+void c_FileMgr::SetSdSpeed ()
 {
 
 #if defined(SUPPORT_SD) || defined(SUPPORT_SD_MMC)
@@ -1247,9 +1264,9 @@ uint64_t c_FileMgr::WriteSdFile(const FileId &FileHandle, byte *FileData, uint64
     {
 
         LockSd();
-        FileList[FileListIndex].fsFile.seek(StartingPosition);
-        LockSd();
-        response = WriteSdFile(FileHandle, FileData, NumBytesToWrite, true);
+        FileList[FileListIndex].fsFile.seek (StartingPosition);
+        UnLockSd();
+        response = WriteSdFile (FileHandle, FileData, NumBytesToWrite, true);
     }
     else
     {
@@ -1619,19 +1636,18 @@ void c_FileMgr::BuildDefaultFseqList()
     JsonWrite(jsonDoc, "totalBytes", 0);
     JsonWrite(jsonDoc, "usedBytes", 0);
     JsonWrite(jsonDoc, "numFiles", 0);
-    JsonArray jsonDocFileList = jsonDoc["files"].to<JsonArray>();
+    jsonDoc["files"].to<JsonArray> ();
     SaveFlashFile(FSEQFILELIST, jsonDoc);
 
     return;
-}
+} // BuildDefaultFseqList
 
 bool c_FileMgr::SeekSdFile(const FileId &FileHandle, uint64_t position, SeekMode Mode)
 {
 
     bool response = false;
     int FileListIndex;
-    LockSd();
-    do
+    do // once
     {
         if (-1 == (FileListIndex = FileListFindSdFileHandle(FileHandle)))
         {
@@ -1639,33 +1655,34 @@ bool c_FileMgr::SeekSdFile(const FileId &FileHandle, uint64_t position, SeekMode
             break;
         }
 
-        switch (Mode)
+        LockSd();
+        switch(Mode)
         {
-        case SeekMode::SeekSet:
-        {
-            response = FileList[FileListIndex].fsFile.seek(position);
-            break;
-        }
-        case SeekMode::SeekEnd:
-        {
-            uint64_t EndPosition = FileList[FileListIndex].fsFile.size();
-            response = FileList[FileListIndex].fsFile.seek(EndPosition - position);
-            break;
-        }
-        case SeekMode::SeekCur:
-        {
-            uint64_t CurrentPosition = FileList[FileListIndex].fsFile.position();
-            response = FileList[FileListIndex].fsFile.seek(CurrentPosition + position);
-            break;
-        }
-        default:
-        {
-            logcon("Procedural error. Cannot set seek value");
-            break;
-        }
-        }
-    } while (false);
-    UnLockSd();
+            case SeekMode::SeekSet:
+            {
+                response = FileList[FileListIndex].fsFile.seek (position);
+                break;
+            }
+            case SeekMode::SeekEnd:
+            {
+                uint64_t EndPosition = FileList[FileListIndex].fsFile.size();
+                response = FileList[FileListIndex].fsFile.seek (EndPosition - position);
+                break;
+            }
+            case SeekMode::SeekCur:
+            {
+                uint64_t CurrentPosition = FileList[FileListIndex].fsFile.position();
+                response = FileList[FileListIndex].fsFile.seek (CurrentPosition + position);
+                break;
+            }
+            default:
+            {
+                logcon("Procedural error. Cannot set seek value");
+                break;
+            }
+        } // end switch mode
+        UnLockSd();
+    } while(false);
 
     return response;
 }
@@ -1677,12 +1694,20 @@ void c_FileMgr::LockSd()
 #ifdef ARDUINO_ARCH_ESP32
     xSemaphoreTake( SdAccessSemaphore, TickType_t(-1) );
 #endif // def ARDUINO_ARCH_ESP32
-}
+
+    // DEBUG_END;
+} // LockSd
+
+//-----------------------------------------------------------------------------
 void c_FileMgr::UnLockSd()
 {
+    // DEBUG_START;
+#ifdef ARDUINO_ARCH_ESP32
+    xSemaphoreGive( SdAccessSemaphore );
+#endif // def ARDUINO_ARCH_ESP32
 
-    SdAccessSemaphore = false;
-}
+    // DEBUG_END;
+} // UnLockSd
 
 void c_FileMgr::AbortSdFileUpload()
 {
