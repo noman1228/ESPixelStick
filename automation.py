@@ -1,3 +1,5 @@
+# automation.py - Jason Theriault
+# the script that started it all. Merely here for guidance and memories
 import subprocess
 import sys
 import os

@@ -1,4 +1,7 @@
 # make_efu.py
+# Broke down the java flasher and reverse-engineered the easy way.
+# https://github.com/forkineye/ESPSFlashTool
+# When you just can't get to them but you need to try someting new
 
 import os
 import struct

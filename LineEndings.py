@@ -1,3 +1,5 @@
+# LineEndings.py
+# Because sometimes you feel like a tux
 import os
 
 def convert_line_endings(directory):

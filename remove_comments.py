@@ -1,3 +1,7 @@
+# toggle_comments.py
+# Sometimes, it's just too much and you end up nuking your help
+# SERIOUSLY FUCKS with documentation (Doxy)
+# #dowhatyouwant but this shouldn't be used 
 import re
 
 def remove_comments(text):

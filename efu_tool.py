@@ -1,4 +1,6 @@
-# efu_tool.py (EFU build + validate only)
+# efu_tool.py - Jason Theriault 
+# with tons of code stolen from original ESPixelStick (EFU build + validate only)
+# 
 import argparse
 import configparser
 import csv

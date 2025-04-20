@@ -1,13 +1,15 @@
+# toggle_debug.py - Jason Theriault 2025
+#    Toggles debug print statements:
+#   '// DEBUG_` → `DEBUG_` (enable debugging)
+#  `DEBUG_` → `// DEBUG_` (disable debugging)
+#  Tracks state using `/* DEBUG_TOGGLE:ENABLED */` or `/* DEBUG_TOGGLE:DISABLED */`
+# 
+
 import re
 import sys
 
 def toggle_debug(text):
-    """
-    Toggles debug print statements:
-    - `// DEBUG_` → `DEBUG_` (enable debugging)
-    - `DEBUG_` → `// DEBUG_` (disable debugging)
-    - Tracks state using `/* DEBUG_TOGGLE:ENABLED */` or `/* DEBUG_TOGGLE:DISABLED */`
-    """
+
     debug_enabled = "/* DEBUG_TOGGLE:ENABLED */" in text
     debug_disabled = "/* DEBUG_TOGGLE:DISABLED */" in text
 

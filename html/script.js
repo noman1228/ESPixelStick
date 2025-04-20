@@ -11,6 +11,7 @@ var Fseq_File_List = [];
 var selector = [];
 var target = document.location.host;
 //target = "192.168.10.220";
+// target = "192.168.10.220";
 
 var SdCardIsInstalled = false;
 var FseqFileTransferStartTime = new Date();

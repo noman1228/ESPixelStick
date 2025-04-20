@@ -234,16 +234,6 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
 #endif
             LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
             LOG_PORT.flush();
-#ifdef SUPPORT_OLED
-    OLED.uploadFilename = FileName;
-    OLED.uploadProgress = 0;
-#endif
-
-#ifdef SUPPORT_OLED
-    OLED.uploadFilename = FileName;
-    OLED.uploadProgress = 0;
-#endif
-
 do
 {
     BytesRead = zip.readCurrentFile(pOutputBuffer, BufferSize);
@@ -258,6 +248,7 @@ do
 
 #ifdef SUPPORT_OLED
         OLED.ShowToast("SD Write Error");
+        OLED.Update(true);
 #endif
         break;
     }
@@ -266,6 +257,7 @@ do
 
 #ifdef SUPPORT_OLED
     OLED.uploadProgress = (uint8_t)((TotalBytesWritten * 100) / fi.uncompressed_size);
+    OLED.Update(true);
 #endif
 
     LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
