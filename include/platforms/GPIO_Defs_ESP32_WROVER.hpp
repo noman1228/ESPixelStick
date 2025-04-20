@@ -35,6 +35,9 @@
 #define BUTTON_GPIO1            gpio_num_t::GPIO_NUM_34
 #define STATUS_LED1             gpio_num_t::GPIO_NUM_2
 #define STATUS_LED2             gpio_num_t::GPIO_NUM_0
+#define STATUS_LED1             gpio_num_t::GPIO_NUM_2
+#define STATUS_LED2             gpio_num_t::GPIO_NUM_0
+
 
 // File Manager
 #define SUPPORT_SD
@@ -44,4 +47,6 @@
 #define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_5
 
 // Output Types
+#define SUPPORT_OutputType_DMX              // UART / RMT
 #define SUPPORT_OutputType_WS2811           // UART / RMT
+#define SUPPORT_OutputType_Relay            // GPIO
