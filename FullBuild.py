@@ -25,15 +25,7 @@ BUILD_ROOT = PROJECT_DIR / ".pio" / "build"
 GULP_SCRIPT = PROJECT_DIR / "gulpme.bat"
 GULP_STAMP_FILE = PROJECT_DIR / ".gulp_stamp"
 NO_FS_STAMP = PROJECT_DIR / ".no_filesystem"
-ESPNOW_TOOL = next(
-    (
-        p.resolve()
-        for base in [PROJECT_DIR, Path.home() / ".platformio"]
-        for p in (base / "packages" / "tool-esptoolpy").rglob("esptool.py")
-        if p.exists()
-    ),
-    "esptool.py"
-)
+ESPNOW_TOOL = PROJECT_DIR / ".pio" / "packages" / "tool-esptoolpy" / "esptool.py"
 
 # --- FILESYSTEM SUPPORT CHECK --- (need all the support we can get)
 def should_use_filesystem():

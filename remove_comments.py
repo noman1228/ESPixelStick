@@ -1,4 +1,4 @@
-# toggle_comments.py
+# toggle_comments.py - Jason Theriault 2025
 # Sometimes, it's just too much and you end up nuking your help
 # SERIOUSLY FUCKS with documentation (Doxy)
 # #dowhatyouwant but this shouldn't be used 

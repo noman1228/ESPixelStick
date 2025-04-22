@@ -80,8 +80,8 @@ def extract_flash_config(env_txt_path):
         print(f"{Fore.RED}✘ MyEnv.txt not found: {env_txt_path}{Style.RESET_ALL}")
         sys.exit(1)
 
-    flash_mode = "dio"
-    flash_freq = "40m"
+    flash_mode = "qio"
+    flash_freq = "80m"
 
     with open(env_txt_path, "r") as f:
         for line in f:
@@ -146,6 +146,10 @@ def build_littlefs_image(env_name):
     subprocess.run(["platformio", "run", "-t", "buildfs", "-e", env_name], check=True)
 
 def run_gulp():
+    import shutil
+    data_dir = PROJECT_DIR / "data"
+    shutil.rmtree(data_dir)
+
     print(f"{Fore.CYAN}🛠 Running Gulp: {GULP_SCRIPT}{Style.RESET_ALL}")
     if not GULP_SCRIPT.exists():
         print(f"{Fore.RED}✘ gulpme.bat not found at {GULP_SCRIPT}{Style.RESET_ALL}")
@@ -153,7 +157,7 @@ def run_gulp():
 
     subprocess.run([str(GULP_SCRIPT)], shell=True, check=True)
 
-    data_dir = PROJECT_DIR / "data"
+    
     if not data_dir.exists():
         print(f"{Fore.RED}✘ Expected output folder 'data/' not found after Gulp run.{Style.RESET_ALL}")
         sys.exit(1)
