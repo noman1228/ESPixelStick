@@ -25,15 +25,7 @@ BUILD_ROOT = PROJECT_DIR / ".pio" / "build"
 GULP_SCRIPT = PROJECT_DIR / "gulpme.bat"
 GULP_STAMP_FILE = PROJECT_DIR / ".gulp_stamp"
 NO_FS_STAMP = PROJECT_DIR / ".no_filesystem"
-ESPNOW_TOOL = next(
-    (
-        p.resolve()
-        for base in [PROJECT_DIR, Path.home() / ".platformio"]
-        for p in (base / "packages" / "tool-esptoolpy").rglob("esptool.py")
-        if p.exists()
-    ),
-    "esptool.py"
-)
+ESPNOW_TOOL = PROJECT_DIR / ".pio" / "packages" / "tool-esptoolpy" / "esptool.py"
 
 # --- FILESYSTEM SUPPORT CHECK --- (need all the support we can get)
 def should_use_filesystem():
@@ -310,13 +302,6 @@ def build_if_needed(env_name): #HereWEgoAgain
         print(f"{Fore.YELLOW}⏭ Code unchanged. Skipping build.{Style.RESET_ALL}")
 
 def check_build_artifacts():
-<<<<<<< HEAD:allinall.py
-    required = [BOOTLOADER_BIN, PARTITIONS_BIN, FIRMWARE_BIN, IMAGE_PATH]
-    missing = [f for f in required if not f.exists()]
-
-    if missing:
-        print(f"{Fore.YELLOW}⚠ Missing build artifacts detected. Forcing rebuild...{Style.RESET_ALL}")
-=======
     required = [BOOTLOADER_BIN, PARTITIONS_BIN, FIRMWARE_BIN]
     if not NO_FS_STAMP.exists():
         required.append(IMAGE_PATH)
@@ -326,7 +311,6 @@ def check_build_artifacts():
         print(f"{Fore.YELLOW}⚠ Missing build artifacts detected. Forcing rebuild...{Style.RESET_ALL}")
         for f in missing:
             print(f"{Fore.YELLOW} - Missing: {f}{Style.RESET_ALL}")
->>>>>>> eecb463f9b419ca41116662a21721d666ee1e3a8:FullBuild.py
         build_all(ENV_NAME)
         for f in required:
             if not f.exists():
