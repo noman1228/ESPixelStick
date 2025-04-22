@@ -21,9 +21,6 @@
 //Output Manager
 //Output Manager
 #define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_4
-#define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_4
-
-
 
 // File Manager
 #define SUPPORT_SD

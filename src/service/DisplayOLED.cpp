@@ -33,8 +33,6 @@ c_OLED::c_OLED()
 
 void c_OLED::Begin()
 {
-    u8g2.setFont(u8g2_font_10x20_tf);  // about 20px tall
-u8g2.setFont(u8g2_font_6x10_tf);   // about 10px tall
     displayMutex = xSemaphoreCreateMutex();
     if (!displayMutex) return;
 
