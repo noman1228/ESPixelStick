@@ -148,7 +148,10 @@ def build_littlefs_image(env_name):
 def run_gulp():
     import shutil
     data_dir = PROJECT_DIR / "data"
-    shutil.rmtree(data_dir)
+
+    # Only delete if it exists
+    if data_dir.exists():
+        shutil.rmtree(data_dir)
 
     print(f"{Fore.CYAN}🛠 Running Gulp: {GULP_SCRIPT}{Style.RESET_ALL}")
     if not GULP_SCRIPT.exists():
@@ -157,7 +160,6 @@ def run_gulp():
 
     subprocess.run([str(GULP_SCRIPT)], shell=True, check=True)
 
-    
     if not data_dir.exists():
         print(f"{Fore.RED}✘ Expected output folder 'data/' not found after Gulp run.{Style.RESET_ALL}")
         sys.exit(1)
