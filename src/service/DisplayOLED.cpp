@@ -2,23 +2,20 @@
 #include "service/DisplayOLED.h"
 #include <Preferences.h>
 
-// Constants
 #define TOAST_DURATION_MS          5000
 #define NETWORK_UPDATE_INTERVAL_MS 10000
 #define BUTTON_DEBOUNCE_DELAY_MS   1000
 #define VERSION_STRING             "4.x-dev"
 
-bool isRebooting = false;
+static bool isRebooting = false;
 static SemaphoreHandle_t displayMutex = nullptr;
 static TaskHandle_t oledTaskHandle = nullptr;
-U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 
-static void OLEDTask(void *)
-{
-    while (true)
-    {
-        if (displayMutex && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE)
-        {
+static U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
+
+static void OLEDTask(void *) {
+    while (true) {
+        if (displayMutex && xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
             OLED.Poll();
             xSemaphoreGive(displayMutex);
         }
@@ -31,8 +28,7 @@ c_OLED::c_OLED()
       isUploading(false), uploadProgress(0), lastUploadUpdate(0), dispRSSI(0),
       isToastActive(false), toastStartTime(0), flipState(false), preferences() {}
 
-void c_OLED::Begin()
-{
+void c_OLED::Begin() {
     displayMutex = xSemaphoreCreateMutex();
     if (!displayMutex) return;
 
@@ -51,15 +47,12 @@ void c_OLED::Begin()
     InitNow();
 }
 
-static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxWidth, uint8_t xOrigin, uint8_t yOrigin)
-{
-    const uint8_t DISPLAY_WIDTH = 128;
-    const uint8_t DISPLAY_HEIGHT = 32;
+static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxWidth, uint8_t xOrigin, uint8_t yOrigin) {
+    constexpr uint8_t DISPLAY_WIDTH = 128;
+    constexpr uint8_t DISPLAY_HEIGHT = 32;
 
-    // Font selector lambda
     auto setFont = [&](bool large) {
-        if (large) u8g2.setFont(u8g2_font_10x20_tf);
-        else       u8g2.setFont(u8g2_font_6x10_tf);
+        u8g2.setFont(large ? u8g2_font_10x20_tf : u8g2_font_6x10_tf);
     };
 
     std::vector<String> lines;
@@ -67,10 +60,9 @@ static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxW
     bool fontFit = false;
 
     for (int attempt = 0; attempt < 2; attempt++) {
-        setFont(attempt == 0);  // Try large first
-
+        setFont(attempt == 0);
         lines.clear();
-        String currentLine = "", currentWord = "";
+        String currentLine, currentWord;
 
         for (uint16_t i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -99,16 +91,13 @@ static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxW
         if (!currentLine.isEmpty()) lines.push_back(currentLine);
 
         lineHeight = u8g2.getAscent() - u8g2.getDescent() + 2;
-        uint8_t totalHeight = lineHeight * lines.size();
-
-        if (totalHeight <= DISPLAY_HEIGHT) {
+        if (lineHeight * lines.size() <= DISPLAY_HEIGHT) {
             fontFit = true;
             break;
         }
     }
 
     if (!fontFit) {
-        // Worst case fallback
         setFont(false);
         lineHeight = u8g2.getAscent() - u8g2.getDescent() + 2;
     }
@@ -123,6 +112,7 @@ static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxW
         u8g2.drawStr(x, y, lines[i].c_str());
     }
 }
+
 
 void c_OLED::InitNow()
 {

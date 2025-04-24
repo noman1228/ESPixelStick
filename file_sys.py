@@ -9,7 +9,7 @@ import subprocess
 import serial.tools.list_ports
 from pathlib import Path
 from colorama import Fore, Style
-
+import time
 # --- ENVIRONMENT DETECTION ---
 def find_platformio_root():
     current_dir = os.getcwd()
@@ -65,15 +65,36 @@ ESPNOW_TOOL = PROJECT_DIR / ".pio" / "packages" / "tool-esptoolpy" / "esptool.py
 GULP_SCRIPT = PROJECT_DIR / "gulpme.bat"
 
 # --- FUNCTIONS ---
+import psutil  # Already used in FullBuild.py; ensure it's available
+
+def close_conflicting_serial_processes(port_name):
+    print(f"{Fore.YELLOW}🔍 Checking for processes using {port_name}...{Style.RESET_ALL}")
+    closed_any = False
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            cmdline = " ".join(proc.info['cmdline']) if proc.info['cmdline'] else ""
+            if port_name.lower() in cmdline.lower():
+                print(f"{Fore.MAGENTA}⚠ Found process using port: PID {proc.pid}, Name: {proc.info['name']}{Style.RESET_ALL}")
+                proc.terminate()
+                proc.wait(timeout=3)
+                print(f"{Fore.GREEN}✔ Terminated process PID {proc.pid}{Style.RESET_ALL}")
+                closed_any = True
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+    if not closed_any:
+        print(f"{Fore.GREEN}✔ No conflicting serial processes found on {port_name}{Style.RESET_ALL}")
+
 def find_serial_port():
     print("🔍 Searching for available serial ports...")
     ports = serial.tools.list_ports.comports()
     for port in ports:
         if any(chip in port.description for chip in ("USB", "UART", "CP210", "CH340")):
             print(f"{Fore.GREEN}✔ Found port: {port.device}{Style.RESET_ALL}")
+            close_conflicting_serial_processes(port.device)
             return port.device
     print(f"{Fore.RED}✘ No suitable ESP32 device found. Is it plugged in?{Style.RESET_ALL}")
     sys.exit(1)
+
 
 def extract_flash_config(env_txt_path):
     if not env_txt_path.exists():
@@ -115,6 +136,23 @@ def extract_filesystem_partition(csv_path):
 
     print(f"{Fore.RED}✘ Could not find a SPIFFS or LittleFS partition in {csv_path}{Style.RESET_ALL}")
     sys.exit(1)
+import serial
+
+def auto_reset_board(port_name):
+    print(f"{Fore.BLUE}🔌 Pulsing DTR/RTS on {port_name} to enter bootloader...{Style.RESET_ALL}")
+    try:
+        with serial.Serial(port_name, 115200, timeout=1) as ser:
+            ser.dtr = False
+            ser.rts = True
+            time.sleep(0.1)
+            ser.dtr = True
+            ser.rts = False
+            time.sleep(0.1)
+            ser.dtr = False
+        print(f"{Fore.GREEN}✔ Reset pulse sent. Continuing with flash...{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"{Fore.RED}✘ Failed to reset board via serial: {e}{Style.RESET_ALL}")
+
 
 def flash_filesystem(port, image_path, offset, flash_mode, flash_freq):
     if not image_path.exists():
@@ -123,7 +161,14 @@ def flash_filesystem(port, image_path, offset, flash_mode, flash_freq):
 
     size = image_path.stat().st_size
     print(f"{Fore.YELLOW}📦 Using image: {image_path} ({size} bytes){Style.RESET_ALL}")
+
+    if flash_freq not in ("80m", "40m"):
+        print(f"{Fore.MAGENTA}⚠ Unusual flash frequency detected: {flash_freq}. Defaulting to 40m.{Style.RESET_ALL}")
+        flash_freq = "40m"
+
     print(f"{Fore.CYAN}🚀 Flashing filesystem image to 0x{offset:X} on {port}...{Style.RESET_ALL}")
+
+    auto_reset_board(port)  # Pulse reset pins
 
     cmd = [
         sys.executable,
@@ -138,8 +183,16 @@ def flash_filesystem(port, image_path, offset, flash_mode, flash_freq):
         f"0x{offset:X}", str(image_path)
     ]
 
-    subprocess.run(cmd, check=True)
-    print(f"{Fore.GREEN}✅ Filesystem upload successful!{Style.RESET_ALL}")
+    try:
+        subprocess.run(cmd, check=True, timeout=30)
+
+        print(f"{Fore.GREEN}✅ Filesystem upload successful!{Style.RESET_ALL}")
+    except subprocess.CalledProcessError as e:
+        print(f"{Fore.RED}✘ Flash failed. Retrying at 115200 baud...{Style.RESET_ALL}")
+        cmd[6] = "115200"
+        time.sleep(1)
+        subprocess.run(cmd, check=True)
+        print(f"{Fore.GREEN}✅ Second attempt succeeded at 115200.{Style.RESET_ALL}")
 
 def build_littlefs_image(env_name):
     print(f"{Fore.CYAN}🔧 Running: 'pio run -t buildfs -e {env_name}'...{Style.RESET_ALL}")
