@@ -19,18 +19,9 @@
 */
 
 #include <Arduino.h>
-
-#if defined(ARDUINO_ARCH_ESP8266)
-#	include <ESP8266WiFi.h>
-#	include <ESPAsyncTCP.h>
-#	include <ESPAsyncUDP.h>
-#elif defined(ARDUINO_ARCH_ESP32)
 #   include <AsyncTCP.h>
 #   include <AsyncUDP.h>
 #   include <WiFi.h>
-#else
-#	error "Unsupported CPU type"
-#endif
 
 #ifdef BOARD_HAS_PSRAM
 #   error "PSRAM is not supported by ESPixelStick"
@@ -88,7 +79,8 @@ extern  const String ConfigFileName;
 extern  void FeedWDT ();
 extern  uint32_t DiscardedRxData;
 
-extern void PrettyPrint (JsonObject& jsonStuff, String Name);
+extern void Prett
+\yPrint (JsonObject& jsonStuff, String Name);
 extern void PrettyPrint (JsonArray& jsonStuff, String Name);
 extern void PrettyPrint(JsonDocument &jsonStuff, String Name);
 
