@@ -79,8 +79,7 @@ extern  const String ConfigFileName;
 extern  void FeedWDT ();
 extern  uint32_t DiscardedRxData;
 
-extern void Prett
-\yPrint (JsonObject& jsonStuff, String Name);
+extern void PrettyPrint (JsonObject& jsonStuff, String Name);
 extern void PrettyPrint (JsonArray& jsonStuff, String Name);
 extern void PrettyPrint(JsonDocument &jsonStuff, String Name);
 

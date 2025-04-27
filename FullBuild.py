@@ -385,7 +385,7 @@ class ESPBuildManager:
 
         merged_bin = dst_prefix.with_name(dst_prefix.name + "-merged.bin")
         esptool_cmd = [
-            "esptool.py", "--chip", board_mcu, "merge_bin",
+            "esptool", "--chip", board_mcu, "merge_bin",
             "-o", str(merged_bin),
             "--flash_mode", config.flash_mode,
             "--flash_freq", config.flash_freq,
