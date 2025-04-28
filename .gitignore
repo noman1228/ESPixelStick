@@ -16,4 +16,5 @@ Changelog.pdf
 *.pyc
 *.build*
 *.*stamp*
-*.gulp_stamp*
+*.*gulp*
+.gulp_stamp

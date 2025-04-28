@@ -30,5 +30,9 @@
     "gulp-rename": "^2.0.0",
     "gulp-terser": "^2.1.0",
     "gulp-using": "^0.1.1"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "http-server": "^14.1.1"
   }
 }
