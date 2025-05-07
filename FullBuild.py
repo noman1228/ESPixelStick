@@ -340,70 +340,59 @@ class ESPBuildManager:
                     sys.exit(1)
             attempt += 1
     
-    def copy_and_prepare_binaries(self, env_name: str, config: BuildConfig, build_files: Dict[str, Path]) -> None:
-        """Copy and prepare binaries for distribution"""
-        from shutil import copyfile
-        output_dir = self.project_dir / "firmware" / "esp32"
-        output_dir.mkdir(parents=True, exist_ok=True)
+    def copy_and_prepare_binaries(self, env_name: str, config: BuildConfig, build_files: Dict[str, Path]):
+        print(Fore.CYAN + f"\n🔧 Generating merged image: {env_name}-merged.bin" + Style.RESET_ALL)
 
-        env_file = self.project_dir / "MyEnv.txt"
-        if not env_file.exists():
-            print(f"{Fore.RED}✘ MyEnv.txt not found. Run a PlatformIO build with CustomTargets.py enabled first.{Style.RESET_ALL}")
-            return
+        firmware_path = build_files.get("firmware")
+        bootloader_path = build_files.get("bootloader")
+        partitions_path = build_files.get("partitions")
 
-        board_mcu = "esp32"
+        if not all([firmware_path, bootloader_path, partitions_path]):
+            print(Fore.RED + "[ERROR] Missing one or more required binary files." + Style.RESET_ALL)
+            print(f"  Firmware:   {firmware_path}")
+            print(f"  Bootloader: {bootloader_path}")
+            print(f"  Partitions: {partitions_path}")
+            sys.exit(1)
 
-        with open(env_file, "r") as f:
-            for line in f.readlines():
-                if "BOARD_MCU" in line:
-                    board_mcu = line.split(":")[1].strip().strip("',\"")
+        merged_path = Path(f".pio/build/{env_name}/{env_name}-merged.bin")
 
-        boot = build_files["bootloader"]
-        app = build_files["firmware"]
-        part = build_files["partitions"]
-        app0 = next((build_files["build_dir"]).glob("*boot_app0.bin"), None)
-        fs = build_files["filesystem"] if config.use_filesystem else None
+        # Locate esptool.py from PlatformIO or fallback
+        esptool_path = (
+            Path(os.environ.get("USERPROFILE", "~")) / ".platformio/packages/tool-esptoolpy/esptool.py"
+        ).expanduser()
 
-        dst_prefix = output_dir / f"{env_name}"
-        paths = {
-            "bootloader": (boot, dst_prefix.with_name(dst_prefix.name + "-bootloader.bin")),
-            "application": (app, dst_prefix.with_name(dst_prefix.name + "-app.bin")),
-            "partitions": (part, dst_prefix.with_name(dst_prefix.name + "-partitions.bin")),
-        }
-        if fs and fs.exists():
-            paths["fs"] = (fs, dst_prefix.with_name(dst_prefix.name + "-littlefs.bin"))
-        if app0:
-            paths["boot_app0"] = (app0, dst_prefix.with_name(dst_prefix.name + "-boot_app0.bin"))
+        if not esptool_path.exists():
+            print(Fore.RED + f"[ERROR] esptool.py not found at: {esptool_path}" + Style.RESET_ALL)
+            print("💡 Run `pio run` at least once or reinstall PlatformIO packages.")
+            sys.exit(1)
 
-        for label, item in paths.items():
-            src, dst = item
-            if src and src.exists():
-                print(f"{Fore.GREEN}✔ Copying {label} → {dst.name}{Style.RESET_ALL}")
-                copyfile(src, dst)
-            else:
-                print(f"{Fore.YELLOW}⚠ Missing {label} at {src}{Style.RESET_ALL}")
-
-        merged_bin = dst_prefix.with_name(dst_prefix.name + "-merged.bin")
+        # Construct the command
         esptool_cmd = [
-            "esptool", "--chip", board_mcu, "merge_bin",
-            "-o", str(merged_bin),
+            sys.executable,  # Python executable
+            str(esptool_path),
+            "--chip", "esp32",
+            "merge_bin",
+            "-o", str(merged_path),
             "--flash_mode", config.flash_mode,
             "--flash_freq", config.flash_freq,
             "--flash_size", "4MB",
-            "0x0000", str(paths["bootloader"][1]),
-            "0x8000", str(paths["partitions"][1]),
-            "0x10000", str(paths["application"][1]),
+            "0x1000", str(bootloader_path),
+            f"0x{config.fs_offset:06X}", str(build_files.get("littlefs.bin", firmware_path)),
+            "0x8000", str(partitions_path),
+            "0x10000", str(firmware_path)
         ]
 
-        if "boot_app0" in paths:
-            esptool_cmd.extend(["0xe000", str(paths["boot_app0"][1])])
-        if "fs" in paths:
-            esptool_cmd.extend([f"0x{config.fs_offset:X}", str(paths["fs"][1])])
-        else:
-            print(f"{Fore.YELLOW}⏭ Skipping FS in merged image. No filesystem selected.{Style.RESET_ALL}")
+        print(Fore.YELLOW + "→ Running esptool:" + Style.RESET_ALL, " ".join(esptool_cmd))
+        try:
+            subprocess.run(esptool_cmd, check=True)
+            print(Fore.GREEN + f"[OK] Merged binary created: {merged_path}" + Style.RESET_ALL)
+        except FileNotFoundError as e:
+            print(Fore.RED + f"[ERROR] esptool execution failed: {e}" + Style.RESET_ALL)
+            sys.exit(1)
+        except subprocess.CalledProcessError as e:
+            print(Fore.RED + f"[ERROR] esptool failed with exit code {e.returncode}" + Style.RESET_ALL)
+            sys.exit(1)
 
-        print(f"{Fore.CYAN}🔧 Generating merged image: {merged_bin.name}{Style.RESET_ALL}")
-        subprocess.run(esptool_cmd, check=False)
             
     def launch_serial_monitor(self, port: str, baud: int = 115200) -> None:
         """Launch the PlatformIO serial monitor"""
@@ -479,7 +468,8 @@ class ESPBuildManager:
 # --- MAIN ---
 if __name__ == "__main__":
     # Find the project directory 
-    project_dir = Path(os.path.join(os.getcwd(), "file_sys.py")).parent
+    project_dir = Path(__file__).resolve().parent
+
     
     # Create build manager and run
     manager = ESPBuildManager(project_dir)
