@@ -169,6 +169,7 @@ void c_OLED::UpdateNetworkInfo(bool forceUpdate)
 
 void c_OLED::UpdateRunningStatus()
 {
+    if (isRebooting)ESP.restart();
     if (!displayMutex || xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) != pdTRUE) return;
 
     static JsonDocument doc;
@@ -192,7 +193,7 @@ void c_OLED::UpdateRunningStatus()
 
 void c_OLED::Update(bool forceUpdate)
 {
-    if (isRebooting) return;
+    if (isRebooting)ESP.restart();
     if (!displayMutex || xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) != pdTRUE) return;
 
     unsigned long now = millis();
@@ -212,6 +213,7 @@ void c_OLED::Update(bool forceUpdate)
 
 void c_OLED::UpdateUploadStatus(const String &filename, int progress)
 {
+    if (isRebooting)ESP.restart();
     if (isRebooting || !displayMutex || xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) != pdTRUE) return;
     uploadFilename = filename;
     uploadProgress = progress;
@@ -297,8 +299,9 @@ void c_OLED::ShowRebootScreen()
     u8g2.setFont(u8g2_font_t0_22b_tr);
     u8g2.drawStr(15, 29, "REBOOTING");
     u8g2.sendBuffer();
-    xSemaphoreGive(displayMutex);
     ESP.restart();
+    xSemaphoreGive(displayMutex);
+    
 }
 
 int c_OLED::getSignalStrength(int rssi)

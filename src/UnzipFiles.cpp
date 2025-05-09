@@ -179,8 +179,6 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
     logcon(FileName +
            " - " + String(fi.compressed_size, DEC) +
            "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
-           " - " + String(fi.compressed_size, DEC) +
-           "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
 
     do // once
     {

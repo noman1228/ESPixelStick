@@ -26,8 +26,6 @@
  // Constants for timing and display
  #define OLED_TASK_DELAY_MS         250
  #define TOAST_DURATION_MS          5000
- #define TOAST_FLASH_INTERVAL_MS    500
- #define REBOOT_FLASH_INTERVAL_MS   400     // <- Added for reboot flash
  #define NETWORK_UPDATE_INTERVAL_MS 10000
  #define BUTTON_DEBOUNCE_DELAY_MS   1000
  
