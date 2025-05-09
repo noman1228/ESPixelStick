@@ -9,7 +9,7 @@
 #include "output/OutputMgr.hpp"
 #include "UnzipFiles.hpp"
 #ifdef SUPPORT_OLED
-#include "service/DisplayOLED.h"
+    #include "service/DisplayOLED.h"
 #endif
 SdFs sd;
 const int8_t DISABLE_CS_PIN = -1;
@@ -107,7 +107,7 @@ c_FileMgr::c_FileMgr()
 
 //-----------------------------------------------------------------------------
 ///< deallocate any resources and put the output channels into a safe state
-c_FileMgr::~c_FileMgr ()
+c_FileMgr::~c_FileMgr()
 {
 }
 
@@ -255,7 +255,7 @@ void c_FileMgr::SetSpiIoPins()
     ESP.wdtDisable();
 #endif // def ARDUINO_ARCH_ESP8266
 
-#if defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
+#if defined(SUPPORT_SD) || defined(SUPPORT_SD_MMC)
     if (SdCardInstalled)
     {
 
@@ -360,7 +360,7 @@ void c_FileMgr::SetSpiIoPins()
 } // SetSpiIoPins
 
 //-----------------------------------------------------------------------------
-void c_FileMgr::SetSdSpeed ()
+void c_FileMgr::SetSdSpeed()
 {
 
 #if defined(SUPPORT_SD) || defined(SUPPORT_SD_MMC)
@@ -1264,9 +1264,9 @@ uint64_t c_FileMgr::WriteSdFile(const FileId &FileHandle, byte *FileData, uint64
     {
 
         LockSd();
-        FileList[FileListIndex].fsFile.seek (StartingPosition);
+        FileList[FileListIndex].fsFile.seek(StartingPosition);
         UnLockSd();
-        response = WriteSdFile (FileHandle, FileData, NumBytesToWrite, true);
+        response = WriteSdFile(FileHandle, FileData, NumBytesToWrite, true);
     }
     else
     {
@@ -1545,9 +1545,16 @@ bool c_FileMgr::handleFileUpload(
         {
 
             bytesWritten = WriteSdFileBuf(fsUploadFileHandle, data, len);
-
-            LOG_PORT.println(String("\033[Fprogress: ") + String(expectedIndex) + ", heap: " + String(ESP.getFreeHeap()));
+            LOG_PORT.print("\033[F"); // Move up
+            LOG_PORT.println("progress: ") + String(expectedIndex) + ", heap: " + String(ESP.getFreeHeap());
             LOG_PORT.flush();
+#ifdef SUPPORT_OLED
+            OLED.uploadFilename = fsUploadFileName;
+            OLED.ShowToast("EXPANDING ");
+            OLED.isUploading = true;
+            OLED.UpdateUploadStatus(fsUploadFileName, expectedIndex);
+            OLED.Update(true);
+#endif
         }
 
         if (len != bytesWritten)
@@ -1571,7 +1578,10 @@ bool c_FileMgr::handleFileUpload(
         FeedWDT();
         DEBUG_FILE_HANDLE(fsUploadFileHandle);
         CloseSdFile(fsUploadFileHandle);
-
+#ifdef SUPPORT_OLED
+        OLED.uploadFilename = fsUploadFileName;
+        OLED.ShowToast(fsUploadFileName + " - RCVD");
+#endif
         logcon(String(F("Upload File: '")) + fsUploadFileName +
                F("' Done (") + String(uploadTime) +
                F("s). Received: ") + String(expectedIndex) +
@@ -1636,7 +1646,7 @@ void c_FileMgr::BuildDefaultFseqList()
     JsonWrite(jsonDoc, "totalBytes", 0);
     JsonWrite(jsonDoc, "usedBytes", 0);
     JsonWrite(jsonDoc, "numFiles", 0);
-    jsonDoc["files"].to<JsonArray> ();
+    jsonDoc["files"].to<JsonArray>();
     SaveFlashFile(FSEQFILELIST, jsonDoc);
 
     return;
@@ -1656,33 +1666,33 @@ bool c_FileMgr::SeekSdFile(const FileId &FileHandle, uint64_t position, SeekMode
         }
 
         LockSd();
-        switch(Mode)
+        switch (Mode)
         {
-            case SeekMode::SeekSet:
-            {
-                response = FileList[FileListIndex].fsFile.seek (position);
-                break;
-            }
-            case SeekMode::SeekEnd:
-            {
-                uint64_t EndPosition = FileList[FileListIndex].fsFile.size();
-                response = FileList[FileListIndex].fsFile.seek (EndPosition - position);
-                break;
-            }
-            case SeekMode::SeekCur:
-            {
-                uint64_t CurrentPosition = FileList[FileListIndex].fsFile.position();
-                response = FileList[FileListIndex].fsFile.seek (CurrentPosition + position);
-                break;
-            }
-            default:
-            {
-                logcon("Procedural error. Cannot set seek value");
-                break;
-            }
+        case SeekMode::SeekSet:
+        {
+            response = FileList[FileListIndex].fsFile.seek(position);
+            break;
+        }
+        case SeekMode::SeekEnd:
+        {
+            uint64_t EndPosition = FileList[FileListIndex].fsFile.size();
+            response = FileList[FileListIndex].fsFile.seek(EndPosition - position);
+            break;
+        }
+        case SeekMode::SeekCur:
+        {
+            uint64_t CurrentPosition = FileList[FileListIndex].fsFile.position();
+            response = FileList[FileListIndex].fsFile.seek(CurrentPosition + position);
+            break;
+        }
+        default:
+        {
+            logcon("Procedural error. Cannot set seek value");
+            break;
+        }
         } // end switch mode
         UnLockSd();
-    } while(false);
+    } while (false);
 
     return response;
 }
@@ -1692,7 +1702,7 @@ void c_FileMgr::LockSd()
     // DEBUG_START;
 
 #ifdef ARDUINO_ARCH_ESP32
-    xSemaphoreTake( SdAccessSemaphore, TickType_t(-1) );
+    xSemaphoreTake(SdAccessSemaphore, TickType_t(-1));
 #endif // def ARDUINO_ARCH_ESP32
 
     // DEBUG_END;
@@ -1703,7 +1713,7 @@ void c_FileMgr::UnLockSd()
 {
     // DEBUG_START;
 #ifdef ARDUINO_ARCH_ESP32
-    xSemaphoreGive( SdAccessSemaphore );
+    xSemaphoreGive(SdAccessSemaphore);
 #endif // def ARDUINO_ARCH_ESP32
 
     // DEBUG_END;

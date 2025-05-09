@@ -95,7 +95,6 @@ def find_serial_port():
     print(f"{Fore.RED}✘ No suitable ESP32 device found. Is it plugged in?{Style.RESET_ALL}")
     sys.exit(1)
 
-
 def extract_flash_config(env_txt_path):
     if not env_txt_path.exists():
         print(f"{Fore.RED}✘ MyEnv.txt not found: {env_txt_path}{Style.RESET_ALL}")

@@ -10,7 +10,6 @@ var System_Config = null;
 var Fseq_File_List = [];
 var selector = [];
 var target = document.location.host;
-//target = "192.168.10.220";
 // target = "192.168.10.220";
 
 var SdCardIsInstalled = false;
@@ -2234,7 +2233,6 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
         $('#ddppacketsreceived').text(InputStatus.ddp.packetsreceived);
         $('#ddpbytesreceived').text(InputStatus.ddp.bytesreceived);
         $('#ddperrors').text(InputStatus.ddp.errors);
-        $('#ddplasterror').text(InputStatus.ddp.lasterror);
     }
     else {
         $('#ddpStatus').addClass("hidden")

@@ -21,6 +21,9 @@
 #ifdef SUPPORT_OLED
 #include "service/DisplayOLED.h"
 #endif
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 // Core
 #include "ESPixelStick.h"
 #include "EFUpdate.h"
@@ -149,6 +152,7 @@ void setup()
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
 
+    config.BlankDelay = 1;
     config.BlankDelay = 1;
 #ifdef ARDUINO_ARCH_ESP32
     // disable brownout detector
@@ -511,6 +515,7 @@ String serializeCore(bool pretty)
 void loop()
 {
 
+
     // DEBUG_START;
 /*
     if(millis() > HeapTime)
@@ -519,6 +524,11 @@ void loop()
         HeapTime += 5000;
     }
 */
+FeedWDT ();
+#ifdef SUPPORT_OLED
+    OLED.Poll();
+    FeedWDT();
+#endif
 FeedWDT ();
 #ifdef SUPPORT_OLED
     OLED.Poll();
@@ -553,6 +563,10 @@ FeedWDT ();
     // Reboot handler
     if (NotRebootingValue != RebootCount)
     {
+        #ifdef SUPPORT_OLED
+        OLED.isRebooting = true;
+        OLED.ShowRebootScreen();
+        #endif
         #ifdef SUPPORT_OLED
         OLED.isRebooting = true;
         OLED.ShowRebootScreen();
@@ -592,8 +606,10 @@ void RequestReboot(uint32_t LoopDelay, bool SkipDisable /* = false */)
     RebootCount = LoopDelay;
 
 
+
         InputMgr.SetOperationalState(false);
         OutputMgr.PauseOutputs(true);
+    
     
 
 } // RequestReboot

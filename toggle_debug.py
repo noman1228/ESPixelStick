@@ -9,7 +9,6 @@ import re
 import sys
 
 def toggle_debug(text):
-
     debug_enabled = "/* DEBUG_TOGGLE:ENABLED */" in text
     debug_disabled = "/* DEBUG_TOGGLE:DISABLED */" in text
 
