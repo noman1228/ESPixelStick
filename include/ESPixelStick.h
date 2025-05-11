@@ -38,7 +38,7 @@
 #include "GPIO_Defs.hpp"
 #include "FastTimer.hpp"
 
-#define REBOOT_DELAY    10     ///< Delay for rebooting once reboot flag is set
+#define REBOOT_DELAY    0    ///< Delay for rebooting once reboot flag is set
 #define LOG_PORT        Serial  ///< Serial port for console logging
 #define CLIENT_TIMEOUT  15      ///< In station/client mode try to connection for 15 seconds
 #define AP_TIMEOUT      120     ///< In AP mode, wait 120 seconds for a connection or reboot
@@ -56,7 +56,7 @@
 #define STRINGIFY(X) #X
 #define STRING(X) STRINGIFY(X)
 
-extern void RequestReboot(uint32_t LoopDelay, bool SkipDisable = false);
+extern void RequestReboot(uint32_t LoopDelay, bool SkipDisable = true);
 extern bool RebootInProgress();
 
 /// Core configuration structure

@@ -97,10 +97,6 @@ def after_build(source, target, env):
     else:
         print(f"[EFU TOOL] ✅ EFU validated and saved to {final_path}")
         
-    flash_device = input(f"{Fore.MAGENTA}Flash the device with this EFU? (y/N): {Style.RESET_ALL}").strip().lower()
-    if flash_device == 'y':
-        serial_port = find_serial_port()
-        if serial_port:
-            print(f"{Fore.GREEN}✔ Would flash to {serial_port} (implement flashing code here){Style.RESET_ALL}")
+
 
 AlwaysBuild(env.Alias("post_efu", "buildprog", after_build))
