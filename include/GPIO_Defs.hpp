@@ -24,8 +24,8 @@
 // Platform specific GPIO definitions
 #if defined (BOARD_ESP32_D1_MINI_ETH)
 #   include "platforms/GPIO_Defs_ESP32_D1_MINI_ETH.hpp"
-#elif defined (BOARD_ESP32_WROVER)
-#   include "platforms/GPIO_Defs_ESP32_WROVER.hpp"
+#elif defined (BOARD_JMT)
+#   include "platforms/GPIO_Defs_JMT.hpp"
 #elif defined (BOARD_ESP32_D1JT)
 #   include "platforms/GPIO_Defs_ESP32_D1JT.hpp"
 #elif defined (BOARD_ESP32_D1JT_ETH)
