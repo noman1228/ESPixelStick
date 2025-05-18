@@ -53,7 +53,7 @@
 #include "input/InputMgr.hpp"
 
 #ifndef DEFAULT_RELAY_GPIO
-    #define DEFAULT_RELAY_GPIO      gpio_num_t::GPIO_NUM_1
+    #define DEFAULT_RELAY_GPIO      gpio_num_t::GPIO_NUM_NC
 #endif // ndef DEFAULT_RELAY_GPIO
 
 //-----------------------------------------------------------------------------

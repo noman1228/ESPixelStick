@@ -20,7 +20,9 @@
 
 #include "UnzipFiles.hpp"
 #include "FileMgr.hpp"
+#ifdef SUPPORT_OLED
 #include "service/DisplayOLED.h"
+#endif
 //
 // Callback functions needed by the unzipLIB to access a file system
 // The library has built-in code for memory-to-memory transfers, but needs
@@ -176,8 +178,9 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
     logcon(FileName +
     " - " + String(fi.compressed_size, DEC) +
     "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
+    #ifdef SUPPORT_OLED
             OLED.ShowToast("Extract: " + FileName);
-
+    #endif
     do // once
     {
         int ReturnCode = zip.openCurrentFile();

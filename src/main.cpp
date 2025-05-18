@@ -45,9 +45,7 @@
 // Services
 #include "service/FPPDiscovery.h"
 #include <TimeLib.h>
-#ifdef SUPPORT_SENSOR_DS18B20
-#include "service/SensorDS18B20.h"
-#endif // def SUPPORT_SENSOR_DS18B20
+
 
 #ifdef ARDUINO_ARCH_ESP8266
 #include <Hash.h>
@@ -140,7 +138,7 @@ void TestHeap(uint32_t Id)
 /** Arduino based setup code that is executed at startup. */
 void setup()
 {
-
+CheckAndRebootIfPowerOn();
 #ifdef SUPPORT_OLED
     OLED.Begin();
 #endif
@@ -185,7 +183,7 @@ void setup()
     // DEBUG_V(String("Configured Stack Size: ") + String(getArduinoLoopTaskStackSize()));
     // DEBUG_V(String("Remaining Stack Space: ") + String(uxTaskGetStackHighWaterMark(NULL)));
 #endif // def ARDUINO_ARCH_ESP32
-CheckAndRebootIfPowerOn();
+
     FileMgr.Begin();
     // Load configuration from the File System and set Hostname
     // TestHeap(uint32_t(15));
@@ -627,7 +625,6 @@ void CheckAndRebootIfPowerOn()
     if (reason == ESP_RST_POWERON)
     {
         logcon(F("Power-on detected. Rebooting to ensure clean startup..."));
-        delay(1000); // Optional: allow log to flush
         ESP.restart();
     }
 }
