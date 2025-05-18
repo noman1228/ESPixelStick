@@ -22,9 +22,6 @@
 #ifdef SUPPORT_OLED
 #include "service/DisplayOLED.h"
 #endif
-#ifdef SUPPORT_OLED
-#include "service/DisplayOLED.h"
-#endif
 // Core
 #include "ESPixelStick.h"
 #include "EFUpdate.h"
@@ -56,29 +53,27 @@
 #include <Hash.h>
 extern "C"
 {
-#include <user_interface.h>
+#   include <user_interface.h>
 } // extern "C"
 
 #elif defined ARDUINO_ARCH_ESP32
-// ESP32 user_interface is now built in
-#include <Update.h>
-#include <esp_task_wdt.h>
-#include "soc/soc.h"
-#include "soc/rtc_cntl_reg.h"
+    // ESP32 user_interface is now built in
+#   include <Update.h>
+#   include <esp_task_wdt.h>
+#   include "soc/soc.h"
+#   include "soc/rtc_cntl_reg.h"
 #else
-#error "Unsupported CPU type."
+#	error "Unsupported CPU type."
 #endif
 
 // Debugging support
 #if defined(DEBUG)
 extern "C" void system_set_os_print(uint8 onoff);
-extern "C" void ets_install_putc1(void *routine);
+extern "C" void ets_install_putc1(void* routine);
 
-static void _u0_putc(char c)
-{
-    while (((U0S >> USTXC) & 0x7F) == 0x7F)
-        ;
-    U0F = c;
+static void _u0_putc(char c){
+  while(((U0S >> USTXC) & 0x7F) == 0x7F);
+  U0F = c;
 }
 #endif
 
@@ -98,14 +93,14 @@ const String ConfigFileName = "/config.json";
 const String BUILD_DATE = String(__DATE__) + " - " + String(__TIME__);
 const uint8_t CurrentConfigVersion = 1;
 
-config_t config; // Current configuration
+config_t config;                    // Current configuration
 static const uint32_t NotRebootingValue = uint32_t(-1);
 uint32_t RebootCount = NotRebootingValue;
-uint32_t lastUpdate; // Update timeout tracker
-bool ResetWiFi = false;
-bool IsBooting = true; // Configuration initialization flag
-time_t ConfigLoadNeeded = NO_CONFIG_NEEDED;
-bool ConfigSaveNeeded = false;
+uint32_t lastUpdate;                // Update timeout tracker
+bool     ResetWiFi = false;
+bool     IsBooting = true;  // Configuration initialization flag
+time_t   ConfigLoadNeeded = NO_CONFIG_NEEDED;
+bool     ConfigSaveNeeded = false;
 
 uint32_t DiscardedRxData = 0;
 
@@ -117,17 +112,16 @@ uint32_t DiscardedRxData = 0;
 
 #define NO_CONFIG_NEEDED time_t(-1)
 
-void ScheduleLoadConfig() { ConfigLoadNeeded = now(); }
+void ScheduleLoadConfig() {ConfigLoadNeeded = now(); }
 void LoadConfig();
-void GetConfig(JsonObject &json);
-void GetDriverName(String &Name) { Name = F("ESP"); }
+void GetConfig (JsonObject & json);
+void GetDriverName (String & Name) { Name = F("ESP"); }
 
 /// Radio configuration
 /** ESP8266 radio configuration routines that are executed at startup. */
 #ifdef ARDUINO_ARCH_ESP8266
-RF_PRE_INIT()
-{
-    system_phy_set_powerup_option(3); // Do full RF calibration on power-up
+RF_PRE_INIT() {
+    system_phy_set_powerup_option(3);   // Do full RF calibration on power-up
 }
 #endif
 
@@ -156,8 +150,7 @@ void setup()
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
 
-    config.BlankDelay = 1;
-    config.BlankDelay = 1;
+    config.BlankDelay = 5;
 #ifdef ARDUINO_ARCH_ESP32
     // disable brownout detector
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
@@ -170,18 +163,17 @@ void setup()
     // DEBUG_START;
     // DEBUG_HW_START;
 #if defined(DEBUG)
-    ets_install_putc1((void *)&_u0_putc);
+    ets_install_putc1((void *) &_u0_putc);
     system_set_os_print(1);
 #endif
 
     // Dump version and build information
-    LOG_PORT.println();
-    logcon(String(CN_ESPixelStick) + " v" + VERSION + " (" + BUILD_DATE + ") on " + BOARD_NAME);
-    CheckAndRebootIfPowerOn();
+    LOG_PORT.println ();
+    logcon (String(CN_ESPixelStick) + " v" + VERSION + " (" + BUILD_DATE + ") on " + BOARD_NAME);
 #ifdef ARDUINO_ARCH_ESP8266
-    logcon(ESP.getFullVersion());
+    logcon (ESP.getFullVersion ());
 #else
-    logcon(ESP.getSdkVersion());
+    logcon (ESP.getSdkVersion ());
 #endif
 
     // TestHeap(uint32_t(10));
@@ -203,7 +195,7 @@ CheckAndRebootIfPowerOn();
     // TestHeap(uint32_t(20));
     // DEBUG_V(String("InputMgr Heap: ") + String(ESP.getFreeHeap()));
     // connect the input processing to the output processing.
-    InputMgr.Begin(0);
+    InputMgr.Begin (0);
 
     // TestHeap(uint32_t(30));
     // DEBUG_V(String("OutputMgr Heap: ") + String(ESP.getFreeHeap()));
@@ -218,17 +210,21 @@ CheckAndRebootIfPowerOn();
     // DEBUG_V(String("WebMgr Heap: ") + String(ESP.getFreeHeap()));
     // Configure and start the web server
     WebMgr.Begin(&config);
+#ifdef SUPPORT_SENSOR_DS18B20
+    // TestHeap(uint32_t(60));
+    // DEBUG_V(String("SensorDS18B20 Heap: ") + String(ESP.getFreeHeap()));
+    SensorDS18B20.Begin();
+#endif // def SUPPORT_SENSOR_DS18B20
 
     // DEBUG_V(String("FPPDiscovery Heap: ") + String(ESP.getFreeHeap()));
-    FPPDiscovery.begin();
-CheckAndRebootIfPowerOn();
+    FPPDiscovery.begin ();
     // DEBUG_V(String("Final Heap: ") + String(ESP.getFreeHeap()));
 
 #ifdef ARDUINO_ARCH_ESP8266
     // * ((volatile uint32_t*)0x60000900) &= ~(1); // Hardware WDT OFF
-    ESP.wdtEnable(2000); // 2 seconds
+    ESP.wdtEnable (2000); // 2 seconds
 #else
-    esp_task_wdt_init(5, true);
+    esp_task_wdt_init (5, true);
 #endif
 
     WebMgr.CreateAdminInfoFile();
@@ -255,7 +251,7 @@ bool validateConfig()
     bool configValid = true;
 
     // Device defaults
-    if (!config.id.length())
+    if (!config.id.length ())
     {
         config.id = F("ESPixelStick");
         configValid = false;
@@ -268,24 +264,24 @@ bool validateConfig()
 } // validateConfig
 
 /// Deserialize device configuration JSON to config structure - returns true if config change detected
-bool dsDevice(JsonObject &json)
+bool dsDevice(JsonObject & json)
 {
     // DEBUG_START;
     // PrettyPrint (json, "dsDevice");
 
     bool ConfigChanged = false;
-    JsonObject JsonDeviceConfig = json[(char *)CN_device];
+    JsonObject JsonDeviceConfig = json[(char*)CN_device];
     if (JsonDeviceConfig)
     {
         // PrettyPrint(JsonDeviceConfig, "device");
 
-        // TODO: Add configuration upgrade handling - cfgver moved to root level
-        ConfigChanged |= setFromJSON(config.id, JsonDeviceConfig, CN_id);
-        ConfigChanged |= setFromJSON(config.BlankDelay, JsonDeviceConfig, CN_blanktime);
+//TODO: Add configuration upgrade handling - cfgver moved to root level
+        ConfigChanged |= setFromJSON (config.id,         JsonDeviceConfig, CN_id);
+        ConfigChanged |= setFromJSON (config.BlankDelay, JsonDeviceConfig, CN_blanktime);
     }
     else
     {
-        logcon(String(F("No device settings found.")));
+        logcon (String (F ("No device settings found.")));
     }
 
     // DEBUG_V (String("ConfigChanged: ") + String(ConfigChanged));
@@ -295,31 +291,31 @@ bool dsDevice(JsonObject &json)
 } // dsDevice
 
 // Save the config and schedule a load operation
-void SetConfig(const char *DataString)
+void SetConfig (const char * DataString)
 {
     // DEBUG_START;
 
-    // TODO: This is being called from c_WebMgr::processCmdSet() with no validation
-    //       of the data. Chance for 3rd party software to muck up the configuraton
-    //       if they send bad json data.
+//TODO: This is being called from c_WebMgr::processCmdSet() with no validation
+//      of the data. Chance for 3rd party software to muck up the configuraton
+//      if they send bad json data.
 
-    FileMgr.SaveFlashFile(ConfigFileName, DataString);
+    FileMgr.SaveFlashFile (ConfigFileName, DataString);
     ScheduleLoadConfig();
 
     // DEBUG_END;
 
 } // SetConfig
 
-bool deserializeCore(JsonObject &json)
+bool deserializeCore (JsonObject & json)
 {
     // DEBUG_START;
 
     bool DataHasBeenAccepted = false;
 
     // PrettyPrint (json, "Main Config");
-    JsonObject SystemConfig = json[(char *)CN_system];
-    JsonObject InitConfig = json[(char *)CN_init];
-    JsonObject NetworkConfig = json[(char *)CN_network];
+    JsonObject SystemConfig = json[(char*)CN_system];
+    JsonObject InitConfig = json[(char*)CN_init];
+    JsonObject NetworkConfig = json[(char*)CN_network];
     JsonObject DeviceConfig;
 
     do // once
@@ -328,7 +324,7 @@ bool deserializeCore(JsonObject &json)
         if (SystemConfig)
         {
             // DEBUG_V("Detected a System Config");
-            DeviceConfig = json[(char *)CN_system];
+            DeviceConfig = json[(char*)CN_system];
             // PrettyPrint (DeviceConfig, "System based DeviceConfig");
         }
         // is this an initial config from the flash tool?
@@ -377,10 +373,10 @@ bool deserializeCore(JsonObject &json)
         FileMgr.SetConfig(DeviceConfig);
         // DEBUG_V("");
         ConfigSaveNeeded |= NetworkMgr.SetConfig(DeviceConfig);
-// DEBUG_V("");
-#ifdef SUPPORT_SENSOR_DS18B20
+        // DEBUG_V("");
+        #ifdef SUPPORT_SENSOR_DS18B20
         ConfigSaveNeeded |= SensorDS18B20.SetConfig(DeviceConfig);
-#endif // def SUPPORT_SENSOR_DS18B20
+        #endif // def SUPPORT_SENSOR_DS18B20
         // DEBUG_V("");
         DataHasBeenAccepted = true;
 
@@ -391,14 +387,14 @@ bool deserializeCore(JsonObject &json)
     return DataHasBeenAccepted;
 }
 
-void deserializeCoreHandler(JsonDocument &jsonDoc)
+void deserializeCoreHandler (JsonDocument & jsonDoc)
 {
     // DEBUG_START;
 
     // PrettyPrint(jsonDoc, "deserializeCoreHandler");
 
     JsonObject json = jsonDoc.as<JsonObject>();
-    deserializeCore(json);
+    deserializeCore (json);
 
     // DEBUG_END;
 }
@@ -412,7 +408,7 @@ void SaveConfig()
 
     // Create buffer and root object
     JsonDocument jsonConfigDoc;
-    JsonObject JsonConfig = jsonConfigDoc[(char *)CN_system].to<JsonObject>();
+    JsonObject JsonConfig = jsonConfigDoc[(char*)CN_system].to<JsonObject>();
 
     GetConfig(JsonConfig);
 
@@ -433,39 +429,43 @@ void LoadConfig()
 
     String temp;
     // DEBUG_V ("");
-    FileMgr.LoadFlashFile(ConfigFileName, &deserializeCoreHandler);
+    FileMgr.LoadFlashFile (ConfigFileName, &deserializeCoreHandler);
 
-    ConfigSaveNeeded |= !validateConfig();
+    ConfigSaveNeeded |= !validateConfig ();
 
     // DEBUG_END;
 } // loadConfig
 
-void DeleteConfig()
+void DeleteConfig ()
 {
     // DEBUG_START;
-    FileMgr.DeleteFlashFile(ConfigFileName);
+    FileMgr.DeleteFlashFile (ConfigFileName);
 
     // DEBUG_END;
 
 } // DeleteConfig
 
-void GetConfig(JsonObject &json)
+void GetConfig (JsonObject & json)
 {
     // DEBUG_START;
 
     // Config Version
-    json[(char *)CN_cfgver] = CurrentConfigVersion;
+    json[(char*)CN_cfgver] = CurrentConfigVersion;
 
     // Device
-    JsonObject device = json[(char *)CN_device].to<JsonObject>();
-    JsonWrite(device, CN_id, config.id);
+    JsonObject device = json[(char*)CN_device].to<JsonObject>();
+    JsonWrite(device, CN_id,        config.id);
     JsonWrite(device, CN_blanktime, config.BlankDelay);
 
     // PrettyPrint(device, "device");
 
-    FileMgr.GetConfig(device);
+    FileMgr.GetConfig (device);
 
-    NetworkMgr.GetConfig(json);
+    NetworkMgr.GetConfig (json);
+
+#ifdef SUPPORT_SENSOR_DS18B20
+    SensorDS18B20.GetConfig(json);
+#endif // def SUPPORT_SENSOR_DS18B20
 
     // DEBUG_END;
 } // GetConfig
@@ -481,15 +481,15 @@ String serializeCore(bool pretty)
 
     String jsonConfigString;
 
-    GetConfig(JsonConfig);
+    GetConfig (JsonConfig);
 
     if (pretty)
     {
-        serializeJsonPretty(JsonConfig, jsonConfigString);
+        serializeJsonPretty (JsonConfig, jsonConfigString);
     }
     else
     {
-        serializeJson(JsonConfig, jsonConfigString);
+        serializeJson (JsonConfig, jsonConfigString);
     }
 
     // DEBUG_V (String ("jsonConfigString: ") + jsonConfigString);
@@ -511,34 +511,33 @@ void loop()
 {
 
     // DEBUG_START;
-    /*
-        if(millis() > HeapTime)
-        {
-            // DEBUG_V(String("Heap: ") + String(ESP.getFreeHeap()));
-            HeapTime += 5000;
-        }
-    */
-    FeedWDT();
-#ifdef SUPPORT_OLED
-    OLED.Poll();
-    FeedWDT();
-#endif
+/*
+    if(millis() > HeapTime)
+    {
+        // DEBUG_V(String("Heap: ") + String(ESP.getFreeHeap()));
+        HeapTime += 5000;
+    }
+*/
+    FeedWDT ();
     // Keep the Network Open
-    NetworkMgr.Poll();
+    NetworkMgr.Poll ();
 
     // Poll output
     OutputMgr.Poll();
 
-    WebMgr.Process();
+    WebMgr.Process ();
 
     FileMgr.Poll();
+#ifdef SUPPORT_SENSOR_DS18B20
+    SensorDS18B20.Poll();
+#endif // def SUPPORT_SENSOR_DS18B20
 
     // need to keep the rx pipeline empty
-    size_t BytesToDiscard = min(100, LOG_PORT.available());
+    size_t BytesToDiscard = min (100, LOG_PORT.available ());
     DiscardedRxData += BytesToDiscard;
     while (0 < BytesToDiscard)
     {
-        FeedWDT();
+        FeedWDT ();
 
         // DEBUG_V (String("BytesToDiscard: ") + String(BytesToDiscard));
         BytesToDiscard--;
@@ -548,27 +547,27 @@ void loop()
     // Reboot handler
     if (NotRebootingValue != RebootCount)
     {
-#ifdef SUPPORT_OLED
-        OLED.isRebooting = true;
-        OLED.ShowRebootScreen();
-#endif
-        logcon(String(CN_stars) + CN_minussigns + F("Internal Reboot Requested. Rebooting Now"));
-        ESP.restart();
+        if(0 == --RebootCount)
+        {
+            logcon (String(CN_stars) + CN_minussigns + F ("Internal Reboot Requested. Rebooting Now"));
+            delay (REBOOT_DELAY);
+            ESP.restart ();
+        }
     }
 
     if (NO_CONFIG_NEEDED != ConfigLoadNeeded)
     {
-        if (abs(now() - ConfigLoadNeeded) > LOAD_CONFIG_DELAY)
+        if(abs(now() - ConfigLoadNeeded) > LOAD_CONFIG_DELAY)
         {
-            FeedWDT();
-            LoadConfig();
+            FeedWDT ();
+            LoadConfig ();
         }
     }
 
     if (ConfigSaveNeeded)
     {
-        FeedWDT();
-        SaveConfig();
+        FeedWDT ();
+        SaveConfig ();
     }
 
 } // loop
@@ -582,39 +581,42 @@ void RequestReboot(uint32_t LoopDelay, bool SkipDisable /* = false */)
 {
     RebootCount = LoopDelay;
 
-    InputMgr.SetOperationalState(false);
-    OutputMgr.PauseOutputs(true);
+    if(!SkipDisable)
+    {
+        InputMgr.SetOperationalState(false);
+        OutputMgr.PauseOutputs(true);
+    }
 
 } // RequestReboot
 
 bool ConsoleUartIsActive = true;
 
-void _logcon(String &DriverName, String Message)
+void _logcon (String & DriverName, String Message)
 {
-    if (ConsoleUartIsActive)
+    if(ConsoleUartIsActive)
     {
         char Spaces[7];
         memset(Spaces, ' ', sizeof(Spaces));
-        if (DriverName.length() < (sizeof(Spaces) - 1))
+        if (DriverName.length() < (sizeof(Spaces)-1))
         {
-            Spaces[(sizeof(Spaces) - 1) - DriverName.length()] = '\0';
+            Spaces[(sizeof (Spaces) - 1) - DriverName.length ()] = '\0';
         }
         else
         {
             Spaces[0] = '\0';
         }
 
-        LOG_PORT.println(String(F("[")) + String(Spaces) + DriverName + F("] ") + Message);
-        LOG_PORT.flush();
+        LOG_PORT.println (String(F("[")) + String (Spaces) + DriverName + F("] ") + Message);
+        LOG_PORT.flush ();
     }
 } // logcon
 
-void FeedWDT()
+void FeedWDT ()
 {
 #ifdef ARDUINO_ARCH_ESP32
-    esp_task_wdt_reset();
+    esp_task_wdt_reset ();
 #else
-    ESP.wdtFeed();
+    ESP.wdtFeed ();
 #endif // def ARDUINO_ARCH_ESP32
 }
 

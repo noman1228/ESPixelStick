@@ -19,9 +19,17 @@
 */
 
 #include <Arduino.h>
+#if defined(ARDUINO_ARCH_ESP8266)
+#	include <ESP8266WiFi.h>
+#	include <ESPAsyncTCP.h>
+#	include <ESPAsyncUDP.h>
+#elif defined(ARDUINO_ARCH_ESP32)
 #   include <AsyncTCP.h>
 #   include <AsyncUDP.h>
 #   include <WiFi.h>
+#else
+#	error "Unsupported CPU type"
+#endif
 
 #ifdef BOARD_HAS_PSRAM
 #   error "PSRAM is not supported by ESPixelStick"
@@ -38,7 +46,7 @@
 #include "GPIO_Defs.hpp"
 #include "FastTimer.hpp"
 
-#define REBOOT_DELAY    0    ///< Delay for rebooting once reboot flag is set
+#define REBOOT_DELAY    100     ///< Delay for rebooting once reboot flag is set
 #define LOG_PORT        Serial  ///< Serial port for console logging
 #define CLIENT_TIMEOUT  15      ///< In station/client mode try to connection for 15 seconds
 #define AP_TIMEOUT      120     ///< In AP mode, wait 120 seconds for a connection or reboot
@@ -56,7 +64,7 @@
 #define STRINGIFY(X) #X
 #define STRING(X) STRINGIFY(X)
 
-extern void RequestReboot(uint32_t LoopDelay, bool SkipDisable = true);
+extern void RequestReboot(uint32_t LoopDelay, bool SkipDisable = false);
 extern bool RebootInProgress();
 
 /// Core configuration structure

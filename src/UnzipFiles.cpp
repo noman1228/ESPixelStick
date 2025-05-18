@@ -1,21 +1,21 @@
 /*
- * UnzipFiles.cpp - Output Management class
- *
- * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
- * Copyright (c) 2021, 2025 Shelby Merrick
- * http://www.forkineye.com
- *
- *  This program is provided free for you to use in any way that you wish,
- *  subject to the laws and regulations where you are using it.  Due diligence
- *  is strongly suggested before using this code.  Please give credit where due.
- *
- *  The Author makes no warranty of any kind, express or implied, with regard
- *  to this program or the documentation contained in this document.  The
- *  Author shall not be liable in any event for incidental or consequential
- *  damages in connection with, or arising out of, the furnishing, performance
- *  or use of these programs.
- *
- */
+* UnzipFiles.cpp - Output Management class
+*
+* Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
+* Copyright (c) 2021, 2025 Shelby Merrick
+* http://www.forkineye.com
+*
+*  This program is provided free for you to use in any way that you wish,
+*  subject to the laws and regulations where you are using it.  Due diligence
+*  is strongly suggested before using this code.  Please give credit where due.
+*
+*  The Author makes no warranty of any kind, express or implied, with regard
+*  to this program or the documentation contained in this document.  The
+*  Author shall not be liable in any event for incidental or consequential
+*  damages in connection with, or arising out of, the furnishing, performance
+*  or use of these programs.
+*
+*/
 #ifdef SUPPORT_UNZIP
 
 #include "UnzipFiles.hpp"
@@ -174,8 +174,8 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
     uint32_t TotalBytesWritten = 0;
 
     logcon(FileName +
-           " - " + String(fi.compressed_size, DEC) +
-           "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
+    " - " + String(fi.compressed_size, DEC) +
+    "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
             OLED.ShowToast("Extract: " + FileName);
 
     do // once
@@ -183,7 +183,7 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
         int ReturnCode = zip.openCurrentFile();
         if(ReturnCode != UNZ_OK)
         {
-// DEBUG_V(String("ReturnCode: ") + String(ReturnCode));
+            // DEBUG_V(String("ReturnCode: ") + String(ReturnCode));
 #ifdef SUPPORT_OLED
             OLED.ShowToast(String(FileName + F(" Failed.")));
             OLED.isUploading = false;
@@ -345,8 +345,7 @@ int32_t UnzipFiles::SeekZipFile(void *p, int32_t position, int iType)
     SeekPosition = position;
     // DEBUG_V(String("         p: 0x") + String(uint32_t(p), HEX));
 
-    c_FileMgr::FileId FileHandle = (c_FileMgr::FileId)(((ZIPFILE *)p)->fHandle);
-    // DEBUG_V(String("FileHandle: ") + String(FileHandle));
+    // DEBUG_V(String("FileHandle: ") + String((c_FileMgr::FileId)(((ZIPFILE *)p)->fHandle)));
     // DEBUG_V(String("  Position: ") + String(position));
     // DEBUG_V(String("     iType: ") + String(iType));
 
