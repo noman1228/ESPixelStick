@@ -567,7 +567,10 @@ void loop()
         FeedWDT ();
         SaveConfig ();
     }
-
+#ifdef SUPPORT_OLED
+    OLED.Poll();
+    FeedWDT();
+#endif
 } // loop
 
 bool RebootInProgress()
