@@ -68,8 +68,7 @@ public:
         FileAppend,
     } FileMode;
 
-    void   DeleteFlashFile (String FileName);
-    void   RenameFlashFile (String OldName, String NewName);
+    void   DeleteFlashFile (const String & FileName);
     bool   SaveFlashFile   (const String & FileName, String & FileData);
     bool   SaveFlashFile   (const String & FileName, const char * FileData);
     bool   SaveFlashFile   (const String & FileName, JsonDocument & FileData);
@@ -112,13 +111,6 @@ public:
 #else
 #   define MAX_SD_BUFFER_SIZE (14 * SD_BLOCK_SIZE)
 #endif
-#define ConnrectFilename(n) \
-{ \
-    if(0 != n.indexOf("/")) \
-    { \
-        n = String("/") + n; \
-    } \
-}
 
 private:
     void    SetSpiIoPins ();

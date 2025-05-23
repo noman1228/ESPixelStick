@@ -562,13 +562,11 @@ void c_FileMgr::ResetSdCard()
 } // ResetSdCard
 
 //-----------------------------------------------------------------------------
-void c_FileMgr::DeleteFlashFile (String FileName)
+void c_FileMgr::DeleteFlashFile (const String& FileName)
 {
     // DEBUG_START;
 
-    ConnrectFilename(FileName);
-
-    if(LittleFS.exists(FileName)) { LittleFS.remove (FileName); }
+    LittleFS.remove (FileName);
 
     if(!FileName.equals(FSEQFILELIST))
     {
@@ -578,26 +576,6 @@ void c_FileMgr::DeleteFlashFile (String FileName)
     // DEBUG_END;
 
 } // DeleteConfigFile
-
-//-----------------------------------------------------------------------------
-void c_FileMgr::RenameFlashFile (String OldName, String NewName)
-{
-     // DEBUG_START;
-
-    ConnrectFilename(OldName);
-    ConnrectFilename(NewName);
-
-     // DEBUG_V(String("OldName: ") + OldName);
-     // DEBUG_V(String("NewName: ") + NewName);
-
-    DeleteFlashFile(NewName);
-    if(!LittleFS.rename(OldName, NewName))
-    {
-        logcon(String(CN_stars) + F("Could not rename '") + OldName + F("' to '") + NewName + F("'") + CN_stars);
-    }
-
-     // DEBUG_END;
-} // RenameFlashFile
 
 //-----------------------------------------------------------------------------
 void c_FileMgr::listDir (fs::FS& fs, String dirname, uint8_t levels)
@@ -1216,7 +1194,7 @@ void c_FileMgr::SaveSdFile (const String & FileName, String & FileData)
         int WriteCount = WriteSdFile (FileHandle, (byte*)FileData.c_str (), (uint64_t)FileData.length ());
         logcon (String (F ("Wrote '")) + FileName + F ("' ") + String(WriteCount));
 
-         // DEBUG_FILE_HANDLE (FileHandle);
+        DEBUG_FILE_HANDLE (FileHandle);
         CloseSdFile (FileHandle);
 
     } while (false);
@@ -1302,7 +1280,7 @@ bool c_FileMgr::OpenSdFile (const String & FileName, FileMode Mode, FileId & Fil
             {
                 logcon(String(F("ERROR: Could not open '")) + FileName + F("'."));
                 // release the file list entry
-                 // DEBUG_FILE_HANDLE (FileHandle);
+                DEBUG_FILE_HANDLE (FileHandle);
                 CloseSdFile(FileHandle);
                 break;
             }
@@ -1358,7 +1336,7 @@ bool c_FileMgr::ReadSdFile (const String & FileName, String & FileData)
             UnLockSd();
         }
 
-         // DEBUG_FILE_HANDLE (FileHandle);
+        DEBUG_FILE_HANDLE (FileHandle);
         CloseSdFile (FileHandle);
         GotFileData = (0 != FileData.length());
 
@@ -1366,7 +1344,7 @@ bool c_FileMgr::ReadSdFile (const String & FileName, String & FileData)
     }
     else
     {
-         // DEBUG_FILE_HANDLE (FileHandle);
+        DEBUG_FILE_HANDLE (FileHandle);
         CloseSdFile (FileHandle);
         logcon (String (F ("SD file: '")) + FileName + String (F ("' not found.")));
     }
@@ -1412,7 +1390,7 @@ bool c_FileMgr::ReadSdFile (const String & FileName, JsonDocument & FileData)
                 GotFileData = true;
             }
         }
-         // DEBUG_FILE_HANDLE (FileHandle);
+        DEBUG_FILE_HANDLE (FileHandle);
         CloseSdFile(FileHandle);
     }
     else
@@ -1671,7 +1649,7 @@ uint64_t c_FileMgr::GetSdFileSize (const String& FileName)
     if(OpenSdFile (FileName,   FileMode::FileRead, Handle, -1))
     {
         response = GetSdFileSize(Handle);
-         // DEBUG_FILE_HANDLE (Handle);
+        DEBUG_FILE_HANDLE (Handle);
         CloseSdFile(Handle);
     }
     else
@@ -1968,7 +1946,7 @@ bool c_FileMgr::handleFileUpload (
             {
                 logcon (String(F("ERROR: Expected index: ")) + String(expectedIndex) + F(" does not match actual index: ") + String(index));
 
-                 // DEBUG_FILE_HANDLE (fsUploadFileHandle);
+                DEBUG_FILE_HANDLE (fsUploadFileHandle);
                 CloseSdFile (fsUploadFileHandle);
                 DeleteSdFile (fsUploadFileName);
                 delay(100);
@@ -1999,7 +1977,7 @@ bool c_FileMgr::handleFileUpload (
         if(len != bytesWritten)
         {
             // DEBUG_V("Write failed. Stop transfer");
-             // DEBUG_FILE_HANDLE (fsUploadFileHandle);
+            DEBUG_FILE_HANDLE (fsUploadFileHandle);
             CloseSdFile(fsUploadFileHandle);
             DeleteSdFile (fsUploadFileName);
             expectedIndex = 0;
@@ -2015,7 +1993,7 @@ bool c_FileMgr::handleFileUpload (
         WriteSdFileBuf (fsUploadFileHandle, data, 0);
         uint32_t uploadTime = (uint32_t)(millis() - fsUploadStartTime) / 1000;
         FeedWDT();
-         // DEBUG_FILE_HANDLE (fsUploadFileHandle);
+        DEBUG_FILE_HANDLE (fsUploadFileHandle);
         CloseSdFile (fsUploadFileHandle);
 
         logcon (String (F ("Upload File: '")) + fsUploadFileName +
@@ -2052,7 +2030,7 @@ void c_FileMgr::handleFileUploadNewFile (const String & filename)
     if (0 != fsUploadFileName.length ())
     {
         logcon (String (F ("Aborting Previous File Upload For: '")) + fsUploadFileName + String (F ("'")));
-         // DEBUG_FILE_HANDLE (fsUploadFileHandle);
+        DEBUG_FILE_HANDLE (fsUploadFileHandle);
         CloseSdFile (fsUploadFileHandle);
         fsUploadFileName = "";
     }
@@ -2192,7 +2170,7 @@ void c_FileMgr::AbortSdFileUpload()
             break;
         }
 
-         // DEBUG_FILE_HANDLE (fsUploadFileHandle);
+        DEBUG_FILE_HANDLE (fsUploadFileHandle);
         CloseSdFile(fsUploadFileHandle);
 
     } while(false);
