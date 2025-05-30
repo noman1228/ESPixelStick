@@ -20,9 +20,7 @@
 
 #include "UnzipFiles.hpp"
 #include "FileMgr.hpp"
-#ifdef SUPPORT_OLED
-#include "service/DisplayOLED.h"
-#endif
+
 //
 // Callback functions needed by the unzipLIB to access a file system
 // The library has built-in code for memory-to-memory transfers, but needs
@@ -115,11 +113,6 @@ void UnzipFiles::ProcessZipFile(String & FileName)
 
     logcon(String("Unzip file: '") + String(FileName) + "'");
 
-#ifdef SUPPORT_OLED
-    OLED.isUploading = true;
-    OLED.uploadFilename = String(FileName);
-#endif
-
     int returnCode = zip.openZIP(FileName.c_str(), _OpenZipFile, _CloseZipFile, _ReadZipFile, _SeekZipFile);
     if (returnCode == UNZ_OK)
     {
@@ -153,10 +146,7 @@ void UnzipFiles::ProcessZipFile(String & FileName)
             returnCode = zip.gotoNextFile();
         } // while more files...
         zip.closeZIP();
-#ifdef SUPPORT_OLED
-        OLED.uploadProgress = 100; // or 0, up to you
-        OLED.isUploading = false;
-#endif
+        // DEBUG_V("No more files in the zip");
     }
     else
     {
@@ -178,19 +168,13 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
     logcon(FileName +
     " - " + String(fi.compressed_size, DEC) +
     "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
-    #ifdef SUPPORT_OLED
-            OLED.ShowToast("Extract: " + FileName);
-    #endif
+
     do // once
     {
         int ReturnCode = zip.openCurrentFile();
         if(ReturnCode != UNZ_OK)
         {
             // DEBUG_V(String("ReturnCode: ") + String(ReturnCode));
-#ifdef SUPPORT_OLED
-            OLED.ShowToast(String(FileName + F(" Failed.")));
-            OLED.isUploading = false;
-#endif
             logcon(FileName + F(" Failed."));
             break;
         }
@@ -201,11 +185,6 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
         {
             zip.closeCurrentFile();
             logcon(String("Could not open '") + FileName + "' for writting");
-#ifdef SUPPORT_OLED
-            OLED.ShowToast("Could not open");
-            OLED.isUploading = false;
-#endif
-
             break;
         }
 
@@ -216,60 +195,18 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
             if(BytesRead != FileMgr.WriteSdFile(FileHandle, pOutputBuffer, BytesRead))
             {
                 logcon(String(F("Failed to write data to '")) + FileName + "'");
-#ifdef SUPPORT_OLED
-                OLED.ShowToast("SD Write Error");
-                OLED.isUploading = false;
-#endif
-
                 break;
             }
             TotalBytesWritten += BytesRead;
-#ifdef SUPPORT_OLED
-            OLED.isUploading = true;
-            OLED.uploadFilename = FileName;
-            OLED.uploadProgress = (uint8_t)((TotalBytesWritten * 100) / fi.uncompressed_size);
-#endif
             LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
             LOG_PORT.flush();
-do
-{
-    BytesRead = zip.readCurrentFile(pOutputBuffer, BufferSize);
-    if(BytesRead <= 0)
-    {
-        break;
-    }
-
-    if(BytesRead != FileMgr.WriteSdFile(FileHandle, pOutputBuffer, BytesRead))
-    {
-        logcon(String(F("Failed to write data to '")) + FileName + "'");
-
-#ifdef SUPPORT_OLED
-        OLED.ShowToast("SD Write Error");
-#endif
-        break;
-    }
-
-    TotalBytesWritten += BytesRead;
-
-#ifdef SUPPORT_OLED
-    OLED.uploadProgress = (uint8_t)((TotalBytesWritten * 100) / fi.uncompressed_size);
-#endif
-
-    LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
-    LOG_PORT.flush();
-
-} while (BytesRead > 0);
-
 
         } while (BytesRead > 0);
 
-        DEBUG_FILE_HANDLE(FileHandle);
+        DEBUG_FILE_HANDLE (FileHandle);
         FileMgr.CloseSdFile(FileHandle);
         zip.closeCurrentFile();
         logcon(FileName + F(" - Done."));
-        #ifdef SUPPORT_OLED
-        OLED.ShowToast(String(FileName + " - DONE"));
-#endif
     } while(false);
 
     // DEBUG_V(String("Close Filename: ") + FileName);
