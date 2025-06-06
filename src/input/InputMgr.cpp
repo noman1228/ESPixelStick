@@ -28,8 +28,8 @@
 #include "input/InputDisabled.hpp"
 #include "input/InputE131.hpp"
 #include "input/InputEffectEngine.hpp"
-//#include "input/InputMQTT.h"
-//#include "input/InputAlexa.h"
+#include "input/InputMQTT.h"
+#include "input/InputAlexa.h"
 #include "input/InputDDP.h"
 #include "input/InputFPPRemote.h"
 #include "input/InputArtnet.hpp"
@@ -55,8 +55,8 @@ static const InputTypeXlateMap_t InputTypeXlateMap[c_InputMgr::e_InputType::Inpu
 #endif // def SUPPORT_FPP
     {c_InputMgr::e_InputType::InputType_Artnet,   "Artnet",     c_InputMgr::e_InputChannelIds::InputPrimaryChannelId},
     {c_InputMgr::e_InputType::InputType_Effects,  "Effects",    c_InputMgr::e_InputChannelIds::InputSecondaryChannelId},
-//    {c_InputMgr::e_InputType::InputType_MQTT,     "MQTT",       c_InputMgr::e_InputChannelIds::InputSecondaryChannelId},
-//    {c_InputMgr::e_InputType::InputType_Alexa,    "Alexa",      c_InputMgr::e_InputChannelIds::InputSecondaryChannelId},
+    {c_InputMgr::e_InputType::InputType_MQTT,     "MQTT",       c_InputMgr::e_InputChannelIds::InputSecondaryChannelId},
+    {c_InputMgr::e_InputType::InputType_Alexa,    "Alexa",      c_InputMgr::e_InputChannelIds::InputSecondaryChannelId},
     {c_InputMgr::e_InputType::InputType_Disabled, "Disabled",   c_InputMgr::e_InputChannelIds::InputChannelId_ALL}
 };
 
@@ -454,7 +454,8 @@ void c_InputMgr::InstantiateNewInputChannel (e_InputChannelIds ChannelIndex, e_I
             }
             String DriverName;
             InputChannelDrivers[ChannelIndex].pInputChannelDriver->GetDriverName (DriverName);
-            rebootNeeded |= InputChannelDrivers[ChannelIndex].pInputChannelDriver->isShutDownRebootNeeded();
+            InputRebootReason = F("Input Reboot due to channel request");
+            RebootNeeded |= InputChannelDrivers[ChannelIndex].pInputChannelDriver->isShutDownRebootNeeded();
             // DEBUG_V (String ("rebootNeeded: ") + String (rebootNeeded));
             if (!IsBooting) {
                 logcon (String(F("Shutting Down '")) + DriverName + String(F("' on Input: ")) + String(ChannelIndex));
@@ -517,6 +518,41 @@ void c_InputMgr::InstantiateNewInputChannel (e_InputChannelIds ChannelIndex, e_I
                 break;
             }
 
+            case e_InputType::InputType_MQTT:
+            {
+                if (InputTypeIsAllowedOnChannel (InputType_MQTT, ChannelIndex))
+                {
+                    if (!IsBooting)
+                    {
+                        logcon (String (F ("Starting MQTT for channel '")) + ChannelIndex + "'.");
+                    }
+                    InputChannelDrivers[ChannelIndex].pInputChannelDriver = new c_InputMQTT (ChannelIndex, InputType_MQTT, InputDataBufferSize);
+                    // DEBUG_V ("");
+                }
+                else
+                {
+                    InputChannelDrivers[ChannelIndex].pInputChannelDriver = new c_InputDisabled (ChannelIndex, InputType_Disabled, InputDataBufferSize);
+                }
+                break;
+            }
+
+            case e_InputType::InputType_Alexa:
+            {
+                if (InputTypeIsAllowedOnChannel (InputType_Alexa, ChannelIndex))
+                {
+                    if (!IsBooting)
+                    {
+                        logcon (String (F ("Starting Alexa for channel '")) + ChannelIndex + "'.");
+                    }
+                    InputChannelDrivers[ChannelIndex].pInputChannelDriver = new c_InputAlexa (ChannelIndex, InputType_Alexa, InputDataBufferSize);
+                    // DEBUG_V ("");
+                }
+                else
+                {
+                    InputChannelDrivers[ChannelIndex].pInputChannelDriver = new c_InputDisabled (ChannelIndex, InputType_Disabled, InputDataBufferSize);
+                }
+                break;
+            }
 
             case e_InputType::InputType_DDP:
             {
@@ -640,8 +676,8 @@ void c_InputMgr::LoadConfig ()
         }
         else
         {
-            logcon (CN_stars + String (F (" Error loading Input Manager Config File. Rebooting ")) + CN_stars);
-            RequestReboot(100000);
+            String Reason = (CN_stars + String (F (" Error loading Input Manager Config File. Rebooting ")) + CN_stars);
+            RequestReboot(Reason, 100000);
         }
     }
 
@@ -708,10 +744,10 @@ void c_InputMgr::Process ()
             RestartBlankTimer (InputSecondaryChannelId);
         } // ALL blank timers have expired
 
-        if (rebootNeeded)
+        if (RebootNeeded)
         {
             // DEBUG_V("Requesting Reboot");
-            RequestReboot(10000);
+            RequestReboot(InputRebootReason, 10000);
         }
 
     } while (false);
@@ -901,6 +937,7 @@ bool c_InputMgr::ProcessJsonConfig (JsonObject & jsonConfig)
     return Response;
 
 } // ProcessJsonConfig
+
 //-----------------------------------------------------------------------------
 bool c_InputMgr::RemotePlayEnabled()
 {
