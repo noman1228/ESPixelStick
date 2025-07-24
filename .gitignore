@@ -8,7 +8,7 @@
 /data
 /.pio
 __pycache__
-platformio_user.ini
+!platformio_user.ini
 secrets.h
 firmware.map
 MyEnv.txt

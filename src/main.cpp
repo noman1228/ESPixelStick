@@ -45,7 +45,9 @@
 #ifdef SUPPORT_SENSOR_DS18B20
 #include "service/SensorDS18B20.h"
 #endif // def SUPPORT_SENSOR_DS18B20
-
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 #ifdef ARDUINO_ARCH_ESP8266
 #include <Hash.h>
 extern "C"
@@ -178,7 +180,9 @@ void setup()
     ets_install_putc1((void *) &_u0_putc);
     system_set_os_print(1);
 #endif
-
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif
     // Dump version and build information
     LOG_PORT.println ();
     logcon (String(CN_ESPixelStick) + " v" + ConstConfig.Version + " (" + ConstConfig.BuildDate + ") on " + BOARD_NAME);
@@ -545,6 +549,10 @@ void loop()
         HeapTime += 5000;
     }
 */
+#ifdef SUPPORT_OLED
+    FeedWDT();
+    OLED.Poll();
+#endif
     FeedWDT ();
 
     // Keep the Network Open
@@ -610,6 +618,9 @@ bool RebootInProgress()
 
 void RequestReboot(String & Reason, uint32_t LoopDelay, bool SkipDisable /* = false */)
 {
+    #ifdef SUPPORT_OLED
+        OLED.ShowRebootScreen();
+    #endif
     GlobalRebootReason = Reason;
     RebootCount = LoopDelay;
     if(!SkipDisable)
