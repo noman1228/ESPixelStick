@@ -45,7 +45,9 @@
 #ifdef SUPPORT_SENSOR_DS18B20
 #include "service/SensorDS18B20.h"
 #endif // def SUPPORT_SENSOR_DS18B20
-
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 #ifdef ARDUINO_ARCH_ESP8266
 #include <Hash.h>
 extern "C"
@@ -158,7 +160,9 @@ void setup()
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
-
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif
     strcpy_P(config.id, String(F("ESPixelStick")).c_str());
 
     config.BlankDelay = 5;
@@ -546,7 +550,10 @@ void loop()
     }
 */
     FeedWDT ();
-
+    #ifdef SUPPORT_OLED
+        OLED.Poll();
+        FeedWDT();
+    #endif
     // Keep the Network Open
     NetworkMgr.Poll ();
 
