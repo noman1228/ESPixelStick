@@ -131,7 +131,15 @@ jobs:
           # WT 32 Foo Board
           - target: "esp32_foo"
             chip: "esp32"
-
+          # JMT Controller
+          - target: "esp32_jmt"
+            chip: "esp32"
+          # JMT Controller
+          - target: "esp32_jmt_eth"
+            chip: "esp32"
+          # JMT Controller
+          - target: "esp32_matrix"
+            chip: "esp32"
     runs-on: ubuntu-latest
     steps:
       # Checkout ESPixelStick
