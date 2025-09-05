@@ -22,7 +22,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">ESPixelStick</a>
+                <a class="navbar-brand" href="#">JMT Controller (ESPixelStick)</a>
             </div>
             <div id="navbar" class="collapse navbar-collapse">
                 <ul class="nav navbar-nav" id="navbar-ul">
@@ -90,7 +90,7 @@
                             </tr>
                             <tr>
                                 <td width="33%">IP</td>
-                                <td><span id="w_ip"></span></td>
+                                <td><span id="w_ip"><button onclick="legacyCopy('w_ip')">📋</button></span></td>
                             </tr>
                             <tr>
                                 <td width="33%">SubNet</td>
@@ -98,7 +98,7 @@
                             </tr>
                             <tr>
                                 <td width="33%">MAC</td>
-                                <td><span id="w_mac"></span></td>
+                                <td><span id="w_mac"><button onclick="legacyCopy('w_mac')">📋</button></span></td>
                             </tr>
                             <tr>
                                 <td width="33%">RSSI</td>
@@ -119,7 +119,7 @@
                             </tr>
                             <tr>
                                 <td width="33%">IP</td>
-                                <td><span id="e_ip"></span></td>
+                                <td><span id="e_ip"><button onclick="legacyCopy('e_ip')">📋</button></span></td>
                             </tr>
                             <tr>
                                 <td width="33%">SubNet</td>
@@ -127,7 +127,7 @@
                             </tr>
                             <tr>
                                 <td width="33%">MAC</td>
-                                <td><span id="e_mac"></span></td>
+                                <td><span id="e_mac"><button onclick="legacyCopy('e_mac')">📋</button></span></td>
                             </tr>
                         </table>
                     </fieldset>
@@ -926,21 +926,6 @@
                         <p class="col-sm-9 col-xs-8 form-control-static" id="realflashsize"></p>
                         <label class="control-label col-sm-3 col-xs-4">Flash ID</label>
                         <p class="col-sm-9 col-xs-8 form-control-static" id="flashchipid"></p>
-                        <label class="control-label col-sm-3 col-xs-4">Project Links</label>
-                        <p class="col-sm-9 col-xs-8 form-control-static">
-                            <a href="https://github.com/forkineye/ESPixelStick" target="_blank">ESPixelStick</a> |
-                            <a href="https://github.com/forkineye/ESPixelStick/issues" target="_blank">Report an
-                                Issue</a>
-                        </p>
-                        <label class="control-label col-sm-3 col-xs-4">Firmware Links</label>
-                        <p class="col-sm-9 col-xs-8 form-control-static">
-                            <a href="https://github.com/forkineye/ESPixelStick/releases/latest" target="_blank">Latest
-                                Release</a> |
-                            <a href="https://github.com/forkineye/ESPixelStick/releases" target="_blank">Beta
-                                Releases</a> |
-                            <a href="https://github.com/forkineye/ESPixelStick/actions/workflows/build.yaml"
-                                target="_blank">CI Builds (untested)</a>
-                        </p>
                     </div>
 
                     <div class="form-group">
@@ -1029,7 +1014,7 @@
                     <h4 class="modal-title">Factory Reset</h4>
                 </div>
                 <div class="modal-body">
-                    <p>This will perform a factory reset of your ESPixelStick, erasing all configuration data.</p>
+                    <p>This will perform a factory reset of your controller, erasing all configuration data.</p>
                     <p>Are you sure you want to do this?</p>
                 </div>
                 <div class="modal-body">
@@ -1059,9 +1044,20 @@
             <i><span id="device-id"></span></i>
         </div>
     </footer>
-
+    <input type="text" id="clipboardTemp" style="position:absolute; left:-9999px;">
     <script type="text/javascript" src="js/loader.js"></script>
-
+    <script>
+        function legacyCopy(id) {
+            const span = document.getElementById(id);
+            const tempInput = document.getElementById("clipboardTemp");
+            if (!span || !tempInput) return;
+    
+            tempInput.value = span.innerText.trim();
+            tempInput.select();
+            document.execCommand("copy");
+            console.log(`Copied '${tempInput.value}' from '${id}'`);
+        }
+    </script>
 </body>
 
 </html>
