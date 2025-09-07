@@ -1,0 +1,14 @@
+<map id="c_OutputMgr::CreateNewConfig" name="c_OutputMgr::CreateNewConfig">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,63,209,88"/>
+<area shape="rect" id="Node000002" href="$classc___output_mgr.html#a1e460ab7d570adbbb53dd0e4c6651f6d" title=" " alt="" coords="257,5,461,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="166,59,284,32,285,38,167,65"/>
+<area shape="rect" id="Node000003" href="$classc___output_mgr.html#a7a2812dee9affa9705178dd19b69e968" title=" " alt="" coords="277,55,440,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="209,73,262,73,262,78,209,78"/>
+<area shape="rect" id="Node000004" href="$classc___output_mgr.html#a63b3162a5ec5fe39859401b4b817b892" title="Save the current configuration data to nvram." alt="" coords="280,120,438,146"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="167,86,285,113,284,119,166,92"/>
+<area shape="rect" id="Node000005" href="$classc___file_mgr.html#a91d8ba978954c06f5448afb5c75f34b4" title=" " alt="" coords="518,91,685,116"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="438,121,502,113,503,118,438,126"/>
+<area shape="rect" id="Node000006" href="$classc___output_mgr.html#ac9742371ff3eae19bc7f0ece84ea6c79" title=" " alt="" coords="509,140,694,181"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="438,139,494,146,493,151,438,145"/>
+<area shape="poly" id="edge5_Node000005_Node000005" title=" " alt="" coords="562,92,554,82,558,72,575,66,602,64,632,67,647,74,644,79,630,72,602,69,576,71,562,76,559,81,566,89"/>
+</map>
