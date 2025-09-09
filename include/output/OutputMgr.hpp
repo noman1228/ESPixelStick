@@ -26,6 +26,7 @@
 #include "memdebug.h"
 #include "FileMgr.hpp"
 #include <TimeLib.h>
+#include <cstddef>   // for std::max_align_t
 
 class c_OutputCommon; ///< forward declaration to the pure virtual output class that will be defined later.
 
@@ -66,55 +67,55 @@ public:
     // handles to determine which output channel we are dealing with
     enum e_OutputChannelIds
     {
-        #ifdef DEFAULT_UART_0_GPIO
+#ifdef DEFAULT_UART_0_GPIO
         OutputChannelId_UART_0,
         #endif // def DEFAULT_UART_0_GPIO
 
-        #ifdef DEFAULT_UART_1_GPIO
+#ifdef DEFAULT_UART_1_GPIO
         OutputChannelId_UART_1,
         #endif // def DEFAULT_UART_1_GPIO
 
-        #ifdef DEFAULT_UART_2_GPIO
+#ifdef DEFAULT_UART_2_GPIO
         OutputChannelId_UART_2,
         #endif // def DEFAULT_UART_2_GPIO
 
-        #ifdef DEFAULT_RMT_0_GPIO
+#ifdef DEFAULT_RMT_0_GPIO
         OutputChannelId_RMT_0,
         #endif // def DEFAULT_RMT_0_GPIO
 
-        #ifdef DEFAULT_RMT_1_GPIO
+#ifdef DEFAULT_RMT_1_GPIO
         OutputChannelId_RMT_1,
         #endif // def DEFAULT_RMT_1_GPIO
 
-        #ifdef DEFAULT_RMT_2_GPIO
+#ifdef DEFAULT_RMT_2_GPIO
         OutputChannelId_RMT_2,
         #endif // def DEFAULT_RMT_2_GPIO
 
-        #ifdef DEFAULT_RMT_3_GPIO
+#ifdef DEFAULT_RMT_3_GPIO
         OutputChannelId_RMT_3,
         #endif // def DEFAULT_RMT_3_GPIO
 
-        #ifdef DEFAULT_RMT_4_GPIO
+#ifdef DEFAULT_RMT_4_GPIO
         OutputChannelId_RMT_4,
         #endif // def DEFAULT_RMT_3_GPIO
 
-        #ifdef DEFAULT_RMT_5_GPIO
+#ifdef DEFAULT_RMT_5_GPIO
         OutputChannelId_RMT_5,
         #endif // def DEFAULT_RMT_3_GPIO
 
-        #ifdef DEFAULT_RMT_6_GPIO
+#ifdef DEFAULT_RMT_6_GPIO
         OutputChannelId_RMT_6,
         #endif // def DEFAULT_RMT_3_GPIO
 
-        #ifdef DEFAULT_RMT_7_GPIO
+#ifdef DEFAULT_RMT_7_GPIO
         OutputChannelId_RMT_7,
         #endif // def DEFAULT_RMT_3_GPIO
 
-        #ifdef SUPPORT_SPI_OUTPUT
+#ifdef SUPPORT_SPI_OUTPUT
         OutputChannelId_SPI_1,
         #endif // def SUPPORT_SPI_OUTPUT
 
-        #if defined(SUPPORT_OutputType_Relay) || defined(SUPPORT_OutputType_Servo_PCA9685)
+#if defined(SUPPORT_OutputType_Relay) || defined(SUPPORT_OutputType_Servo_PCA9685)
         OutputChannelId_Relay,
         #endif // def SUPPORT_RELAY_OUTPUT
 
@@ -127,63 +128,63 @@ public:
     {
         OutputType_Disabled = 0,
 
-        #ifdef SUPPORT_OutputType_WS2811
+#ifdef SUPPORT_OutputType_WS2811
         OutputType_WS2811 = 1,
         #endif // def SUPPORT_OutputType_WS2811
 
-        #ifdef SUPPORT_OutputType_GECE
+#ifdef SUPPORT_OutputType_GECE
         OutputType_GECE = 2,
         #endif // def SUPPORT_OutputType_GECE
 
-        #ifdef SUPPORT_OutputType_DMX
+#ifdef SUPPORT_OutputType_DMX
         OutputType_DMX = 3,
         #endif // def SUPPORT_OutputType_DMX
 
-        #ifdef SUPPORT_OutputType_Renard
+#ifdef SUPPORT_OutputType_Renard
         OutputType_Renard = 4,
         #endif // def SUPPORT_OutputType_Renard
 
-        #ifdef SUPPORT_OutputType_Serial
+#ifdef SUPPORT_OutputType_Serial
         OutputType_Serial = 5,
         #endif // def SUPPORT_OutputType_Serial
 
-        #ifdef SUPPORT_OutputType_Relay
+#ifdef SUPPORT_OutputType_Relay
         OutputType_Relay = 6,
         #endif // def SUPPORT_OutputType_Relay
 
-        #ifdef SUPPORT_OutputType_Servo_PCA9685
+#ifdef SUPPORT_OutputType_Servo_PCA9685
         OutputType_Servo_PCA9685 = 7,
         #endif // def SUPPORT_OutputType_Servo_PCA9685
 
-        #ifdef SUPPORT_OutputType_UCS1903
+#ifdef SUPPORT_OutputType_UCS1903
         OutputType_UCS1903 = 8,
         #endif // def SUPPORT_OutputType_UCS1903
 
-        #ifdef SUPPORT_OutputType_TM1814
+#ifdef SUPPORT_OutputType_TM1814
         OutputType_TM1814 = 9,
         #endif // def SUPPORT_OutputType_TM1814
 
-        #ifdef SUPPORT_OutputType_WS2801
+#ifdef SUPPORT_OutputType_WS2801
         OutputType_WS2801 = 10,
         #endif // def SUPPORT_OutputType_WS2801
 
-        #ifdef SUPPORT_OutputType_APA102
+#ifdef SUPPORT_OutputType_APA102
         OutputType_APA102 = 11,
         #endif // def SUPPORT_OutputType_APA102
 
-        #ifdef SUPPORT_OutputType_GS8208
+#ifdef SUPPORT_OutputType_GS8208
         OutputType_GS8208 = 12,
         #endif // def SUPPORT_OutputType_GS8208
 
-        #ifdef SUPPORT_OutputType_UCS8903
+#ifdef SUPPORT_OutputType_UCS8903
         OutputType_UCS8903 = 13,
         #endif // def SUPPORT_OutputType_UCS8903
 
-        #ifdef SUPPORT_OutputType_TLS3001
+#ifdef SUPPORT_OutputType_TLS3001
         OutputType_TLS3001 = 14,
         #endif // def SUPPORT_OutputType_TLS3001
 
-        #ifdef SUPPORT_OutputType_GRINCH
+#ifdef SUPPORT_OutputType_GRINCH
         OutputType_GRINCH = 15,
         #endif // def SUPPORT_OutputType_GRINCH
 
@@ -207,9 +208,10 @@ public:
         Undefined
     };
 
-    // must be 16 byte aligned. Determined by upshifting the max size of all drivers
-    #define OutputDriverMemorySize 1200
-    uint32_t GetDriverSize() {return OutputDriverMemorySize;}
+    // bump storage size to fit largest driver (TM1814 ~1228B), add margin
+    #define OutputDriverMemorySize 1280
+    uint32_t GetDriverSize() { return OutputDriverMemorySize; }
+
 private:
     struct DriverInfo_t
     {

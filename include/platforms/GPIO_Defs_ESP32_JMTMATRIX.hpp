@@ -31,3 +31,11 @@
 
 // Output Types
 #define SUPPORT_OutputType_WS2811           // UART / RMT
+#define SUPPORT_OutputType_DMX            // UART
+#define SUPPORT_OutputType_GECE           // UART
+#define SUPPORT_OutputType_GS8208         // UART / RMT
+#define SUPPORT_OutputType_Renard         // UART
+#define SUPPORT_OutputType_Serial         // UART
+#define SUPPORT_OutputType_TM1814         // UART / RMT
+#define SUPPORT_OutputType_UCS1903        // UART / RMT
+#define SUPPORT_OutputType_UCS8903        // UART / RMT
