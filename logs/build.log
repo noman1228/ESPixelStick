@@ -1,0 +1,26 @@
+2025-09-10 20:08:29,653 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-10 20:08:29,668 - ESPBuildManager - INFO - Processing environment: esp32_jmt_eth
+2025-09-10 20:08:42,168 - ESPBuildManager - INFO - Building firmware for esp32_jmt_eth
+2025-09-10 20:09:45,077 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-10 20:09:45,091 - ESPBuildManager - INFO - Processing environment: esp32_jmt_eth
+2025-09-10 20:09:52,850 - ESPBuildManager - INFO - Building firmware for esp32_jmt_eth
+2025-09-10 20:10:31,913 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-10 20:10:31,927 - ESPBuildManager - INFO - Processing environment: esp32_jmt_eth
+2025-09-10 20:10:37,385 - ESPBuildManager - INFO - Building firmware for esp32_jmt_eth
+2025-09-10 20:11:30,435 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-10 20:11:30,450 - ESPBuildManager - INFO - Processing environment: esp32_jmt_eth
+2025-09-10 20:11:39,205 - ESPBuildManager - INFO - Building firmware for esp32_jmt_eth
+2025-09-10 20:12:06,907 - ESPBuildManager - INFO - Flashing images to COM101
+2025-09-10 22:02:21,266 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-10 22:02:21,282 - ESPBuildManager - INFO - Processing environment: esp32_jmt_eth
+2025-09-10 22:02:34,109 - ESPBuildManager - INFO - Flashing images to COM101
+2025-09-10 22:06:43,522 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-10 22:06:43,539 - ESPBuildManager - INFO - Processing environment: esp32_jmt
+2025-09-10 22:07:06,048 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-10 22:07:06,063 - ESPBuildManager - INFO - Processing environment: esp32_jmt
+2025-09-10 22:07:18,770 - ESPBuildManager - INFO - Building firmware for esp32_jmt
+2025-09-10 22:07:58,319 - ESPBuildManager - INFO - Flashing images to COM101
+2025-09-10 22:32:38,072 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-10 22:32:40,933 - ESPBuildManager - INFO - Processing environment: esp32_jmt_eth
+2025-09-10 22:32:54,186 - ESPBuildManager - INFO - Building firmware for esp32_jmt_eth
+2025-09-10 22:33:28,743 - ESPBuildManager - INFO - Flashing images to COM101
