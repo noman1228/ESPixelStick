@@ -8,7 +8,6 @@
 /data
 /.pio
 __pycache__
-platformio_user.ini
 secrets.h
 firmware.map
 MyEnv.txt
@@ -16,3 +15,6 @@ Changelog.pdf
 *.ino.generic.bin
 *.gz
 *.pyc
+upload_log*
+*build_stamp*
+/.build_stamp_esp32_jmt_eth

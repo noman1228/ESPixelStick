@@ -37,14 +37,12 @@
 #define SD_CARD_CLK_PIN          gpio_num_t::GPIO_NUM_14
 #define SD_CARD_CS_PIN           gpio_num_t::GPIO_NUM_15
 #define MaxSdTransSpeedMHz  25
-#define DEFAULT_I2C_SDA     gpio_num_t::GPIO_NUM_1
-#define DEFAULT_I2C_SCL     gpio_num_t::GPIO_NUM_1
 #include <ETH.h>
 
 
 #define DEFAULT_ETH_CLK_MODE           eth_clock_mode_t::ETH_CLOCK_GPIO0_IN
 #define DEFAULT_ETH_POWER_PIN          gpio_num_t::GPIO_NUM_17
-#define DEFAULT_ETH_POWER_PIN_ACTIVE   HIGH
+#define DEFAULT_ETH_POWER_PIN_ACTIVE   LOW
 #define DEFAULT_ETH_TYPE               eth_phy_type_t::ETH_PHY_LAN8720
 #define ETH_ADDR_PHY_LAN8720           1
 #define DEFAULT_ETH_ADDR               ETH_ADDR_PHY_LAN8720
