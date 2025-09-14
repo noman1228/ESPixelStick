@@ -18,3 +18,5 @@ Changelog.pdf
 upload_log*
 *build_stamp*
 /.build_stamp_esp32_jmt_eth
+.efu_env
+.gulp_stamp
