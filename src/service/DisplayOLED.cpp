@@ -11,7 +11,14 @@ static bool isRebooting = false;
 static SemaphoreHandle_t displayMutex = nullptr;
 static TaskHandle_t oledTaskHandle = nullptr;
 
-static U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 22, 21);
+#ifndef ESP_SCL_PIN
+#define ESP_SCL_PIN 21
+#endif
+#ifndef ESP_SDA_PIN
+#define ESP_SDA_PIN 22
+#endif
+
+static U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, ESP_SCL_PIN, ESP_SDA_PIN);
 
 static void OLEDTask(void *) {
     while (true) {
