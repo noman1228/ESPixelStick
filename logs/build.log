@@ -58,3 +58,7 @@
 2025-09-14 19:20:16,706 - ESPBuildManager - INFO - Processing environment: esp32_jmt_eth
 2025-09-14 19:20:43,912 - ESPBuildManager - INFO - Building firmware for esp32_jmt_eth
 2025-09-14 19:21:26,312 - ESPBuildManager - INFO - Flashing images to COM101
+2025-09-14 20:29:08,303 - ESPBuildManager - INFO - Checking dependencies...
+2025-09-14 20:29:08,323 - ESPBuildManager - INFO - Processing environment: esp32_jmt_eth
+2025-09-14 20:29:36,504 - ESPBuildManager - INFO - Building firmware for esp32_jmt_eth
+2025-09-14 20:30:15,182 - ESPBuildManager - INFO - Flashing images to COM101

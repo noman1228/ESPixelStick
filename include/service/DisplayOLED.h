@@ -34,6 +34,13 @@ enum class DisplayPage
     UPLOAD_STATUS
 };
 
+// NEW: which network icon was shown last when both Wi-Fi and Ethernet are up
+enum class NetShown : uint8_t
+{
+    WIFI,
+    ETH
+};
+
 class c_OLED
 {
 public:
@@ -41,45 +48,49 @@ public:
     void Begin();
     void InitNow();
     void End();
+
     void Update(bool forceUpdate = false);
     void UpdateNetworkInfo(bool forceUpdate = false);
     void UpdateUploadStatus(const String &filename, int progress);
     void UpdateRunningStatus();
+
     void Flip();
     void Poll();
     void ShowToast(const String &message, const String &title = "");
     void ShowRebootScreen();
 
-    bool flipState;
-    bool isUploading;
+    // persisted/user-visible state
+    bool   flipState = false;
+    bool   isUploading = false;
     String uploadFilename;
-    int uploadProgress;
-    unsigned long lastUploadUpdate;
-    bool isRebooting;
+    int    uploadProgress = 0;
+    unsigned long lastUploadUpdate = 0;
 
-    void GetDriverName(String &name) const
-    {
-        name = "OLED";
-    }
+    void GetDriverName(String &name) const { name = "OLED"; }
 
     // Button interrupt handler
     static void IRAM_ATTR buttonISR();
 
-    void NotifyNetworkChange(bool isConnected, const String &ipAddress);
-
 private:
-    bool isToastActive = false;
-    unsigned long toastStartTime = 0;
-    String toastMessage;
+    // toast state
+    bool           isToastActive = false;
+    unsigned long  toastStartTime = 0;
+    String         toastMessage;
+
+    // network view state
+    NetShown lastNetShown = NetShown::WIFI;   // alternate when both links up
+    String   dispNetMode;                     // "WIFI" | "ETH" | "NONE"
+    String   dispIP;
+    String   dispHostName;
+    int      dispRSSI = 0;
 
     int getSignalStrength(int rssi);
-    DisplayPage currentPage;
-    unsigned long lastPageSwitchTime;
-    unsigned long lastNetworkUpdate;
+
+    // page/refresh state
+    DisplayPage   currentPage = DisplayPage::NETWORK_INFO;
+    unsigned long lastPageSwitchTime = 0;
+    unsigned long lastNetworkUpdate  = 0;
     const unsigned long pageSwitchInterval = 7500;
-    String dispIP;
-    String dispHostName;
-    int dispRSSI;
 
     Preferences preferences;
 };

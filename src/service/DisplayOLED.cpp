@@ -1,6 +1,12 @@
 #ifdef SUPPORT_OLED
 #include "service/DisplayOLED.h"
 #include <Preferences.h>
+#include <vector>  // for std::vector used in DrawCenteredWrappedText
+
+#if defined(ARDUINO_ARCH_ESP32)
+  #include <ETH.h>     // for ETH.linkUp(), ETH.localIP()
+#endif
+#include <WiFi.h>       // for WiFi.isConnected(), WiFi.RSSI(), WiFi.localIP()
 
 #define TOAST_DURATION_MS          5000
 #define NETWORK_UPDATE_INTERVAL_MS 10000
@@ -11,6 +17,8 @@ static bool isRebooting = false;
 static SemaphoreHandle_t displayMutex = nullptr;
 static TaskHandle_t oledTaskHandle = nullptr;
 
+// --- NEW: simple enum to remember which net we showed last when both are up
+
 #ifndef ESP_SCL_PIN
 #define ESP_SCL_PIN 21
 #endif
@@ -19,6 +27,27 @@ static TaskHandle_t oledTaskHandle = nullptr;
 #endif
 
 static U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, ESP_SCL_PIN, ESP_SDA_PIN);
+
+// --- UPDATED: AP status page tuned for 128x32 and safe truncation ---
+static void drawApStatus(U8G2 &u8g2)
+{
+    const String ssidIn = WiFi.softAPSSID();
+
+    u8g2.clearBuffer();
+
+    u8g2.setFont(u8g2_font_6x10_tr);
+
+    // Line 1
+    const char* line1 = "CONNECT TO AP:";
+    int16_t x1 = (128 - u8g2.getStrWidth(line1)) / 2;
+    u8g2.drawStr(x1, 12, line1);
+
+    // Line 2 (SSID)
+    int16_t x2 = (128 - u8g2.getStrWidth(ssidIn.c_str())) / 2;
+    u8g2.drawStr(x2, 28, ssidIn.c_str());
+
+    u8g2.sendBuffer();
+}
 
 static void OLEDTask(void *) {
     while (true) {
@@ -33,7 +62,9 @@ static void OLEDTask(void *) {
 c_OLED::c_OLED()
     : currentPage(DisplayPage::NETWORK_INFO), lastPageSwitchTime(0), lastNetworkUpdate(0),
       isUploading(false), uploadProgress(0), lastUploadUpdate(0), dispRSSI(0),
-      isToastActive(false), toastStartTime(0), flipState(false), preferences() {}
+      isToastActive(false), toastStartTime(0), flipState(false), preferences()
+    , lastNetShown(NetShown::WIFI) // NEW: start by showing Wi-Fi first
+{}
 
 void c_OLED::Begin() {
     displayMutex = xSemaphoreCreateMutex();
@@ -54,8 +85,52 @@ void c_OLED::Begin() {
     InitNow();
 }
 
+// ---------- helpers (NEW) ----------
+
+static void drawWifiBars(U8G2 &g, int bars) {
+    // Draw up to 4 bars at top-right
+    bars = constrain(bars, 0, 4);
+    for (int i = 0; i < bars; i++) {
+        // x grows left->right, y grows down. Bar width=4, gap=2
+        g.drawBox(105 + i * 6, 16 - (i + 1) * 4, 4, (i + 1) * 4);
+    }
+}
+
+static void drawEthCord(U8G2 &g) {
+    // A tiny RJ45 plug (right side) + a short “cord”
+    // Plug body
+    g.drawFrame(108, 2, 18, 12);         // outer body
+    g.drawHLine(108, 6, 18);             // latch line
+    // Gold pins
+    for (int i = 0; i < 6; i++) {
+        g.drawVLine(111 + i * 2, 8, 4);
+    }
+    // Cord (leftwards)
+    g.drawHLine(96, 8, 12);
+    g.drawHLine(96, 9, 12);
+}
+
+static bool getWiFiInfo(IPAddress &ip, int &rssi) {
+    if (WiFi.isConnected()) {
+        ip = WiFi.localIP();
+        rssi = WiFi.RSSI();
+        return ip != INADDR_NONE && ip.toString() != "0.0.0.0";
+    }
+    return false;
+}
+
+static bool getEthInfo(IPAddress &ip) {
+#if defined(ARDUINO_ARCH_ESP32)
+    if (ETH.linkUp()) {
+        ip = ETH.localIP();
+        return ip != INADDR_NONE && ip.toString() != "0.0.0.0";
+    }
+#endif
+    return false;
+}
+
 static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxWidth, uint8_t xOrigin, uint8_t yOrigin) {
-    constexpr uint8_t DISPLAY_WIDTH = 128;
+    constexpr uint8_t DISPLAY_WIDTH  = 128;
     constexpr uint8_t DISPLAY_HEIGHT = 32;
 
     auto setFont = [&](bool large) {
@@ -120,6 +195,7 @@ static void DrawCenteredWrappedText(U8G2 &u8g2, const String &text, uint8_t maxW
     }
 }
 
+// ---------- unchanged init/draw splash ----------
 
 void c_OLED::InitNow()
 {
@@ -150,24 +226,101 @@ void c_OLED::End()
     preferences.end();
 }
 
+// ---------- UPDATED: Network page logic ----------
+
 void c_OLED::UpdateNetworkInfo(bool forceUpdate)
 {
     if (!displayMutex || xSemaphoreTake(displayMutex, pdMS_TO_TICKS(100)) != pdTRUE) return;
 
-    String currIP = NetworkMgr.GetlocalIP().toString();
-    String currHost; NetworkMgr.GetHostname(currHost);
-    int signalStrength = getSignalStrength(WiFi.RSSI());
+    // Gather current status
+    IPAddress wifiIP, ethIP;
+    int wifiRSSIraw = -127;
+    const bool wifiUp = getWiFiInfo(wifiIP, wifiRSSIraw);
+    const bool ethUp  = getEthInfo(ethIP);
+    const bool apOn   = (WiFi.getMode() & WIFI_MODE_AP);
 
-    if (forceUpdate || currIP != dispIP || currHost != dispHostName || signalStrength != dispRSSI)
-    {
-        u8g2.clearBuffer();
-        for (int i = 0; i < signalStrength; i++) {
-            u8g2.drawBox(105 + i * 6, 16 - (i + 1) * 4, 4, (i + 1) * 4);
+    // Hostname (unchanged)
+    String currHost; NetworkMgr.GetHostname(currHost);
+
+    // Decide what to show
+    bool showWiFi = false;
+    bool showEth  = false;
+    bool showAp   = false;
+
+    if (wifiUp && ethUp) {
+        // alternate each refresh
+        if (forceUpdate || (millis() - lastNetworkUpdate) >= NETWORK_UPDATE_INTERVAL_MS) {
+            lastNetShown = (lastNetShown == NetShown::WIFI) ? NetShown::ETH : NetShown::WIFI;
         }
+        showWiFi = (lastNetShown == NetShown::WIFI);
+        showEth  = !showWiFi;
+    } else if (wifiUp) {
+        showWiFi = true;
+        lastNetShown = NetShown::WIFI;
+    } else if (ethUp) {
+        showEth = true;
+        lastNetShown = NetShown::ETH;
+    } else if (apOn) {
+        // Neither up, but AP is active -> show AP connection instructions
+        showAp = true;
+    }
+
+    // Only redraw if something changed (IP/host/RSSI or toggled side) or forced
+    String newDispIP;
+    int newDispRSSI = dispRSSI;
+
+    if (showWiFi) {
+        newDispIP = wifiIP.toString();
+        newDispRSSI = getSignalStrength(wifiRSSIraw);
+    } else if (showEth) {
+        newDispIP = ethIP.toString();
+        newDispRSSI = 0; // not used for ETH
+    } else if (showAp) {
+        newDispIP = "0.0.0.0";
+        newDispRSSI = 0;
+    } else {
+        newDispIP = "0.0.0.0";
+        newDispRSSI = 0;
+    }
+
+    const bool toggledView =
+        (showWiFi && dispNetMode != "WIFI") ||
+        (showEth  && dispNetMode != "ETH")  ||
+        (showAp   && dispNetMode != "AP")   ||
+        (!showWiFi && !showEth && !showAp && dispNetMode != "NONE");
+
+    if (forceUpdate || toggledView || newDispIP != dispIP || currHost != dispHostName || newDispRSSI != dispRSSI) {
+        u8g2.clearBuffer();
         u8g2.setFont(u8g2_font_ncenB08_tr);
-        u8g2.drawStr(0, 18, ("IP: " + currIP).c_str());
-        u8g2.drawStr(0, 30, ("HOST: " + currHost).c_str());
-        dispIP = currIP; dispHostName = currHost; dispRSSI = signalStrength;
+
+        if (showWiFi) {
+            // Icon + lines for Wi-Fi
+            drawWifiBars(u8g2, newDispRSSI);
+            String ipLine = "WIFI: " + newDispIP;
+            u8g2.drawStr(0, 18, ipLine.c_str());
+            u8g2.drawStr(0, 30, ("HOST: " + currHost).c_str());
+            dispNetMode = "WIFI";
+        } else if (showEth) {
+            // Icon + lines for Ethernet
+            drawEthCord(u8g2);
+            String ipLine = "ETH : " + newDispIP;
+            u8g2.drawStr(0, 18, ipLine.c_str());
+            u8g2.drawStr(0, 30, ("HOST: " + currHost).c_str());
+            dispNetMode = "ETH";
+        } else if (showAp) {
+            // NEW: AP instruction screen
+            drawApStatus(u8g2);
+            dispNetMode = "AP";
+        } else {
+            // Fallback: Neither up and AP not active
+            u8g2.setFont(u8g2_font_6x10_tf);
+            DrawCenteredWrappedText(u8g2, "No Network", 120, 4, 6);
+            dispNetMode = "NONE";
+        }
+
+        dispIP = newDispIP;
+        dispHostName = currHost;
+        dispRSSI = newDispRSSI;
         u8g2.sendBuffer();
     }
 
@@ -250,7 +403,6 @@ void c_OLED::ShowToast(const String &message, const String &title)
 
     uint8_t messageYOffset = 4;
 
-    // Optional: Draw title if provided
     if (!title.isEmpty()) {
         u8g2.setFont(u8g2_font_6x10_tf);
         uint8_t titleWidth = u8g2.getStrWidth(title.c_str());
@@ -258,15 +410,12 @@ void c_OLED::ShowToast(const String &message, const String &title)
         messageYOffset = 14;
     }
 
-    // Set font optimized for two-line toast messages
     u8g2.setFont(u8g2_font_7x13B_tr);
 
-    // Draw centered and wrapped toast text within defined bounds
     constexpr uint8_t MAX_TOAST_WIDTH = 120;
     constexpr uint8_t TOAST_X_ORIGIN  = 4;
     DrawCenteredWrappedText(u8g2, toastMessage, MAX_TOAST_WIDTH, TOAST_X_ORIGIN, messageYOffset);
 
-    // Optional: Draw border around toast
     u8g2.setDrawColor(1);
     u8g2.drawRFrame(0, 0, 128, 32, 4);
 
@@ -331,7 +480,6 @@ void c_OLED::ShowRebootScreen()
     u8g2.sendBuffer();
     ESP.restart();
     xSemaphoreGive(displayMutex);
-    
 }
 
 int c_OLED::getSignalStrength(int rssi)
