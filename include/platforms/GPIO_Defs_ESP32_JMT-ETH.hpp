@@ -19,9 +19,7 @@
 */
 
 #define SUPPORT_ETHERNET
-#ifndef SUPPORT_OLED
-#define SUPPORT_OLED
-#endif
+
 //Output Manager
 #define DEFAULT_RMT_0_GPIO      gpio_num_t::GPIO_NUM_2
 #define DEFAULT_RMT_1_GPIO      gpio_num_t::GPIO_NUM_4
@@ -43,7 +41,7 @@
 
 
 #define DEFAULT_ETH_CLK_MODE           eth_clock_mode_t::ETH_CLOCK_GPIO0_IN
-#define DEFAULT_ETH_POWER_PIN          gpio_num_t::GPIO_NUM_17
+#define DEFAULT_ETH_POWER_PIN          gpio_num_t(-1)
 #define DEFAULT_ETH_POWER_PIN_ACTIVE   HIGH
 #define DEFAULT_ETH_TYPE               eth_phy_type_t::ETH_PHY_LAN8720
 #define ETH_ADDR_PHY_LAN8720           1
@@ -56,8 +54,6 @@
 #define DEFAULT_ETH_RXD1               gpio_num_t::GPIO_NUM_26
 #define DEFAULT_ETH_MDC_PIN            gpio_num_t::GPIO_NUM_23
 #define DEFAULT_ETH_MDIO_PIN           gpio_num_t::GPIO_NUM_18
-#define ESP_SCL_PIN                    gpio_num_t::GPIO_NUM_17
-#define ESP_SDA_PIN                    gpio_num_t::GPIO_NUM_12
 #define SUPPORT_OutputType_DMX            // UART
 #define SUPPORT_OutputType_GECE           // UART
 #define SUPPORT_OutputType_GS8208         // UART / RMT

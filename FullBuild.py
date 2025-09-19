@@ -27,6 +27,7 @@ from datetime import datetime
 from tqdm import tqdm
 import concurrent.futures
 from logging.handlers import RotatingFileHandler
+import re
 
 
 @dataclass
@@ -209,8 +210,10 @@ class ESPBuildManager:
         self.build_root = self.project_dir / ".pio" / "build"
         self.gulp_script = self.project_dir / "gulpme.bat"
         self.gulp_stamp = self.project_dir / ".gulp_stamp"
-        self.esp_tool = self.project_dir / ".pio" / "packages" / "tool-esptoolpy" / "esptool.py"
-        
+
+        # esptool: always use Python module form to control version
+        self.esptool_base_cmd = [sys.executable, "-m", "esptool"]
+
         # Setup logging
         self.logger = self.setup_logging()
         
@@ -220,7 +223,42 @@ class ESPBuildManager:
         # Setup profile manager
         profiles_file = self.project_dir / "build_profiles.json"
         self.profile_manager = ProfileManager(profiles_file)
-    
+
+    # ---------- esptool v5 enforcement ----------
+    def get_esptool_version_text(self) -> str:
+        try:
+            # esptool v5 supports "version" subcommand
+            out = subprocess.check_output(self.esptool_base_cmd + ["version"], stderr=subprocess.STDOUT, text=True)
+            return out.strip()
+        except Exception:
+            # fallback: call without args; parse header line
+            try:
+                out = subprocess.check_output(self.esptool_base_cmd + ["--help"], stderr=subprocess.STDOUT, text=True)
+                return out.splitlines()[0].strip()
+            except Exception as e:
+                raise RuntimeError(f"Unable to invoke esptool: {e}")
+
+    def assert_esptool_v5(self) -> None:
+        ver_text = self.get_esptool_version_text()
+        # Typical formats:
+        # "esptool.py v5.0.2"
+        # or "esptool v5.3"
+        m = re.search(r"v?(\d+)\.(\d+)", ver_text)
+        if not m:
+            print(f"{Fore.RED}✘ Could not parse esptool version from: {ver_text}{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Install with: pip install --upgrade 'esptool>=5,<6'{Style.RESET_ALL}")
+            sys.exit(1)
+        major = int(m.group(1))
+        if major != 5:
+            print(f"{Fore.RED}✘ esptool v5 is required. Detected: {ver_text}{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Fix it with: pip install --upgrade 'esptool>=5,<6'{Style.RESET_ALL}")
+            sys.exit(1)
+        self.logger.info(f"Using {ver_text}")
+
+    def esptool_cmd(self, *args: str) -> List[str]:
+        return self.esptool_base_cmd + list(args)
+    # -------------------------------------------
+
     def setup_logging(self) -> logging.Logger:
         """Setup comprehensive logging"""
         log_dir = self.project_dir / "logs"
@@ -265,13 +303,19 @@ class ESPBuildManager:
             if not shutil.which(tool):
                 missing.append(name)
         
-        # Check for esptool in project
-        if not self.esp_tool.exists() and not shutil.which('esptool'):
-            missing.append('ESP Tool')
-        
         if missing:
             print(f"{Fore.RED}✘ Missing dependencies: {', '.join(missing)}{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}Install with: pip install platformio esptool{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Install with: pip install platformio{Style.RESET_ALL}")
+            return False
+
+        # Hard-require esptool v5.*
+        try:
+            self.assert_esptool_v5()
+        except SystemExit:
+            return False
+        except Exception as e:
+            print(f"{Fore.RED}✘ esptool check failed: {e}{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Install with: pip install --upgrade 'esptool>=5,<6'{Style.RESET_ALL}")
             return False
         
         return True
@@ -515,13 +559,12 @@ class ESPBuildManager:
         self.logger.info(f"Backing up firmware to {backup_file}")
         
         try:
-            # Read flash memory
-            subprocess.run([
-                sys.executable, str(self.esp_tool),
+            # Read flash memory (esptool v5 syntax)
+            subprocess.run(self.esptool_cmd(
                 "--chip", "esp32",
                 "--port", serial_port,
-                "read_flash", "0x0", "0x400000", str(backup_file)
-            ], check=True)
+                "read-flash", "0x0", "0x400000", str(backup_file)
+            ), check=True)
             
             print(f"{Fore.GREEN}✔ Backup saved to: {backup_file}{Style.RESET_ALL}")
             return backup_file
@@ -563,18 +606,13 @@ class ESPBuildManager:
             return False
     
     def erase_flash(self, serial_port: str) -> None:
-        """Erase the entire flash of the ESP32"""
-        if not self.esp_tool.exists():
-            print(f"{Fore.RED}✘ esptool.py not found in .pio/packages. Did you run a PlatformIO build first?{Style.RESET_ALL}")
-            sys.exit(1)
-            
+        """Erase the entire flash of the ESP32 (esptool v5)"""
         print(f"{Fore.MAGENTA}💥 Erasing entire flash...{Style.RESET_ALL}")
-        subprocess.run([
-            sys.executable, str(self.esp_tool),
+        subprocess.run(self.esptool_cmd(
             "--chip", "esp32",
             "--port", serial_port,
-            "erase_flash"
-        ], check=True)
+            "erase-flash"
+        ), check=True)
     
     def enter_bootloader(self, port: str) -> None:
         """Force the ESP32 into bootloader mode using DTR/RTS signals"""
@@ -655,21 +693,19 @@ class ESPBuildManager:
         print(f"{Fore.CYAN}🚀 Flashing all firmware and filesystem images to {port}...{Style.RESET_ALL}")
         self.logger.info(f"Flashing images to {port}")
 
-        cmd = [
-            sys.executable,
-            str(self.esp_tool),
+        cmd = self.esptool_cmd(
             "--chip", "esp32",
             "--port", port,
             "--baud", str(config.baud_rate),
-            "write_flash",
-            "--flash_mode", config.flash_mode,
-            "--flash_freq", config.flash_freq,
-            "--flash_size", "detect",
+            "write-flash",
+            "--flash-mode", config.flash_mode,
+            "--flash-freq", config.flash_freq,
+            "--flash-size", "detect",
             "0x1000", str(build_files["bootloader"]),
             "0x8000", str(build_files["partitions"]),
             "0x10000", str(build_files["firmware"]),
             f"0x{config.fs_offset:X}", str(build_files["filesystem"])
-        ]
+        )
 
         attempt = 0
         while attempt <= max_retries:
@@ -732,23 +768,29 @@ class ESPBuildManager:
                 print(f"{Fore.YELLOW}⚠ Missing {label} at {src}{Style.RESET_ALL}")
 
         merged_bin = dst_prefix.with_name(dst_prefix.name + "-merged.bin")
-        esptool_cmd = [
-            "esptool", "--chip", board_mcu, "merge_bin",
-            "-o", str(merged_bin),
-            "--flash_mode", config.flash_mode,
-            "--flash_freq", config.flash_freq,
-            "--flash_size", "4MB",
-            "0x0000", str(paths["bootloader"][1]),
-            "0x8000", str(paths["partitions"][1]),
+
+        # Build merge list in correct address order
+        merge_args = [
+            "--flash-mode", config.flash_mode,
+            "--flash-freq", config.flash_freq,
+            "--flash-size", "4MB",
+            "0x1000", str(paths["bootloader"][1]),
+            "0x8000", str(paths["partitions"][1])
+        ]
+        if "boot_app0" in paths:
+            merge_args.extend(["0xe000", str(paths["boot_app0"][1])])
+        merge_args.extend([
             "0x10000", str(paths["application"][1]),
             f"0x{config.fs_offset:X}", str(paths["fs"][1])
-        ]
-
-        if "boot_app0" in paths:
-            esptool_cmd.extend(["0xe000", str(paths["boot_app0"][1])])
+        ])
 
         print(f"{Fore.CYAN}🔧 Generating merged image: {merged_bin.name}{Style.RESET_ALL}")
-        subprocess.run(esptool_cmd, check=False)
+        # esptool v5 syntax: merge-bin
+        subprocess.run(self.esptool_cmd(
+            "--chip", board_mcu, "merge-bin",
+            "-o", str(merged_bin),
+            *merge_args
+        ), check=False)
             
     def launch_serial_monitor(self, port: str, baud: int = 115200) -> None:
         """Launch the PlatformIO serial monitor"""
@@ -795,7 +837,7 @@ class ESPBuildManager:
         
         # Override with profile settings if available
         if profile and profile.flash_config:
-            flash_mode = profile.flash_config.get('flash_mode', flash_mode)
+            flash_mode = profile.flash_config.get('flash-mode', flash_mode)
             flash_freq = profile.flash_config.get('flash_freq', flash_freq)
         
         # Create build config
@@ -835,7 +877,7 @@ class ESPBuildManager:
     
     def run_action(self, action: str) -> None:
         """Run the specified action"""
-        # Check dependencies first
+        # Check dependencies first (includes esptool v5 enforcement)
         if not self.check_dependencies():
             sys.exit(1)
         
@@ -910,7 +952,7 @@ class ESPBuildManager:
 def create_parser() -> argparse.ArgumentParser:
     """Create command line argument parser"""
     parser = argparse.ArgumentParser(
-        description='ESP32 Build and Flash Manager - Enhanced Version',
+        description='ESP32 Build and Flash Manager - Enhanced Version (esptool v5 enforced)',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:

@@ -80,7 +80,11 @@ void c_EthernetDriver::Begin ()
 
 #ifdef testEth
     logcon(String("Start IP ") + GetIpAddress().toString());
-    if (false == ETH.begin(phy_addr, power_pin /*gpio_num_t(-1)*/, mdc_pin, mdio_pin, phy_type, clk_mode))
+
+    // If no power pin, pass gpio_num_t(-1) to ETH.begin
+    gpio_num_t pwr_test = (power_pin >= 0) ? static_cast<gpio_num_t>(power_pin)
+                                           : static_cast<gpio_num_t>(-1);
+    if (false == ETH.begin(phy_addr, pwr_test, mdc_pin, mdio_pin, phy_type, clk_mode))
     {
         logcon(String("Failed IP ") + GetIpAddress().toString());
     }
@@ -256,10 +260,17 @@ void c_EthernetDriver::InitPowerPin ()
 {
     // DEBUG_START;
 
+    // If there is no controllable power pin, do nothing.
+    if (power_pin < 0) {
+        // Optional: log for clarity
+        // logcon(F("Ethernet power pin disabled (-1); skipping power control."));
+        return;
+    }
+
     // Set up the power control output
     ResetGpio(power_pin);
-    pinMode (power_pin, OUTPUT);
-    digitalWrite (power_pin, powerPinActiveValue);
+    pinMode (static_cast<uint8_t>(power_pin), OUTPUT);
+    digitalWrite (static_cast<uint8_t>(power_pin), powerPinActiveValue);
 
     // DEBUG_END;
 } // InitPowerPin
@@ -490,9 +501,16 @@ void c_EthernetDriver::StartEth ()
 // if (!eth_connected)
 // esp_eth_disable();
     logcon(String("ETH IP Before Start: ") + ETH.localIP().toString());
-    if (false == ETH.begin (phy_addr, power_pin /*gpio_num_t(-1)*/, mdc_pin, mdio_pin, phy_type, clk_mode))
+
+    // If there is no power pin, tell ETH.begin to ignore it via -1
+    gpio_num_t pwr = (power_pin >= 0) ? static_cast<gpio_num_t>(power_pin)
+                                      : static_cast<gpio_num_t>(-1);
+
+    if (false == ETH.begin (phy_addr, pwr, mdc_pin, mdio_pin, phy_type, clk_mode))
     {
         fsm_Eth_state_DeviceInitFailed_imp.Init ();
+        // DEBUG_END;
+        return;
     }
     // https://github.com/espressif/arduino-esp32/issues/5733 - Add delay
     delay(100);
@@ -559,6 +577,7 @@ void fsm_Eth_state_PoweringUp::Init ()
     pEthernetDriver->AnnounceState ();
     pEthernetDriver->GetFsmTimer().StartTimer (pEthernetDriver->GetPowerPinActiveDelayMs(), false);
 
+    // This will no-op if power_pin < 0
     pEthernetDriver->InitPowerPin ();
 
     // DEBUG_END;

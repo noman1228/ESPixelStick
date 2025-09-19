@@ -20,10 +20,10 @@ static TaskHandle_t oledTaskHandle = nullptr;
 // --- NEW: simple enum to remember which net we showed last when both are up
 
 #ifndef ESP_SCL_PIN
-#define ESP_SCL_PIN 21
+#define ESP_SCL_PIN SCL
 #endif
 #ifndef ESP_SDA_PIN
-#define ESP_SDA_PIN 22
+#define ESP_SDA_PIN SDA
 #endif
 
 static U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, ESP_SCL_PIN, ESP_SDA_PIN);
