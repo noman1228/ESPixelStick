@@ -225,8 +225,14 @@ void c_OLED::InitNow()
 
 void c_OLED::End()
 {
-    if (oledTaskHandle) { vTaskDelete(oledTaskHandle); oledTaskHandle = nullptr; }
-    if (displayMutex) { vSemaphoreDelete(displayMutex); displayMutex = nullptr; }
+    if (oledTaskHandle != nullptr) {
+        vTaskDelete(oledTaskHandle);
+        oledTaskHandle = nullptr;
+    }
+    if (displayMutex != nullptr) {
+        vSemaphoreDelete(displayMutex);
+        displayMutex = nullptr;
+    }
     preferences.end();
 }
 
