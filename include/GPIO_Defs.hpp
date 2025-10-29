@@ -74,7 +74,15 @@ typedef enum
 #endif // def ARDUINO_ARCH_ESP8266
 
 // Platform specific GPIO definitions
-#if   defined (BOARD_ESP32_CAM)
+#if defined (BOARD_ESP32_JMT)
+#   include "platforms/GPIO_Defs_ESP32_JMT.hpp"
+#elif defined (BOARD_ESP32_JMTMATRIX)
+#   include "platforms/GPIO_Defs_ESP32_JMTMATRIX.hpp"
+#elif defined (BOARD_ESP32_JMT_ETH)
+#   include "platforms/GPIO_Defs_ESP32_JMT-ETH.hpp"
+#elif defined (BOARD_ESP32_JMT_MINI)
+#   include "platforms/GPIO_Defs_ESP32_JMT_MINI.hpp"
+#elif   defined (BOARD_ESP32_CAM)
 #   include "platforms/GPIO_Defs_ESP32_CAM.hpp"
 #elif defined (BOARD_ESP32_D1_MINI_ETH)
 #   include "platforms/GPIO_Defs_ESP32_D1_MINI_ETH.hpp"

@@ -23,7 +23,9 @@
 #include "ESPixelStick.h"
 #include "EFUpdate.h"
 #include <Int64String.h>
-
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 // Input modules
 #include "input/InputMgr.hpp"
 
@@ -158,7 +160,9 @@ void setup()
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
-
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif
     strcpy_P(config.id, String(F("ESPixelStick")).c_str());
 
     config.BlankDelay = 5;
@@ -546,7 +550,10 @@ void loop()
     }
 */
     FeedWDT ();
-
+    #ifdef SUPPORT_OLED
+        OLED.Poll();
+        FeedWDT();
+    #endif
     // Keep the Network Open
     NetworkMgr.Poll ();
 
