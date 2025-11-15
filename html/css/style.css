@@ -2,7 +2,38 @@
   padding-top: 60px;
   padding-bottom: 20px;
 }
+.copyable {
+    cursor: pointer;
+    color: var(--link-color, #0078d7);
+    text-decoration: underline dotted;
+    position: relative;
+    transition: color 0.2s ease;
+}
 
+.copyable:hover {
+    color: var(--link-hover-color, #c00);
+}
+
+/* Tooltip styling */
+.copy-tooltip {
+    position: absolute;
+    background: #333;
+    color: #fff;
+    font-size: 0.75em;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    transform: translateY(-150%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 999;
+}
+
+.copy-tooltip.show {
+    opacity: 1;
+    transform: translateY(-200%);
+}
 /* Fix single page anchor nav */
 .anchor:before {
   display: block;

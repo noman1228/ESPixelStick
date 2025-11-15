@@ -18,6 +18,79 @@ var ServerTransactionTimer = null;
 var FailedToCompleteServerTransaction = 0;
 var DocumentIsHidden = false;
 
+// Copy-to-clipboard handler for elements with class "copyable"
+(function () {
+    // Fallback copy for insecure contexts (HTTP) and older browsers
+    function legacyCopy(text) {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '-9999px';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+
+            // iOS/Safari quirks
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok;
+        } catch {
+            return false;
+        }
+    }
+
+    function showTooltip(el, msg) {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'copy-tooltip';
+        tooltip.textContent = msg;
+        el.appendChild(tooltip);
+        // force reflow for transition
+        void tooltip.offsetWidth;
+        tooltip.classList.add('show');
+        setTimeout(() => {
+            tooltip.classList.remove('show');
+            setTimeout(() => tooltip.remove(), 200);
+        }, 900);
+    }
+
+    async function copyTextFromEl(el) {
+        const text = el.textContent.trim();
+        if (!text) return;
+
+        // Prefer modern API only in secure contexts
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showTooltip(el, 'Copied!');
+                return;
+            } catch {
+                // fall through to legacy
+            }
+        }
+
+        // Legacy path (works on HTTP)
+        const ok = legacyCopy(text);
+        showTooltip(el, ok ? 'Copied!' : 'Press Ctrl+C');
+        // If even legacy fails, pre-select the text so Ctrl+C works
+        if (!ok) {
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.copyable').forEach(el => {
+            el.addEventListener('click', () => copyTextFromEl(el));
+        });
+    });
+})();
+
 // Drawing canvas - move to diagnostics
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
@@ -454,7 +527,7 @@ $(function ()
         }
     });
 
-// lets get started
+    // lets get started
     RequestConfigFile("admininfo.json");
     RequestConfigFile("config.json");
     RequestConfigFile("output_config.json");

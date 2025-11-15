@@ -20,6 +20,10 @@
 
 #include "UnzipFiles.hpp"
 #include "FileMgr.hpp"
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
+
 #include <TimeLib.h>
 //
 // Callback functions needed by the unzipLIB to access a file system
@@ -94,13 +98,17 @@ void UnzipFiles::Run()
         {
             break;
         }
-
+        #ifdef SUPPORT_OLED
+        OLED.ShowToast("DECOMPRESSING", String(FileName));
+        #endif
         ProcessZipFile(FileName);
 
         FileMgr.DeleteSdFile(FileName);
 
     } while(true);
-
+        #ifdef SUPPORT_OLED
+        OLED.ShowToast(" COMPLETED ", String(FileName));
+        #endif
     // DEBUG_END;
 } // Run
 
