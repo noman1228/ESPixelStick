@@ -28,7 +28,10 @@
 #include <vector>
 
 #ifdef ARDUINO_ARCH_ESP32
-#   ifdef SUPPORT_SD_MMC
+#   ifdef SIMULATE_SD
+#       define ESP_SD   LittleFS
+#	    define ESP_SDFS LittleFS
+#   elif defined (SUPPORT_SD_MMC)
 #       define ESP_SD   SD_MMC
 #	    define ESP_SDFS SD_MMC
 #   else // !def SUPPORT_SD_MMC
@@ -98,7 +101,7 @@ public:
     void     GetListOfSdFiles (std::vector<String> & Response);
     uint64_t GetSdFileSize    (const String & FileName);
     uint64_t GetSdFileSize    (const FileId & FileHandle);
-    void     RenameSdFile     (String & OldName, String & NewName);
+    void     RenameSdFile     (const String & OldName, const String & NewName);
     void     BuildFseqList    (bool DisplayFileNames);
 
     void     GetDriverName    (String& Name) { Name = F("FileMgr"); }
