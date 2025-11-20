@@ -170,10 +170,11 @@ void c_FileMgr::Begin ()
 
         if (!LittleFS.begin ())
         {
-            logcon ( String(CN_stars) + F (" Flash file system did not initialize correctly ") + CN_stars);
+            String msg = String(CN_stars) + F (" Flash file system did not initialize correctly ") + CN_stars;
+            RequestReboot(msg, 1000, true);
+            break;
         }
-        else
-        {
+
 #ifdef ARDUINO_ARCH_ESP32
             logcon (String (F ("Flash file system initialized. Used = ")) + String (LittleFS.usedBytes ()) + String (F (" out of ")) + String (LittleFS.totalBytes()) );
 #else
@@ -181,7 +182,6 @@ void c_FileMgr::Begin ()
 #endif // def ARDUINO_ARCH_ESP32
 
             listDir (LittleFS, String ("/"), 3);
-        }
 
         // StartSdCard();
 
@@ -397,12 +397,16 @@ void c_FileMgr::SetSpiIoPins ()
 {
     // DEBUG_START;
 
-#ifdef ARDUINO_ARCH_ESP8266
+#if defined ARDUINO_ARCH_ESP8266
     ESP.wdtDisable();
 #endif // def ARDUINO_ARCH_ESP8266
 
-#if defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
-    if (SdCardInstalled)
+#if defined (SIMULATE_SD)
+    SdCardInstalled = true;
+    BuildFseqList(true);
+
+#elif defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
+    if (SdCardInstalled && !SimulateSd)
     {
         // DEBUG_V("Terminate current SD session");
         ESP_SD.end ();
@@ -414,7 +418,8 @@ void c_FileMgr::SetSpiIoPins ()
     try
 #endif // def ARDUINO_ARCH_ESP32
     {
-#ifdef SUPPORT_SD_MMC
+#ifdef SIMULATE_SD
+#elif defined (SUPPORT_SD_MMC)
         // DEBUG_V (String ("  Data 0: ") + String (SD_CARD_DATA_0));
         // DEBUG_V (String ("  Data 1: ") + String (SD_CARD_DATA_1));
         // DEBUG_V (String ("  Data 2: ") + String (SD_CARD_DATA_2));
@@ -426,7 +431,7 @@ void c_FileMgr::SetSpiIoPins ()
         pinMode(SD_CARD_DATA_3, PULLUP);
 
         if(!ESP_SD.begin())
-#else // ! SUPPORT_SD_MMC
+#else // ifndef SUPPORT_SD_MMC
 #   ifdef ARDUINO_ARCH_ESP32
         // DEBUG_V (String ("miso_pin: ") + String (miso_pin));
         // DEBUG_V (String ("mosi_pin: ") + String (mosi_pin));
@@ -523,8 +528,10 @@ void c_FileMgr::SetSpiIoPins ()
 void c_FileMgr::SetSdSpeed ()
 {
     // DEBUG_START;
-#if defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
-    if (SdCardInstalled)
+#ifdef SIMULATE_SD
+    SdCardSizeMB = 12;
+#elif defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
+    if (SdCardInstalled && !SimulateSd)
     {
         // DEBUG_V();
         csd_t csd;
@@ -588,7 +595,7 @@ void c_FileMgr::SetSdSpeed ()
 void c_FileMgr::ResetSdCard()
 {
     // DEBUG_START;
-
+#ifndef SIMULATE_SD
     // send 0xff bytes until we get 0xff back
     byte ResetValue = 0x00;
     digitalWrite(cs_pin, LOW);
@@ -602,6 +609,7 @@ void c_FileMgr::ResetSdCard()
     }
     SPI.endTransaction();
     digitalWrite(cs_pin, HIGH);
+#endif // ndef SIMULATE_SD
 
     // DEBUG_END;
 } // ResetSdCard
@@ -1109,6 +1117,10 @@ c_FileMgr::FileId c_FileMgr::CreateSdFileHandle ()
 void c_FileMgr::DeleteSdFile (const String & FileName)
 {
     // DEBUG_START;
+#ifdef SIMULATE_SD
+    String NewFilename = String(F("/fseq/")) + FileName;
+    DeleteFlashFile(NewFilename);
+#else
     LockSd();
     bool FileExists = ESP_SD.exists (FileName);
     UnLockSd();
@@ -1119,6 +1131,7 @@ void c_FileMgr::DeleteSdFile (const String & FileName)
         ESP_SD.remove (FileName);
         UnLockSd();
     }
+#endif // def SIMULATE_SD
     BuildFseqList(false);
 
     // DEBUG_END;
@@ -1163,8 +1176,12 @@ void c_FileMgr::GetListOfSdFiles (std::vector<String> & Response)
         }
 
         FsFile dir;
+#ifdef SUPPORT_SD
+        if(!dir.open ("/fseq", O_READ))
+#else
         ESP_SD.chdir(); // Set to sd root
         if(!dir.open ("/", O_READ))
+#endif // ndef SUPPORT_SD
         {
             logcon("ERROR:GetListOfSdFiles: Could not open root dir");
             break;
@@ -1282,13 +1299,17 @@ void c_FileMgr::SaveSdFile (const String & FileName, JsonVariant & FileData)
 } // SaveSdFile
 
 //-----------------------------------------------------------------------------
-bool c_FileMgr::OpenSdFile (const String & FileName, FileMode Mode, FileId & FileHandle, int FileListIndex)
+bool c_FileMgr::OpenSdFile (const String & _FileName, FileMode Mode, FileId & FileHandle, int FileListIndex)
 {
     // DEBUG_START;
     // DEBUG_V(String("Mode: ") + String(Mode));
 
     bool FileIsOpen = false;
-
+    #ifdef SIMULATE_SD
+    String FileName = String(F("/fseq/")) + _FileName;
+    #else
+    String FileName = _FileName;
+    #endif
     do // once
     {
         if (!SdCardInstalled)
@@ -1755,12 +1776,15 @@ uint64_t c_FileMgr::GetSdFileSize (const FileId& FileHandle)
 } // GetSdFileSize
 
 //-----------------------------------------------------------------------------
-void c_FileMgr::RenameSdFile(String & OldName, String & NewName)
+void c_FileMgr::RenameSdFile(const String & OldName, const String & NewName)
 {
     // DEBUG_START;
     // DEBUG_V(String("OldName: '") + OldName + "'");
     // DEBUG_V(String("NewName: '") + NewName + "'");
 
+#ifdef SIMULATE_SD
+    RenameFlashFile(String(F("/fseq/")) + OldName, String(F("/fseq/")) + NewName);
+#else
     LockSd();
     // only do this in the root dir
     ESP_SD.chdir();
@@ -1771,6 +1795,7 @@ void c_FileMgr::RenameSdFile(String & OldName, String & NewName)
         logcon(String(CN_stars) + F("Could not rename '") + OldName + F("' to '") + NewName + F("'") + CN_stars);
     }
     UnLockSd();
+#endif // ndef SIMULATE_SD
     // DEBUG_END;
 } // RenameSdFile
 
@@ -1793,7 +1818,12 @@ void c_FileMgr::BuildFseqList(bool DisplayFileNames)
 
         LockSd();
         FsFile InputFile;
-        ESP_SD.chdir(); // Set to sd root
+#ifdef SIMULATE_SD
+        if(!InputFile.open ("/fseq", O_READ))
+#else
+        ESP_SD.chdir();
+        if(!InputFile.open ("/", O_READ))
+#endif // ndef SIMULATE_SD
         if(!InputFile.open ("/", O_READ))
         {
             UnLockSd();
@@ -1804,7 +1834,9 @@ void c_FileMgr::BuildFseqList(bool DisplayFileNames)
         jsonDoc.to<JsonObject>();
 
         // open output file, erase old data
-        ESP_SD.chdir(); // Set to sd root
+#ifndef SIMULATE_SD
+        ESP_SD.chdir();
+#endif // ndef SIMULATE_SD
         // DEBUG_V();
         JsonWrite(jsonDoc, "totalBytes", SdCardSizeMB * 1024 * 1024);
 
@@ -1916,8 +1948,12 @@ void c_FileMgr::FindFirstZipFile(String &FileName)
         FeedWDT();
         LockSd();
         FsFile InputFile;
-        ESP_SD.chdir(); // Set to sd root
+#ifdef SIMULATE_SD
+        if(!InputFile.open ("/fseq", O_READ))
+#else
+        ESP_SD.chdir();
         if(!InputFile.open ("/", O_READ))
+#endif // ndef SIMULATE_SD
         {
             UnLockSd();
             logcon(F("ERROR: Could not open SD card for Reading FSEQ List."));
@@ -1925,7 +1961,9 @@ void c_FileMgr::FindFirstZipFile(String &FileName)
         }
 
         // open output file, erase old data
-        ESP_SD.chdir(); // Set to sd root
+#ifndef SIMULATE_SD
+        ESP_SD.chdir();
+#endif // ndef SIMULATE_SD
 
         FsFile CurrentEntry;
         while (CurrentEntry.openNext (&InputFile, O_READ))
