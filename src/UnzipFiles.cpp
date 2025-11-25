@@ -307,17 +307,41 @@ int32_t UnzipFiles::SeekZipFile(void *p, int32_t position, int iType)
     return SeekPosition; // FileMgr.SeekSdFile(FileHandle, position, SeekMode(iType));
 } // SeekZipFile
 
-void UnzipFiles::DosDateToTmuDate (uint32_t DosDate, tmElements_t * ptm)
+void UnzipFiles::DosDateToTmuDate(uint32_t DosDate, tmElements_t *ptm)
 {
-    uint32_t Date;
-    Date = (uLong)(DosDate>>16);
-    ptm->Day   = (uInt)(Date&0x1f);
-    ptm->Month = (uInt)((((Date)&0x1E0)/0x20)-1);
-    ptm->Year  = CalendarYrToTm((uInt)(((Date&0x0FE00)/0x0200)+1980));
+    // Extract DOS DATE (high 16 bits)
+    uint16_t date = uint16_t(DosDate >> 16);
 
-    ptm->Hour   = (uInt) ((DosDate &0xF800)/0x800);
-    ptm->Minute = (uInt) ((DosDate&0x7E0)/0x20);
-    ptm->Second = (uInt) (2*(DosDate&0x1f));
+    uint16_t day   =  date        & 0x1F;       // 1–31
+    uint16_t month = (date >> 5)  & 0x0F;       // 1–12
+    uint16_t year  = (date >> 9)  & 0x7F;       // years since 1980
+
+    // Extract DOS TIME (low 16 bits)
+    uint16_t time  = uint16_t(DosDate & 0xFFFF);
+
+    uint16_t hour   = (time >> 11) & 0x1F;      // 0–23
+    uint16_t minute = (time >> 5)  & 0x3F;      // 0–59
+    uint16_t second = (time & 0x1F) * 2;        // stored in 2-sec increments
+
+    // DOS spec allows month 0 for "invalid" → clamp to 1
+    if (month < 1) month = 1;
+    if (month > 12) month = 12;
+
+    if (day < 1) day = 1;
+    if (day > 31) day = 31;
+
+    if (hour > 23) hour = 23;
+    if (minute > 59) minute = 59;
+    if (second > 59) second = 59;
+
+    // Convert the fields into TimeLib format
+    ptm->Day    = (uInt)day;
+    ptm->Month  = (uInt)month;                         // TimeLib expects 1–12
+    ptm->Year   = (uInt)CalendarYrToTm(1980 + year);   // Convert to tmElements_t year
+
+    ptm->Hour   = (uInt)hour;
+    ptm->Minute = (uInt)minute;
+    ptm->Second = (uInt)second;
 /*
     // DEBUG_V(String("Year: ") + String(tmYearToCalendar(FileDate.Year)));
     // DEBUG_V(String("Month: ") + String(FileDate.Month));
