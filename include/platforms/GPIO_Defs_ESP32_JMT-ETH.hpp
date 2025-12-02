@@ -7,6 +7,7 @@
 #define DEFAULT_RMT_1_GPIO      gpio_num_t::GPIO_NUM_4
 #define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_5
 #define DEFAULT_RMT_3_GPIO      gpio_num_t::GPIO_NUM_16
+
 #define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_0
 #define DEFAULT_RMT_5_GPIO      gpio_num_t::GPIO_NUM_12
 #define DEFAULT_RMT_6_GPIO      gpio_num_t::GPIO_NUM_3

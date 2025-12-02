@@ -76,6 +76,8 @@ typedef enum
 // Platform specific GPIO definitions
 #if defined (BOARD_ESP32_JMT)
 #   include "platforms/GPIO_Defs_ESP32_JMT.hpp"
+#elif defined (BOARD_RELAYS)
+#   include "platforms/GPIO_Defs_ESP32_JMT_RELAYS.hpp"
 #elif defined (BOARD_ESP32_JMT_ETH)
 #   include "platforms/GPIO_Defs_ESP32_JMT-ETH.hpp"
 #elif   defined (BOARD_ESP32_CAM)
