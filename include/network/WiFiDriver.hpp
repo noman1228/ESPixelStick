@@ -98,7 +98,7 @@ private:
     IPAddress   CurrentIpAddress  = IPAddress (0, 0, 0, 0);
     IPAddress   CurrentSubnetMask = IPAddress (0, 0, 0, 0);
     FastTimer   NextPoll;
-    uint32_t    PollInterval = 1000;
+    uint32_t    PollInterval = MilliSecondsInASecond;
     bool        ReportedIsWiFiConnected = false;
 
     char        ap_ssid[65];
