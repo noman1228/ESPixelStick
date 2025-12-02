@@ -72,6 +72,13 @@ public:
         FileAppend,
     } FileMode;
 
+    struct SdInfo
+    {
+        uint64_t MaxSize = 0;
+        uint64_t Available = 0;
+        uint64_t Used = 0;
+    };
+
     void   DeleteFlashFile (String FileName);
     void   RenameFlashFile (String OldName, String NewName);
     bool   SaveFlashFile   (const String & FileName, String & FileData);
@@ -108,6 +115,7 @@ public:
     void     NetworkStateChanged (bool NewState);
     void     FindFirstZipFile (String &FileName);
     int      FileListFindSdFileHandle (FileId HandleToFind);
+    void     GetSdInfo(SdInfo & Response);
 
 #define SD_BLOCK_SIZE 512
 
@@ -152,14 +160,14 @@ private:
     uint8_t  clk_pin  = SD_CARD_CLK_PIN;
     uint8_t  cs_pin   = SD_CARD_CS_PIN;
     FileId   fsUploadFileHandle;
-    char     fsUploadFileName[65];
+    String   fsUploadFileName;
     bool     fsUploadFileSavedIsEnabled = false;
     uint32_t fsUploadStartTime;
     char     FtpUserName[65] = "esps";
     char     FtpPassword[65] = "esps";
     char     WelcomeString[65] = "ESPS V4 FTP";
     bool     FtpEnabled = true;
-    uint64_t SdCardSizeMB = 0;
+    uint64_t SdCardSize = 0;
     uint32_t MaxSdSpeed = MaxSdTransSpeedMHz;
     bool     FoundZipFile = false;
 
@@ -237,7 +245,11 @@ public: struct __attribute__((__packed__, aligned(4))) CSD {
     struct FileListEntry_t
     {
         FileId      handle = INVALID_FILE_HANDLE;
+        #ifdef SIMULATE_SD
+        File        fsFile;
+        #else
         FsFile      fsFile;
+        #endif // def SIMULATE_SD
         uint64_t    size = 0;
         int         entryId = -1;
         char        Filename[65];

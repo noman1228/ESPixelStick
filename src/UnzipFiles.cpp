@@ -52,7 +52,7 @@ UnzipFiles::UnzipFiles ()
     // DEBUG_START;
 
     // use 75% and align to an even number of KB
-    BufferSize = uint32_t(float(ESP.getMaxAllocHeap ()) * 0.75) & 0xfffffc00;
+    BufferSize = uint32_t(float(ESP.getMaxAllocHeap ()) * 0.05) & 0xfffffc00;
     // DEBUG_V(String("BufferSize: ") + String(BufferSize));
 
     pOutputBuffer = (uint8_t*)malloc(BufferSize);
@@ -130,11 +130,6 @@ void UnzipFiles::ProcessZipFile(String & ArchiveFileName)
             returnCode = zip.getFileInfo(&fi, szName, sizeof(szName), NULL, 0, szComment, sizeof(szComment));
             if (returnCode == UNZ_OK)
             {
-                tmElements_t FileDate = {0};
-                DosDateToTmuDate (fi.dosDate, &FileDate);
-                setTime(makeTime(FileDate));
-                FeedWDT();
-
                 String ArchiveSubFileName = String(szName);
                 String FinalFileName = String(szName);
                 if(IsSpecialxLightsZipFile)
@@ -145,13 +140,28 @@ void UnzipFiles::ProcessZipFile(String & ArchiveFileName)
                 }
                 // DEBUG_V(String("ArchiveSubFileName: ") + ArchiveSubFileName);
                 // DEBUG_V(String("     FinalFileName: ") + FinalFileName);
+
+                c_FileMgr::SdInfo info;
+                FileMgr.GetSdInfo(info);
+                // DEBUG_V(String("Uncompressed Size: ") + String(fi.uncompressed_size));
+                // DEBUG_V(String("SD unused Size: ") + String(info.Available));
+                if(fi.uncompressed_size + 100 > info.Available)
+                {
+                    logcon (String(CN_stars) + F("Cannot unzip '") + FinalFileName + F("'. Not enough room on the SD card") + CN_stars);
+                    break;
+                }
+                tmElements_t FileDate = {0};
+                DosDateToTmuDate (fi.dosDate, &FileDate);
+                setTime(makeTime(FileDate));
+                FeedWDT();
+
                 FileMgr.DeleteSdFile(FinalFileName);
 
                 ProcessCurrentFileInZip(fi, ArchiveSubFileName);
 
                 if(IsSpecialxLightsZipFile)
                 {
-                    // DEBUG_V(String("Rename '") + SubFileName + "' to '" + NewName);
+                    // DEBUG_V(String("Rename '") + ArchiveSubFileName + "' to '" + FinalFileName);
                     FileMgr.RenameSdFile(ArchiveSubFileName, FinalFileName);
                     // only a single file is alowed in an xlz zip file.
                     break;
