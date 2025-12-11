@@ -729,7 +729,7 @@ void fsm_WiFi_state_ConnectingUsingConfig::Init ()
             // DEBUG_V ("Try this ssid");
             pWiFiDriver->SetFsmState (this);
             pWiFiDriver->AnnounceState ();
-            pWiFiDriver->GetFsmTimer().StartTimer(1000 * pWiFiDriver->Get_sta_timeout(), false);
+            pWiFiDriver->GetFsmTimer().StartTimer(MilliSecondsInASecond * pWiFiDriver->Get_sta_timeout(), false);
 
             pWiFiDriver->connectWifi (ssid, pw);
             break;
@@ -791,7 +791,7 @@ void fsm_WiFi_state_ConnectingUsingDefaults::Init ()
     {
         pWiFiDriver->SetFsmState (this);
         pWiFiDriver->AnnounceState ();
-        pWiFiDriver->GetFsmTimer().StartTimer(1000 * pWiFiDriver->Get_sta_timeout (), false);
+        pWiFiDriver->GetFsmTimer().StartTimer(MilliSecondsInASecond * pWiFiDriver->Get_sta_timeout (), false);
         // DEBUG_V ("      default_ssid: '" + default_ssid + "'");
         // DEBUG_V ("default_passphrase: '" + default_passphrase + "'");
         pWiFiDriver->connectWifi (default_ssid, default_passphrase);
@@ -855,7 +855,7 @@ void fsm_WiFi_state_ConnectingAsAP::Init ()
 
     pWiFiDriver->SetFsmState (this);
     pWiFiDriver->AnnounceState ();
-    pWiFiDriver->GetFsmTimer ().StartTimer(1000 * pWiFiDriver->Get_ap_timeout (), false);
+    pWiFiDriver->GetFsmTimer ().StartTimer(MilliSecondsInASecond * pWiFiDriver->Get_ap_timeout (), false);
 
     if (true == pWiFiDriver->Get_ap_fallbackIsEnabled() || pWiFiDriver->Get_ap_StayInApMode())
     {

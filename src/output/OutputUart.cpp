@@ -2,7 +2,7 @@
 * OutputUart.cpp - TM1814 driver code for ESPixelStick UART Channel
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2015-2022 Shelby Merrick
+* Copyright (c) 2015-2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -19,6 +19,7 @@
 #include "ESPixelStick.h"
 
 #include "output/OutputUart.hpp"
+
 extern "C"
 {
 #if defined(ARDUINO_ARCH_ESP8266)
@@ -874,12 +875,20 @@ bool c_OutputUart::RegisterUartIsrHandler()
         esp_intr_free(IsrHandle);
         IsrHandle = nullptr;
     }
+    #ifdef CONFIG_IDF_TARGET_ESP32S3
+    ret = (ESP_OK == uart_isr_register(OutputUartConfig.UartId,
+                                       uart_intr_handler,
+                                       this,
+                                       UART_TXFIFO_EMPTY_INT_ENA | ESP_INTR_FLAG_IRAM,
+                                       &IsrHandle));
+    #else
     ret = (ESP_OK == esp_intr_alloc((OutputUartConfig.UartId == UART_NUM_1) ? ETS_UART1_INTR_SOURCE : ETS_UART2_INTR_SOURCE,
                                     UART_TXFIFO_EMPTY_INT_ENA | ESP_INTR_FLAG_IRAM,
                                     uart_intr_handler,
                                     this,
                                     &IsrHandle));
     // UART_EXIT_CRITICAL(&(uart_context[uart_num].spinlock));
+    #endif // def CONFIG_IDF_TARGET_ESP32S3
 #endif
     // DEBUG_END;
 
