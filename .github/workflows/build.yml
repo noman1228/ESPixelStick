@@ -129,7 +129,7 @@ jobs:
             chip: "esp32"
           #
           - target: "esp32_s3"
-            chip: "esp32"
+            chip: "esp32s3"
           #
           # WT 32 Foo Board
           - target: "esp32_foo"
