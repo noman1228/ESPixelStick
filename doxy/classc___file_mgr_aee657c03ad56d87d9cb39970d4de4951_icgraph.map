@@ -1,11 +1,13 @@
 <map id="c_FileMgr::RenameFlashFile" name="c_FileMgr::RenameFlashFile">
-<area shape="rect" id="Node000001" title=" " alt="" coords="2524,202,2710,228"/>
-<area shape="rect" id="Node000002" href="$classc___web_mgr.html#a2c6189891b0496dae7d89ea7cdb24aee" title=" " alt="" coords="2370,202,2476,228"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="2509,217,2477,217,2477,212,2509,212"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="2587,226,2773,252"/>
+<area shape="rect" id="Node000002" href="$classc___web_mgr.html#a2c6189891b0496dae7d89ea7cdb24aee" title=" " alt="" coords="2402,200,2508,226"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="2571,229,2508,222,2508,217,2572,224"/>
+<area shape="rect" id="Node000037" href="$classc___file_mgr.html#a58980da9ad6a1fede7c36d8fe5be4361" title=" " alt="" coords="2370,250,2539,276"/>
+<area shape="poly" id="edge44_Node000001_Node000037" title=" " alt="" coords="2572,253,2540,256,2540,251,2571,248"/>
 <area shape="rect" id="Node000003" href="$classc___web_mgr.html#a078d26bad50a9051344ff07ad8e746d8" title="set up the operating environment based on the current config (or defaults)" alt="" coords="1895,83,2018,109"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="2354,200,2010,112,2011,107,2355,195"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="2386,200,2014,112,2015,107,2387,195"/>
 <area shape="rect" id="Node000005" href="$classc___web_mgr.html#aa3c98d4d503811ca4071b3e3ba84fa0f" title=" " alt="" coords="2102,227,2322,253"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="2355,225,2323,229,2322,224,2354,220"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="2387,223,2323,231,2322,225,2386,218"/>
 <area shape="rect" id="Node000004" href="$main_8cpp.html#a4fc01d736fe50cf5b977f755b675f11d" title="Arduino Setup." alt="" coords="5,122,59,148"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1895,81,1807,59,1695,35,1569,16,1441,8,317,8,276,12,235,21,195,36,158,53,95,91,51,123,48,119,92,87,156,49,193,31,233,16,275,6,317,3,1441,3,1569,10,1696,29,1808,53,1896,76"/>
 <area shape="rect" id="Node000006" href="$classc___network_mgr.html#af2b9dc93956b88607802667e89c76f75" title=" " alt="" coords="1859,222,2054,263"/>

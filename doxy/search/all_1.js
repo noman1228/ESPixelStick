@@ -30,5 +30,6 @@ var searchData=
   ['appendnullpixelcurrentcount_27',['AppendNullPixelCurrentCount',['../classc___output_pixel.html#aeb486aefb0cfdb737b04c86c95d5a19a',1,'c_OutputPixel']]],
   ['arduinojson_5fdefault_5fnesting_5flimit_28',['ARDUINOJSON_DEFAULT_NESTING_LIMIT',['../_e_s_pixel_stick_8h.html#adb3f9ff6eeacc0a7093b59f9d38a55fc',1,'ESPixelStick.h']]],
   ['arduinojson_5fuse_5flong_5flong_29',['ARDUINOJSON_USE_LONG_LONG',['../_e_s_pixel_stick_8h.html#ad04364871efb11788ea94d5f5417072c',1,'ESPixelStick.h']]],
-  ['array_30',['Array',['../unionc___output_pixel_1_1_color_offsets__s.html#a8840fcb54d39b02e79b1da48e4ad6800',1,'c_OutputPixel::ColorOffsets_s']]]
+  ['array_30',['Array',['../unionc___output_pixel_1_1_color_offsets__s.html#a8840fcb54d39b02e79b1da48e4ad6800',1,'c_OutputPixel::ColorOffsets_s']]],
+  ['available_31',['Available',['../structc___file_mgr_1_1_sd_info.html#a9ab12fb87eae130ff458830b6dfa1d5b',1,'c_FileMgr::SdInfo']]]
 ];

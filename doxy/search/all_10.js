@@ -26,7 +26,7 @@ var searchData=
   ['remainingplaycount_23',['RemainingPlayCount',['../structc___input_f_p_p_remote_play_item_1_1_file_control__t.html#afab732064f1162ed86a513660420385e',1,'c_InputFPPRemotePlayItem::FileControl_t']]],
   ['remoteplayenabled_24',['RemotePlayEnabled',['../classc___input_mgr.html#a5f69ee45bb28425a665bb08ec17ce50c',1,'c_InputMgr']]],
   ['renameflashfile_25',['RenameFlashFile',['../classc___file_mgr.html#aee657c03ad56d87d9cb39970d4de4951',1,'c_FileMgr']]],
-  ['renamesdfile_26',['RenameSdFile',['../classc___file_mgr.html#a93997e392e1f8e7a7e77eea0ee4079ec',1,'c_FileMgr']]],
+  ['renamesdfile_26',['RenameSdFile',['../classc___file_mgr.html#a58980da9ad6a1fede7c36d8fe5be4361',1,'c_FileMgr']]],
   ['reportediswificonnected_27',['ReportedIsWiFiConnected',['../classc___wi_fi_driver.html#a4d752718b07127ffc3291d7b0e360d9d',1,'c_WiFiDriver']]],
   ['reportnewframe_28',['ReportNewFrame',['../classc___output_common.html#ae4db3605be43e71dbd0b4f929b69aa85',1,'c_OutputCommon::ReportNewFrame()'],['../classc___output_uart.html#a535f40a45bc69ba9c67de5ed3da80467',1,'c_OutputUart::ReportNewFrame()']]],
   ['requestreadconfigfile_29',['RequestReadConfigFile',['../classc___web_mgr.html#a461cebce4ff284be5a268e7d36fffd05',1,'c_WebMgr']]],

@@ -15,7 +15,7 @@ var searchData=
   ['relayupdate_12',['RelayUpdate',['../classc___output_mgr.html#af6e6b50618e4d5cf50375ec684aa2a6b',1,'c_OutputMgr']]],
   ['remoteplayenabled_13',['RemotePlayEnabled',['../classc___input_mgr.html#a5f69ee45bb28425a665bb08ec17ce50c',1,'c_InputMgr']]],
   ['renameflashfile_14',['RenameFlashFile',['../classc___file_mgr.html#aee657c03ad56d87d9cb39970d4de4951',1,'c_FileMgr']]],
-  ['renamesdfile_15',['RenameSdFile',['../classc___file_mgr.html#a93997e392e1f8e7a7e77eea0ee4079ec',1,'c_FileMgr']]],
+  ['renamesdfile_15',['RenameSdFile',['../classc___file_mgr.html#a58980da9ad6a1fede7c36d8fe5be4361',1,'c_FileMgr']]],
   ['reportnewframe_16',['ReportNewFrame',['../classc___output_common.html#ae4db3605be43e71dbd0b4f929b69aa85',1,'c_OutputCommon::ReportNewFrame()'],['../classc___output_uart.html#a535f40a45bc69ba9c67de5ed3da80467',1,'c_OutputUart::ReportNewFrame()']]],
   ['requestreadconfigfile_17',['RequestReadConfigFile',['../classc___web_mgr.html#a461cebce4ff284be5a268e7d36fffd05',1,'c_WebMgr']]],
   ['requestreboot_18',['RequestReboot',['../main_8cpp.html#a23252221d60de2259fe00859f716c72e',1,'RequestReboot(String &amp;Reason, uint32_t LoopDelay, bool SkipDisable):&#160;main.cpp'],['../_e_s_pixel_stick_8h.html#aaffdda62d966b7a1777fec7ce955a22e',1,'RequestReboot(String &amp;Reason, uint32_t LoopDelay, bool SkipDisable=false):&#160;main.cpp']]],

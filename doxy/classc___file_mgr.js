@@ -1,6 +1,7 @@
 var classc___file_mgr =
 [
     [ "FileListEntry_t", "structc___file_mgr_1_1_file_list_entry__t.html", "structc___file_mgr_1_1_file_list_entry__t" ],
+    [ "SdInfo", "structc___file_mgr_1_1_sd_info.html", "structc___file_mgr_1_1_sd_info" ],
     [ "DeserializationHandler", "classc___file_mgr.html#a6e26c91b067547f4b8ec9bd3770ae9d7", null ],
     [ "FileId", "classc___file_mgr.html#ad1e8a2ab1fb887e915321d40f1959df3", null ],
     [ "FileMode", "classc___file_mgr.html#a8d56eea107a803ee4a53b9223d9c3853", [
@@ -28,6 +29,7 @@ var classc___file_mgr =
     [ "GetListOfSdFiles", "classc___file_mgr.html#a089c1ede83bf79b375fbc34a01f885ee", null ],
     [ "GetSdFileSize", "classc___file_mgr.html#a79819b60462db86b5bfd13e185381b92", null ],
     [ "GetSdFileSize", "classc___file_mgr.html#aad0ef23c104e33e3ebad71fbc3533458", null ],
+    [ "GetSdInfo", "classc___file_mgr.html#aa2d484dec382eb4be757fa7128f62af0", null ],
     [ "GetStatus", "classc___file_mgr.html#a47d399db704cff3e5ef32ae8a615349a", null ],
     [ "handleFileUpload", "classc___file_mgr.html#a7fc07abded89ba2dc2fb88aa6e230da8", null ],
     [ "handleFileUploadNewFile", "classc___file_mgr.html#aad3d5c934b264ab5e66c5616c43fa060", null ],
@@ -47,7 +49,7 @@ var classc___file_mgr =
     [ "ReadSdFile", "classc___file_mgr.html#a8691c90e2a239cde2087bf72e84f4436", null ],
     [ "ReadSdFile", "classc___file_mgr.html#a99bd795457bb43cc30780a1fc9d43c90", null ],
     [ "RenameFlashFile", "classc___file_mgr.html#aee657c03ad56d87d9cb39970d4de4951", null ],
-    [ "RenameSdFile", "classc___file_mgr.html#a93997e392e1f8e7a7e77eea0ee4079ec", null ],
+    [ "RenameSdFile", "classc___file_mgr.html#a58980da9ad6a1fede7c36d8fe5be4361", null ],
     [ "ResetSdCard", "classc___file_mgr.html#abf9680ad0d546bd42476f6460e387ba0", null ],
     [ "SaveFlashFile", "classc___file_mgr.html#ac9037dee1fa0683939b45f103442e237", null ],
     [ "SaveFlashFile", "classc___file_mgr.html#aff37690a9e5ab9311170fdf20ba1f6ec", null ],
@@ -73,7 +75,7 @@ var classc___file_mgr =
     [ "FileSendDir", "classc___file_mgr.html#a2cee9bd729f2622f518889c3794f544f", null ],
     [ "FoundZipFile", "classc___file_mgr.html#a0ad989fab99631270433bfbf6acdcb00", null ],
     [ "fsUploadFileHandle", "classc___file_mgr.html#a95ce91ea55ac222562d83f87aca429bb", null ],
-    [ "fsUploadFileName", "classc___file_mgr.html#a3b4bed0da3f46d1dd7772e353e70fb5a", null ],
+    [ "fsUploadFileName", "classc___file_mgr.html#a1cb372ace094d52c26f6c6d98e006cbd", null ],
     [ "fsUploadFileSavedIsEnabled", "classc___file_mgr.html#ad02883207cdebd5dae72ae7851127d39", null ],
     [ "fsUploadStartTime", "classc___file_mgr.html#aaba83240f519b443944a15cf6fd03963", null ],
     [ "FtpEnabled", "classc___file_mgr.html#a85fbd6a2a2766f0130fdfb9207da777f", null ],
@@ -85,6 +87,6 @@ var classc___file_mgr =
     [ "miso_pin", "classc___file_mgr.html#ad9d9c41539429dae4f18ceacda367199", null ],
     [ "mosi_pin", "classc___file_mgr.html#a7ed46a08080b395e231db4496e600c02", null ],
     [ "SdCardInstalled", "classc___file_mgr.html#ab0aca0e57b11d97db3a7341a28b1f8f5", null ],
-    [ "SdCardSizeMB", "classc___file_mgr.html#a40907cdc97cfe26711ffd8191c2ed610", null ],
+    [ "SdCardSize", "classc___file_mgr.html#ada07127a014a3244200b97a5b71a800d", null ],
     [ "WelcomeString", "classc___file_mgr.html#a936ea9cdbe993f9fcdd7bbc58fb184ae", null ]
 ];

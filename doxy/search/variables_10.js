@@ -3,7 +3,7 @@ var searchData=
   ['s_0',['s',['../structc___input_effect_engine_1_1d_c_h_s_v.html#a8ba380a9ebbd1f09d5a75c05ae85b6e9',1,'c_InputEffectEngine::dCHSV']]],
   ['sd_1',['sd',['../_file_mgr_8cpp.html#a6385eecb021ea6dc1e9b5597cfe94b85',1,'FileMgr.cpp']]],
   ['sdcardinstalled_2',['SdCardInstalled',['../classc___file_mgr.html#ab0aca0e57b11d97db3a7341a28b1f8f5',1,'c_FileMgr']]],
-  ['sdcardsizemb_3',['SdCardSizeMB',['../classc___file_mgr.html#a40907cdc97cfe26711ffd8191c2ed610',1,'c_FileMgr']]],
+  ['sdcardsize_3',['SdCardSize',['../classc___file_mgr.html#ada07127a014a3244200b97a5b71a800d',1,'c_FileMgr']]],
   ['secondarydns_4',['secondaryDns',['../classc___wi_fi_driver.html#a5717e4658564a346cf2a22c822653855',1,'c_WiFiDriver']]],
   ['seconds_5felapsed_5',['seconds_elapsed',['../union_f_p_p_multi_sync_packet.html#affd325a4aad9ca4be88b6aae2c0a2234',1,'FPPMultiSyncPacket::seconds_elapsed'],['../fseq_8h.html#abde5492c4b5532fb2c50e42aef706805',1,'seconds_elapsed:&#160;fseq.h']]],
   ['sendfppsync_6',['SendFppSync',['../classc___input_f_p_p_remote.html#a5b0598cd573c49535959ed9eb66b0880',1,'c_InputFPPRemote::SendFppSync'],['../classc___input_f_p_p_remote_play_item.html#a0bf2dd0492e17cd4f7b7f536f51fffc2',1,'c_InputFPPRemotePlayItem::SendFppSync']]],

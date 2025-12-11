@@ -16,5 +16,6 @@ var searchData=
   ['apcredentialsiterator_13',['ApCredentialsIterator',['../classc___ap_credentials.html#a62ee6760f021b7a0d1a9940cade3c890',1,'c_ApCredentials']]],
   ['appendnullpixelcount_14',['AppendNullPixelCount',['../classc___output_pixel.html#aa713d7da0b02c79339403769f04f1398',1,'c_OutputPixel']]],
   ['appendnullpixelcurrentcount_15',['AppendNullPixelCurrentCount',['../classc___output_pixel.html#aeb486aefb0cfdb737b04c86c95d5a19a',1,'c_OutputPixel']]],
-  ['array_16',['Array',['../unionc___output_pixel_1_1_color_offsets__s.html#a8840fcb54d39b02e79b1da48e4ad6800',1,'c_OutputPixel::ColorOffsets_s']]]
+  ['array_16',['Array',['../unionc___output_pixel_1_1_color_offsets__s.html#a8840fcb54d39b02e79b1da48e4ad6800',1,'c_OutputPixel::ColorOffsets_s']]],
+  ['available_17',['Available',['../structc___file_mgr_1_1_sd_info.html#a9ab12fb87eae130ff458830b6dfa1d5b',1,'c_FileMgr::SdInfo']]]
 ];
