@@ -242,7 +242,7 @@ void setup()
     // * ((volatile uint32_t*)0x60000900) &= ~(1); // Hardware WDT OFF
     ESP.wdtEnable (2000); // 2 seconds
 #else
-    esp_task_wdt_init (5, true);
+    esp_task_wdt_init (15, true);
 #endif
 
     WebMgr.CreateAdminInfoFile();
