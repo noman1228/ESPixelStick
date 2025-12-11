@@ -549,18 +549,24 @@ void loop()
 
     // Keep the Network Open
     NetworkMgr.Poll ();
+    // DEBUG_V();
 
     // Poll output
     OutputMgr.Poll ();
+    // DEBUG_V();
 
     WebMgr.Process ();
+    // DEBUG_V();
 
     FileMgr.Poll ();
+    // DEBUG_V();
 
     FPPDiscovery.Poll ();
+    // DEBUG_V();
 
 #ifdef SUPPORT_SENSOR_DS18B20
     SensorDS18B20.Poll();
+    // DEBUG_V();
 #endif // def SUPPORT_SENSOR_DS18B20
 
     // need to keep the rx pipeline empty
@@ -574,6 +580,7 @@ void loop()
         BytesToDiscard--;
         LOG_PORT.read();
     } // end discard loop
+    // DEBUG_V();
 
     // Reboot handler
     if (NotRebootingValue != RebootCount)
@@ -600,7 +607,7 @@ void loop()
         FeedWDT ();
         SaveConfig ();
     }
-
+    // DEBUG_END;
 } // loop
 
 bool RebootInProgress()
