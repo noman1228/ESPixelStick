@@ -189,7 +189,7 @@ void c_FileMgr::Begin ()
 
             listDir (LittleFS, String ("/"), 3);
 
-        // StartSdCard();
+        StartSdCard();
 
     } while (false);
 
@@ -405,6 +405,8 @@ void c_FileMgr::SetSpiIoPins ()
 {
     // DEBUG_START;
 
+    
+
 #if defined ARDUINO_ARCH_ESP8266
     ESP.wdtDisable();
 #endif // def ARDUINO_ARCH_ESP8266
@@ -419,7 +421,7 @@ void c_FileMgr::SetSpiIoPins ()
     SetSdSpeed();
     BuildFseqList(true);
 
-#elif defined (SUPPORT_SD) && defined(SUPPORT_SD_MMC)
+#elif defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
     if (SdCardInstalled)
     {
         // DEBUG_V("Terminate current SD session");
