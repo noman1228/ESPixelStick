@@ -3,7 +3,7 @@
 * OutputRmt.hpp - RMT driver code for ESPixelStick RMT Channel
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2015, 2024 Shelby Merrick
+* Copyright (c) 2015, 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -21,6 +21,7 @@
 #include "ESPixelStick.h"
 #ifdef ARDUINO_ARCH_ESP32
 #include <driver/rmt.h>
+#include <hal/rmt_ll.h>
 #include "OutputPixel.hpp"
 #include "OutputSerial.hpp"
 
@@ -75,20 +76,26 @@ public:
 #endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     };
 
+struct isrTxFlags_t
+{
+    uint32_t End = 0;
+    uint32_t Err = 0;
+    uint32_t Thres = 0;
+};
+
 private:
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#define MAX_NUM_RMT_CHANNELS 4
+#else
 #define MAX_NUM_RMT_CHANNELS     8
-#define RMT_INT_TX_END          (1)
-#define RMT_INT_RX_END          (2)
-#define RMT_INT_ERROR           (4)
-#define RMT_BITS_PER_CHAN       (3)
+#endif // def CONFIG_IDF_TARGET_ESP32S3
 
-#define RMT_INT_THR_EVNT_BIT    (1 << (24 + uint32_t (OutputRmtConfig.RmtChannelId)))
+#define RMT_INT_BIT         uint32_t(1 << uint32_t (OutputRmtConfig.RmtChannelId))
+#define InterrupsAreEnabled (0 != (RMT.int_ena.val & RMT_INT_BIT))
 
-#define RMT_INT_TX_END_BIT      (RMT_INT_TX_END   << (uint32_t (OutputRmtConfig.RmtChannelId)*RMT_BITS_PER_CHAN))
-#define RMT_INT_RX_END_BIT      (RMT_INT_RX_END   << (uint32_t (OutputRmtConfig.RmtChannelId)*RMT_BITS_PER_CHAN))
-#define RMT_INT_ERROR_BIT       (RMT_INT_ERROR    << (uint32_t (OutputRmtConfig.RmtChannelId)*RMT_BITS_PER_CHAN))
-#define NUM_RMT_SLOTS           (sizeof(RMTMEM.chan[0].data32) / sizeof(RMTMEM.chan[0].data32[0]))
+#define _NUM_RMT_SLOTS (sizeof(RMTMEM.chan[0].data32) / sizeof(RMTMEM.chan[0].data32[0]))
 
+    const uint32_t      NUM_RMT_SLOTS = _NUM_RMT_SLOTS;
     OutputRmtConfig_t   OutputRmtConfig;
 
     rmt_item32_t        Intensity2Rmt[RmtDataBitIdType_t::RMT_LIST_END];
@@ -96,9 +103,10 @@ private:
 
     uint32_t            NumRmtSlotsPerIntensityValue      = 8;
     uint32_t            NumRmtSlotOverruns                = 0;
-    uint32_t            MaxNumRmtSlotsPerInterrupt        = (NUM_RMT_SLOTS/2);
+    const uint32_t      MaxNumRmtSlotsPerInterrupt        = (_NUM_RMT_SLOTS/2);
 
-    rmt_item32_t    SendBuffer[NUM_RMT_SLOTS * 2];
+    #define         NumSendBufferSlots 64
+    rmt_item32_t    SendBuffer[NumSendBufferSlots];
     uint32_t        RmtBufferWriteIndex         = 0;
     uint32_t        SendBufferWriteIndex        = 0;
     uint32_t        SendBufferReadIndex         = 0;
@@ -132,14 +140,32 @@ public:
     bool StartNextFrame                         () { return ((nullptr != pParent) & (!OutputIsPaused)) ? pParent->RmtPoll() : false; }
     void GetStatus                              (ArduinoJson::JsonObject& jsonStatus);
     void PauseOutput                            (bool State);
-    inline uint32_t IRAM_ATTR GetRmtIntMask     ()               { return ((RMT_INT_TX_END_BIT | RMT_INT_ERROR_BIT | RMT_INT_ERROR_BIT)); }
     void GetDriverName                          (String &value)  { value = CN_RMT; }
 
-#define RMT_ISR_BITS         (RMT_INT_TX_END_BIT | RMT_INT_THR_EVNT_BIT)
-#define DisableRmtInterrupts RMT.int_ena.val &= ~(RMT_ISR_BITS)
-#define EnableRmtInterrupts  RMT.int_ena.val |=  (RMT_ISR_BITS)
-#define ClearRmtInterrupts   RMT.int_clr.val  =  (RMT_ISR_BITS)
-#define InterrupsAreEnabled  (RMT.int_ena.val &  (RMT_ISR_BITS))
+__attribute__((always_inline))
+inline void IRAM_ATTR DisableRmtInterrupts()
+{
+    rmt_ll_enable_tx_thres_interrupt(&RMT, OutputRmtConfig.RmtChannelId, false);
+    rmt_ll_enable_tx_end_interrupt(&RMT, OutputRmtConfig.RmtChannelId, false);
+    rmt_ll_enable_tx_err_interrupt(&RMT, OutputRmtConfig.RmtChannelId, false);
+    ClearRmtInterrupts();
+}
+
+__attribute__((always_inline))
+inline void IRAM_ATTR EnableRmtInterrupts()
+{
+    rmt_ll_enable_tx_thres_interrupt(&RMT, OutputRmtConfig.RmtChannelId, true);
+    rmt_ll_enable_tx_end_interrupt(&RMT, OutputRmtConfig.RmtChannelId, true);
+    rmt_ll_enable_tx_err_interrupt(&RMT, OutputRmtConfig.RmtChannelId, true);
+}
+
+__attribute__((always_inline))
+inline void IRAM_ATTR ClearRmtInterrupts()
+{
+    rmt_ll_clear_tx_thres_interrupt(&RMT, OutputRmtConfig.RmtChannelId);
+    rmt_ll_clear_tx_end_interrupt(&RMT, OutputRmtConfig.RmtChannelId);
+    rmt_ll_clear_tx_err_interrupt(&RMT, OutputRmtConfig.RmtChannelId);
+}
 
     bool DriverIsSendingIntensityData() {return 0 != InterrupsAreEnabled;}
 
@@ -152,9 +178,8 @@ public:
     void SetIntensity2Rmt (rmt_item32_t NewValue, RmtDataBitIdType_t ID) { Intensity2Rmt[ID] = NewValue; }
 
     bool ThereIsDataToSend = false;
-    bool NoFrameInProgress () { return (0 == (RMT.int_ena.val & (RMT_ISR_BITS))); }
 
-    void IRAM_ATTR ISR_Handler (uint32_t isrFlags);
+    void IRAM_ATTR ISR_Handler (isrTxFlags_t isrFlags);
     c_OutputCommon * pParent = nullptr;
 
 // #define USE_RMT_DEBUG_COUNTERS

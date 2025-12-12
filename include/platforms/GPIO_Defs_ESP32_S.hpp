@@ -19,17 +19,18 @@
 */
 
 //Output Manager
-#define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_2
-#define DEFAULT_RMT_1_GPIO     gpio_num_t::GPIO_NUM_13
-
-#define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_12
+#define MAX_NUM_RMT_CHANNELS 4
+#define DEFAULT_RMT_0_GPIO  gpio_num_t::GPIO_NUM_2
+#define DEFAULT_RMT_1_GPIO  gpio_num_t::GPIO_NUM_12
+#define DEFAULT_RMT_2_GPIO  gpio_num_t::GPIO_NUM_13
+#define DEFAULT_RMT_3_GPIO  gpio_num_t::GPIO_NUM_14
 
 // SPI Output
 #define SUPPORT_SPI_OUTPUT
-#define DEFAULT_SPI_DATA_GPIO   gpio_num_t::GPIO_NUM_27
-#define DEFAULT_SPI_CLOCK_GPIO  gpio_num_t::GPIO_NUM_32
-#define DEFAULT_SPI_CS_GPIO     gpio_num_t::GPIO_NUM_0
-#define DEFAULT_SPI_DEVICE      VSPI_HOST
+#define DEFAULT_SPI_DATA_GPIO   gpio_num_t::GPIO_NUM_26
+#define DEFAULT_SPI_CLOCK_GPIO  gpio_num_t::GPIO_NUM_33
+#define DEFAULT_SPI_CS_GPIO     gpio_num_t::GPIO_NUM_32
+#define DEFAULT_SPI_DEVICE      SPI2_HOST
 
 #define DEFAULT_I2C_SDA         gpio_num_t::GPIO_NUM_3
 #define DEFAULT_I2C_SCL         gpio_num_t::GPIO_NUM_5
@@ -37,11 +38,11 @@
 // File Manager
 #define SUPPORT_SD
 #define SD_CARD_MISO_PIN        gpio_num_t::GPIO_NUM_19
-#define SD_CARD_MOSI_PIN        gpio_num_t::GPIO_NUM_23
-#define SD_CARD_CLK_PIN         gpio_num_t::GPIO_NUM_18
+#define SD_CARD_MOSI_PIN        gpio_num_t::GPIO_NUM_18
+#define SD_CARD_CLK_PIN         gpio_num_t::GPIO_NUM_36
 #define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_4
 
-#define DEFAULT_RELAY_GPIO      gpio_num_t::GPIO_NUM_14
+#define DEFAULT_RELAY_GPIO      gpio_num_t::GPIO_NUM_15
 
 // Output Types
 // Not Finished - #define SUPPORT_OutputType_TLS3001
