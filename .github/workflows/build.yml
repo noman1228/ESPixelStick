@@ -127,9 +127,6 @@ jobs:
           #
           - target: "esp32_breakdancev2"
             chip: "esp32"
-          #
-          - target: "esp32_s"
-            chip: "esp32"
           #  
           - target: "esp32_s3"
             chip: "esp32s3"
