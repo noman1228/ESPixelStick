@@ -148,6 +148,13 @@ private:
 #   define MaxSdTransSpeedMHz 200
 #endif // ndef MaxSdTransSpeedMHz
 
+#ifdef ENABLE_DEDICATED_SPI
+#define ESPS_SPI_MODE DEDICATED_SPI
+#else
+#define ESPS_SPI_MODE SHARED_SPI
+#endif // def DEDICATED_SPI
+
+
     void StartSdCard ();
     void listDir (fs::FS& fs, String dirname, uint8_t levels);
     void DescribeSdCardToUser ();

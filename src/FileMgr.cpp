@@ -419,7 +419,7 @@ void c_FileMgr::SetSpiIoPins ()
     SetSdSpeed();
     BuildFseqList(true);
 
-#elif defined (SUPPORT_SD) && defined(SUPPORT_SD_MMC)
+#elif defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
     if (SdCardInstalled)
     {
         // DEBUG_V("Terminate current SD session");
@@ -478,7 +478,7 @@ void c_FileMgr::SetSpiIoPins ()
 #endif // !def SUPPORT_SD_MMC
         {
             // DEBUG_V();
-            logcon(String(F("No SD card installed")));
+            // logcon(String(F("No SD card installed")));
             SdCardInstalled = false;
             // DEBUG_V();
             if(nullptr == ESP_SD.card())
@@ -487,17 +487,17 @@ void c_FileMgr::SetSpiIoPins ()
             }
             else if (ESP_SD.card()->errorCode())
             {
-                logcon(String(F("SD initialization failed - code: ")) + String(ESP_SD.card()->errorCode()));
-                // DEBUG_V(String(F("SD initialization failed - data: ")) + String(ESP_SD.card()->errorData()));
-                printSdErrorText(&Serial, ESP_SD.card()->errorCode()); LOG_PORT.println("");
+                logcon(String(F("SD Card Error: initialization failed - code: ")) + String(ESP_SD.card()->errorCode()));
+                // DEBUG_V(String(F("SD Card initialization failed - data: ")) + String(ESP_SD.card()->errorData()));
+                // printSdErrorText(&LOG_PORT, ESP_SD.card()->errorCode()); LOG_PORT.println("");
             }
             else if (ESP_SD.vol()->fatType() == 0)
             {
-                logcon(F("SD Can't find a valid FAT16/FAT32 partition."));
+                logcon(F("SD Card Error: Can't find a valid FAT16/FAT32 partition."));
             }
             else
             {
-                logcon(F("SD Can't determine error type"));
+                logcon(F("SD Card Error: Can't determine SD Card error type"));
             }
         }
         else
@@ -670,6 +670,7 @@ void c_FileMgr::RenameFlashFile (String OldName, String NewName)
 void c_FileMgr::listDir (fs::FS& fs, String dirname, uint8_t levels)
 {
     // DEBUG_START;
+    std::vector<String> ListOfSubDirectories;
     do // once
     {
         logcon (String (F ("Listing directory: ")) + dirname);
@@ -693,10 +694,7 @@ void c_FileMgr::listDir (fs::FS& fs, String dirname, uint8_t levels)
         {
             if (MyFile.isDirectory ())
             {
-                if (levels)
-                {
-                    listDir (fs, dirname + "/" + MyFile.name (), levels - 1);
-                }
+                ListOfSubDirectories.push_back(MyFile.name());
             }
             else
             {
@@ -705,6 +703,13 @@ void c_FileMgr::listDir (fs::FS& fs, String dirname, uint8_t levels)
             MyFile = root.openNextFile ();
         }
 
+        for(auto & CurrentSubDir : ListOfSubDirectories)
+        {
+            if (levels)
+            {
+                listDir (fs, dirname + "/" + CurrentSubDir, levels - 1);
+            }
+        }
     } while (false);
 
 } // listDir
