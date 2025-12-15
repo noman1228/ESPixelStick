@@ -503,15 +503,18 @@ void c_FPPDiscovery::ProcessSyncPacket (uint8_t action, String FileName, float S
                 MultiSyncStats.pktSyncSeqStop++;
                 if(BlankOnStop)
                 {
+                    // DEBUG_V("Blank on stop");
                     ProcessBlankPacket();
                 }
                 else
                 {
+                    // DEBUG_V("NO Blank on stop");
                     StopPlaying ();
                 }
 
                 if(FppSyncOverride)
                 {
+                    // DEBUG_V("Set Background file");
                     InputFPPRemote->SetBackgroundFile();
                 }
                 break;
@@ -571,6 +574,7 @@ void c_FPPDiscovery::ProcessBlankPacket ()
 
     if (IsEnabled)
     {
+        // DEBUG_V("Blanking is enabled");
         StopPlaying ();
         OutputMgr.ClearBuffer();
     }
