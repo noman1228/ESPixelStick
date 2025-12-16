@@ -64,7 +64,6 @@ private:
     bool IsEnabled = false;
     bool BlankOnStop = false;
     bool StopInProgress = false;
-    bool FppSyncOverride = false;
     char ConfiguredFileToPlay[65];
     char UploadFileName[65];
     IPAddress FppRemoteIp = IPAddress (uint32_t(0));
