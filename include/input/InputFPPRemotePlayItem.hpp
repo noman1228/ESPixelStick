@@ -80,7 +80,7 @@ public:
             c_InputMgr::e_InputChannelIds GetInputChannelId () { return InputChannelId; }
             bool     InputIsPaused   () { return InputPaused; }
             void     SetOperationalState (bool ActiveFlag) {InputPaused = !ActiveFlag;}
-            void     SetBackgroundFileName(String & FileName) {strcpy(BackgroundFileName, FileName.c_str());}
+            void     SetBackgroundFileName(String & FileName) {strncpy(BackgroundFileName, FileName.c_str(), sizeof(BackgroundFileName)-1);}
             void     ClearFileNames  ();
 
 }; // c_InputFPPRemotePlayItem
