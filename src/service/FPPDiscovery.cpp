@@ -230,7 +230,6 @@ void c_FPPDiscovery::GetConfig (JsonObject& jsonConfig)
 
     JsonWrite(jsonConfig, CN_fseqfilename, ConfiguredFileToPlay);
     JsonWrite(jsonConfig, CN_BlankOnStop,  BlankOnStop);
-    JsonWrite(jsonConfig, CN_FPPoverride,  FppSyncOverride);
 
     // DEBUG_END;
 
@@ -275,7 +274,7 @@ void c_FPPDiscovery::GetStatus (JsonObject & jsonStatus)
         JsonWrite(MyJsonStatus, F ("FppRemoteIp"), FppRemoteIp.toString ());
         if (AllowedToPlayRemoteFile())
         {
-            // DEBUG_V();
+            // DEBUG_V("GetFppRemotePlayStatus");
             InputFPPRemote->GetFppRemotePlayStatus (MyJsonStatus);
         }
         else
@@ -512,11 +511,6 @@ void c_FPPDiscovery::ProcessSyncPacket (uint8_t action, String FileName, float S
                     StopPlaying ();
                 }
 
-                if(FppSyncOverride)
-                {
-                    // DEBUG_V("Set Background file");
-                    InputFPPRemote->SetBackgroundFile();
-                }
                 break;
             }
 
@@ -1423,7 +1417,6 @@ bool c_FPPDiscovery::SetConfig (JsonObject& jsonConfig)
 
     setFromJSON (ConfiguredFileToPlay, jsonConfig, CN_fseqfilename);
     setFromJSON (BlankOnStop,          jsonConfig, CN_BlankOnStop);
-    setFromJSON (FppSyncOverride,      jsonConfig, CN_FPPoverride);
 
     // DEBUG_END;
 
@@ -1463,7 +1456,7 @@ void c_FPPDiscovery::StartPlaying (String & FileName, float SecondsElapsed)
         if (AllowedToPlayRemoteFile())
         {
             // DEBUG_V ("Ask FSM to start playing");
-            InputFPPRemote->FppStartRemoteFilePlay (FileName, SecondsElapsed);
+            InputFPPRemote->StartPlaying (FileName, SecondsElapsed, true);
         }
 
     } while (false);
@@ -1483,7 +1476,7 @@ void c_FPPDiscovery::StopPlaying ()
 
     if(AllowedToPlayRemoteFile())
     {
-        InputFPPRemote->FppStopRemoteFilePlay();
+        InputFPPRemote->StopPlaying();
     }
 
     // DEBUG_END;
