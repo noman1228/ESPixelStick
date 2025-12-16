@@ -39,6 +39,7 @@ private:
     bool    InputPaused = false;
     int32_t SyncOffsetMS = 0;
     c_InputMgr::e_InputChannelIds InputChannelId = c_InputMgr::e_InputChannelIds::InputChannelId_ALL;
+    uint32_t  PlayedFileCount = 0;
 
 public:
     c_InputFPPRemotePlayItem (c_InputMgr::e_InputChannelIds InputChannelId);
@@ -68,8 +69,10 @@ public:
     virtual void     SetPauseState  (bool _PauseInput) {InputPaused = _PauseInput;}
     virtual void     Sync           (String & FileName, float SecondsElapsed) = 0;
     virtual void     GetStatus      (JsonObject & jsonStatus) = 0;
-    virtual void     ClearStatistics () {}
+    virtual void     ClearStatistics () {PlayedFileCount = 0;}
     virtual bool     IsIdle         () = 0;
+            uint32_t GetPlayedFileCount () {return PlayedFileCount;}
+            void     SetPlayedFileCount (uint32_t value) {PlayedFileCount = value;}
             String   GetFileName    () { return String(FileControl[CurrentFile].FileName); }
             uint32_t GetRepeatCount () { return FileControl[CurrentFile].RemainingPlayCount; }
             void     SetDuration    (time_t value) { PlayDurationSec = value; }
