@@ -127,6 +127,7 @@ void c_InputFPPRemote::GetStatus (JsonObject& jsonStatus)
     {
         // DEBUG_V("PlayingRemoteFile");
         FPPDiscovery.GetStatus (LocalPlayerStatus);
+        FilePlayCount = pInputFPPRemotePlayItem->GetPlayedFileCount();
     }
 
     else if (PlayingFile ())
@@ -153,6 +154,8 @@ void c_InputFPPRemote::ClearStatistics ()
 {
     // DEBUG_START;
 
+    FilePlayCount = 0;
+
     if (PlayingRemoteFile ())
     {
         // DEBUG_V();
@@ -161,7 +164,6 @@ void c_InputFPPRemote::ClearStatistics ()
 
     else if (PlayingFile ())
     {
-        FilePlayCount = 0;
         if(pInputFPPRemotePlayItem)
         {
             pInputFPPRemotePlayItem->ClearStatistics ();
@@ -449,18 +451,21 @@ void c_InputFPPRemote::StartPlaying (String& FileName, time_t ElapsedSeconds, bo
             }
             // DEBUG_V("we are allowed to play remote files")
             StartPlayingRemoteFile (FileName, ElapsedSeconds);
+            pInputFPPRemotePlayItem->SetPlayedFileCount (++FilePlayCount);
         }
         else if ((!FileName.isEmpty ()) && (!FileName.equals("null")))
         {
             // DEBUG_V("we are only allowed to play local files");
             StartPlayingLocalFile (FileName);
+            pInputFPPRemotePlayItem->SetPlayedFileCount (++FilePlayCount);
         }
         else
         {
             // DEBUG_V("No file to play");
             break;
         }
-        FilePlayCount++;
+
+
     } while (false);
 
     // DEBUG_END;
@@ -639,6 +644,11 @@ bool c_InputFPPRemote::PlayingRemoteFile ()
 void c_InputFPPRemote::FppStopRemoteFilePlay ()
 {
     // DEBUG_START;
+
+    if(pInputFPPRemotePlayItem)
+    {
+        FilePlayCount = pInputFPPRemotePlayItem->GetPlayedFileCount();
+    }
 
     // only process if the pointer is valid
     while (AllowedToPlayRemoteFile())

@@ -61,11 +61,6 @@ void c_InputFPPRemotePlayFile::Start (String & FileName, float SecondsElapsed, u
     {
         // DEBUG_V("Ask FSM to start the sequence.");
         pCurrentFsmState->Start (FileName, SecondsElapsed, PlayCount);
-        if(!FileName.equals(FileControl[CurrentFile].FileName))
-        {
-            // File changed. Restart counter
-            PlayedFileCount = 0;
-        }
     }
     else
     {
@@ -168,7 +163,7 @@ void c_InputFPPRemotePlayFile::GetStatus (JsonObject& JsonStatus)
     JsonWrite(JsonStatus, CN_seconds_played,    String (secs));
     JsonWrite(JsonStatus, CN_seconds_remaining, String (secsRem));
     JsonWrite(JsonStatus, CN_sequence_filename, temp);
-    JsonWrite(JsonStatus, F("PlayedFileCount"), PlayedFileCount);
+    JsonWrite(JsonStatus, F("PlayedFileCount"), GetPlayedFileCount());
 
     // After inserting the total seconds and total seconds remaining,
     // JsonStatus also includes formatted "minutes + seconds" for both
@@ -194,7 +189,7 @@ void c_InputFPPRemotePlayFile::ClearStatistics ()
     SyncControl.SyncCount = 0;
     SyncControl.SyncAdjustmentCount = 0;
 
-    PlayedFileCount = 0;
+    SetPlayedFileCount(0);
 
     memset(LastFailedPlayStatusMsg, 0x0, sizeof(LastFailedPlayStatusMsg));
 
@@ -467,7 +462,7 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
             SparseRanges[0].ChannelCount = fsqParsedHeader.channelCount;
         }
 
-        PlayedFileCount++;
+        SetPlayedFileCount (GetPlayedFileCount() + 1);
         Response = true;
 
     } while (false);
