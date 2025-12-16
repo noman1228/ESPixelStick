@@ -111,7 +111,7 @@ private:
 #   define CTRL_PKT_PLUGIN      5
 #   define CTRL_PKT_FPPCOMMAND  6
 
-#define FPP_DEBUG_ENABLED
+// #define FPP_DEBUG_ENABLED
 struct SystemDebugStats_t
 {
     uint32_t ProcessFPPJson = 0;
