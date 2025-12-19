@@ -28,6 +28,12 @@ c_OutputSerialUart::c_OutputSerialUart (c_OutputMgr::e_OutputChannelIds OutputCh
     c_OutputSerial(OutputChannelId, outputGpio, uart, outputType)
 {
     // DEBUG_START;
+    #if defined(SUPPORT_OutputType_FireGod)
+    if (c_OutputMgr::e_OutputType::OutputType_FireGod == OutputType)
+    {
+        CurrentBaudrate = 115200;
+    }
+    #endif // defined(SUPPORT_OutputType_FireGod)
     // DEBUG_END;
 } // c_OutputSerialUart
 
@@ -113,8 +119,8 @@ uint32_t c_OutputSerialUart::Poll ()
 
     if (canRefresh())
     {
-        Uart.StartNewFrame();
         ReportNewFrame();
+        Uart.StartNewFrame();
     }
     else
     {
@@ -137,4 +143,4 @@ void c_OutputSerialUart::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
