@@ -97,6 +97,7 @@ const CN_PROGMEM char CN_File                     [] = "File";
 const CN_PROGMEM char CN_file                     [] = "file";
 const CN_PROGMEM char CN_filename                 [] = "filename";
 const CN_PROGMEM char CN_files                    [] = "files";
+const CN_PROGMEM char CN_FireGod                  [] = "FireGod";
 const CN_PROGMEM char CN_FPPoverride              [] = "FPPoverride";
 const CN_PROGMEM char CN_Frequency                [] = "Frequency";
 const CN_PROGMEM char CN_fseqfilelist             [] = "/fseqfilelist";

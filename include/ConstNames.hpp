@@ -103,6 +103,7 @@ extern const CN_PROGMEM char CN_File [];
 extern const CN_PROGMEM char CN_file [];
 extern const CN_PROGMEM char CN_filename [];
 extern const CN_PROGMEM char CN_files [];
+extern const CN_PROGMEM char CN_FireGod [];
 extern const CN_PROGMEM char CN_FPPoverride [];
 extern const CN_PROGMEM char CN_Frequency [];
 extern const CN_PROGMEM char CN_fseqfilelist [];

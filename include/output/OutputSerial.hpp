@@ -57,10 +57,11 @@ protected:
 
     enum class BaudRate
     {
-        BR_MIN = 38400,
-        BR_DMX = 250000,
-        BR_MAX = 460800,
-        BR_DEF = 57600,
+        BR_MIN     = 38400,
+        BR_FIREGOD = 115200,
+        BR_DMX     = 250000,
+        BR_MAX     = 460800,
+        BR_DEF     = 57600,
     };
 
     uint32_t CurrentBaudrate = uint32_t(BaudRate::BR_DEF); // current transmit rate
@@ -97,6 +98,11 @@ private:
     uint32_t      SerialFooterSize  = 0;
     uint32_t      SerialFooterIndex = 0;
 
+    uint16_t      FireGodCurrentController = 0;
+    uint8_t       FireGodBytesInFrameCount = 0;
+    const uint8_t FireGodNumMaxControllers = 4;
+    const uint8_t FireGodNumChanPerController = 32;
+
 #ifdef USE_SERIAL_DEBUG_COUNTERS
     uint32_t   IntensityBytesSent = 0;
     uint32_t   IntensityBytesSentLastFrame = 0;
@@ -128,6 +134,13 @@ private:
         MAX_VAL_TO_ESC   = ESC_CHAR
     };
 
+    enum FireGodFrameDefinitions_t
+    {
+        FRAME_START = 0x55,
+        DATA_BASE   = 100,
+        DATA_MAX    = 200,
+    };
+
     enum SerialFrameState_t
     {
         RenardFrameStart,
@@ -139,6 +152,10 @@ private:
         GenSerSendHeader,
         GenSerSendData,
         GenSerSendFooter,
+        FireGodFrameStart,
+        FireGodSendControllerId,
+        FireGodSendData,
+        FireGodSendFill,
         SerialIdle
     };
     SerialFrameState_t SerialFrameState = SerialIdle;

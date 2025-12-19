@@ -92,7 +92,7 @@ public:
         bool                        TriggerIsrExternally            = false;
         const CitudsArray_t        *CitudsArray                     = nullptr;
 
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
             c_OutputSerial *pSerialDataSource = nullptr;
 #endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     };

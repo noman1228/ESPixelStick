@@ -3,7 +3,7 @@
  * GPIO_Defs_ESP32_BreakDanceV2.hpp - Output Management class
  *
  * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
- * Copyright (c) 2021 - 2022 Shelby Merrick
+ * Copyright (c) 2021 - 2026 Shelby Merrick
  * http://www.forkineye.com
  *
  *  This program is provided free for you to use in any way that you wish,
@@ -59,3 +59,4 @@
 #define SUPPORT_OutputType_WS2811           // UART / RMT
 #define SUPPORT_OutputType_Relay            // GPIO
 #define SUPPORT_OutputType_Servo_PCA9685    // I2C (default pins)
+#define SUPPORT_OutputType_FireGod          // UART / RMT
