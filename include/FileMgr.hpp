@@ -245,11 +245,7 @@ public: struct __attribute__((__packed__, aligned(4))) CSD {
     struct FileListEntry_t
     {
         FileId      handle = INVALID_FILE_HANDLE;
-        #ifdef SIMULATE_SD
-        File        fsFile;
-        #else
         FsFile      fsFile;
-        #endif // def SIMULATE_SD
         uint64_t    size = 0;
         int         entryId = -1;
         char        Filename[65];

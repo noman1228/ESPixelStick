@@ -1,6 +1,26 @@
-﻿body {
+﻿:root{
+    --bg-0: #071016; /* page background */
+    --bg-1: linear-gradient(180deg,#071016 0%,#0a1520 100%);
+    --card: rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.04);
+    --muted: #9aa6b2;
+    --accent: #00e5ff; /* cyan */
+    --accent-2: #7c4dff; /* purple */
+    --success: #4ade80;
+    --danger: #ff6b6b;
+    --glass-border: rgba(255,255,255,0.06);
+    --radius: 8px;
+    font-synthesis: none;
+}
+
+body {
   padding-top: 60px;
   padding-bottom: 20px;
+    background: var(--bg-1);
+    color: var(--muted);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Fix single page anchor nav */
@@ -19,6 +39,8 @@
 .esps-legend {
     margin-top: 5px;
     margin-bottom: 5px;
+    color: var(--muted);
+    font-weight: 600;
 }
 
 .esps-table {
@@ -37,15 +59,22 @@
   position: fixed;
   bottom: 0;
   width: 100%;
-  height: 20px;
-  background-color: #222;
-  color: #9d9d9d;
+    height: 28px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    color: var(--muted);
+    border-top: 1px solid rgba(255,255,255,0.02);
+    display: flex;
+    align-items: center;
+    padding-left: 14px;
+    font-size: 12px;
 }
 
 /* Color picker */
 .colorpicker-saturation {
   width: 200px;
   height: 200px;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.6) inset;
 }
 
 .colorpicker-hue,
@@ -60,8 +89,12 @@
 }
 
 .btn-cp {
-  border: 1px solid;
+    border: 1px solid var(--glass-border);
   width: 100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    color: var(--muted);
+    padding: 8px 10px;
+    border-radius: 6px;
 }
 
 .white {
@@ -89,35 +122,37 @@
 }
 
 canvas {
-  background-color: black;
+    background-color: #020305;
+    border-radius: 6px;
+    box-shadow: 0 8px 30px rgba(2,8,20,0.6) inset;
   width: 100%;
   height: auto;
 }
 
 /* Snackbar - position it at the bottom and in the middle of the screen */
 #snackbar {
-    visibility: hidden;     /* Hidden by default. Visible on click */
-    min-width: 250px;       /* Set a default minimum width */
-    margin-left: -125px;    /* Divide value of min-width by 2 */
-    background-color: #333; /* Black background color */
-    color: #fff;            /* White text color */
-    text-align: center;     /* Centered text */
-    border-radius: 2px;     /* Rounded borders */
-    padding: 16px;          /* Padding */
-    position: fixed;        /* Sit on top of the screen */
-    z-index: 1;             /* Add a z-index if needed */
-    left: 50%;              /* Center the snackbar */
-    bottom: 30px;           /* 30px from the bottom */
+    visibility: hidden;
+    min-width: 260px;
+    margin-left: -130px;
+    background: linear-gradient(90deg, rgba(0,0,0,0.6), rgba(10,14,20,0.6));
+    backdrop-filter: blur(6px);
+    color: var(--muted);
+    text-align: center;
+    border-radius: 10px;
+    padding: 14px 18px;
+    position: fixed;
+    z-index: 2000;
+    left: 50%;
+    bottom: 30px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 12px 30px rgba(2,6,23,0.7);
 }
 
 /* Show the snackbar when clicking on a button (class added with JavaScript) */
 #snackbar.show {
-    visibility: visible; /* Show the snackbar */
-
-/* Add animation: Take 0.5 seconds to fade in and out the snackbar.
-However, delay the fade out process for 2.5 seconds */
-    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    visibility: visible;
+    -webkit-animation: fadein 0.45s cubic-bezier(.2,.9,.2,1), fadeout 0.45s 3s cubic-bezier(.2,.9,.2,1);
+    animation: fadein 0.45s cubic-bezier(.2,.9,.2,1), fadeout 0.45s 3s cubic-bezier(.2,.9,.2,1);
 }
 
 /* Animations to fade the snackbar in and out */
@@ -144,19 +179,78 @@ However, delay the fade out process for 2.5 seconds */
 /* Progress bar */
 .bar {
   width: 100%;
-  height: 20px;
-  border: 1px solid #2980b9;
-  border-radius: 3px;
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      #2980b9,
-      #2980b9 11px,
-      #eee 10px,
-      #eee 20px /* determines size */
-    );
-  background-size: 28px 28px;
-  animation: move .5s linear infinite;
+    height: 14px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+.bar::after{
+    content: '';
+    display:block;
+    height:100%;
+    width:40%;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+    box-shadow: 0 6px 18px rgba(124,77,255,0.16);
+    animation: glide 1.6s linear infinite;
+}
+
+@keyframes glide {
+    0% { transform: translateX(-100%); }
+
+/* Copy-to-clipboard and file-management styles extracted from index.html */
+.copyable {
+    cursor: pointer;
+    color: var(--link-color, #0078d7);
+    text-decoration: underline dotted;
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+.copyable:hover {
+    color: var(--link-hover-color, #c00);
+}
+
+/* Tooltip styling */
+.copy-tooltip {
+    position: absolute;
+    background: #333;
+    color: #fff;
+    font-size: 0.75em;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    transform: translateY(-150%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 999;
+}
+
+.copy-tooltip.show {
+    opacity: 1;
+    transform: translateY(-200%);
+}
+
+/* File management action button disabled state */
+.button.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Selected count badge */
+.selected-badge {
+    margin-left: 12px;
+    font-weight: 600;
+    background: #007bff;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+}
+    100% { transform: translateX(200%); }
 }
 
 @keyframes move {
@@ -196,12 +290,13 @@ input:valid {
 
 #filemanagementupload
 {
-    border: 2px dashed #ccc;
-    border-radius: 20px;
+    border: 1px dashed rgba(255,255,255,0.06);
+    border-radius: 12px;
     width: 480px;
-    font-family: sans-serif;
+    font-family: inherit;
     margin: 100px auto;
-    padding: 20px;
+    padding: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
 }
 
 #drop-area.highlight
@@ -235,16 +330,20 @@ p
 .button
 {
     display: inline-block;
-    padding: 10px;
-    background: #ccc;
+    padding: 8px 12px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     cursor: pointer;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.04);
+    color: var(--muted);
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.5);
 }
 
 .button:hover
 {
-    background: #ddd;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(2,6,23,0.7);
 }
 
 #fileElem
@@ -252,10 +351,11 @@ p
     display: none;
 }
 
-/* simple tree from https://www.cssscript.com/folder-tree-json/ */
 .simple-tree {
     user-select: none;
     -moz-user-select: none;
+    color: var(--muted);
+    font-size: 14px;
 }
 
     .simple-tree > details > summary {
@@ -284,12 +384,14 @@ p
 
     .simple-tree summary {
         list-style-type: none;
-        background-color: #eee;
         outline: none;
+        background: transparent;
+        padding: 6px 8px;
+        border-radius: 6px;
     }
 
     .simple-tree.dark summary {
-        background-color: #444;
+        background-color: transparent;
     }
 
     .simple-tree details > :not(details),
@@ -349,6 +451,10 @@ p
         top: 2px;
         width: 16px;
         height: 16px;
+        display: inline-block;
+        content: '';
+        background-image: radial-gradient(circle at 30% 35%, var(--accent) 0%, transparent 25%), linear-gradient(90deg,var(--accent-2),transparent 70%);
+        opacity: 0.9;
     }
 
     .simple-tree details[open] > summary::before {

@@ -18,6 +18,120 @@ var ServerTransactionTimer = null;
 var FailedToCompleteServerTransaction = 0;
 var DocumentIsHidden = false;
 
+// Update the UI badge that shows how many files are selected
+function updateSelectedCount() {
+    try {
+        const boxes = document.querySelectorAll('#FileManagementTable input[type="checkbox"]');
+        const count = Array.from(boxes).filter(cb => cb.checked).length;
+        const el = document.getElementById('FileSelectedCount');
+        if (el) {
+            el.textContent = count;
+            // toggle delete button disabled state
+            try {
+                const btn = document.getElementById('FileDeleteButton');
+                if (btn) {
+                    if (count === 0) btn.classList.add('disabled'); else btn.classList.remove('disabled');
+                }
+
+            // Copy-to-clipboard helpers (migrated from inline index.html script)
+            (function () {
+                function legacyCopy(text) {
+                    try {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.setAttribute('readonly', '');
+                        ta.style.position = 'fixed';
+                        ta.style.top = '-9999px';
+                        ta.style.left = '-9999px';
+                        document.body.appendChild(ta);
+
+                        ta.focus();
+                        ta.select();
+                        const ok = document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        return ok;
+                    } catch {
+                        return false;
+                    }
+                }
+
+                function showTooltip(el, msg) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'copy-tooltip';
+                    tooltip.textContent = msg;
+                    el.appendChild(tooltip);
+                    void tooltip.offsetWidth;
+                    tooltip.classList.add('show');
+                    setTimeout(() => {
+                        tooltip.classList.remove('show');
+                        setTimeout(() => tooltip.remove(), 200);
+                    }, 900);
+                }
+
+                async function copyTextFromEl(el) {
+                    const text = el.textContent.trim();
+                    if (!text) return;
+                    if (navigator.clipboard && window.isSecureContext) {
+                        try {
+                            await navigator.clipboard.writeText(text);
+                            showTooltip(el, 'Copied!');
+                            return;
+                        } catch {
+                            // fall through
+                        }
+                    }
+                    const ok = legacyCopy(text);
+                    showTooltip(el, ok ? 'Copied!' : 'Press Ctrl+C');
+                    if (!ok) {
+                        const range = document.createRange();
+                        range.selectNodeContents(el);
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                }
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.querySelectorAll('.copyable').forEach(el => {
+                        el.addEventListener('click', () => copyTextFromEl(el));
+                    });
+                });
+            })();
+
+            // File select toggle (migrated from inline index.html script)
+            document.addEventListener('DOMContentLoaded', function () {
+                const btn = document.getElementById('FileSelectAllButton');
+                if (!btn) return;
+
+                function updateButtonLabel(allChecked) {
+                    btn.textContent = allChecked ? 'Deselect All Files' : 'Select All Files';
+                }
+
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const boxes = Array.from(document.querySelectorAll('#FileManagementTable input[type="checkbox"]'));
+                    if (boxes.length === 0) return;
+
+                    const allChecked = boxes.every(cb => cb.checked);
+                    const newState = !allChecked;
+                    boxes.forEach(cb => { cb.checked = newState; cb.dispatchEvent(new Event('change')); });
+                    updateButtonLabel(newState);
+                });
+
+                // Initialize label based on current state (if any checkboxes exist)
+                const initialBoxes = Array.from(document.querySelectorAll('#FileManagementTable input[type="checkbox"]'));
+                if (initialBoxes.length) {
+                    const allChecked = initialBoxes.every(cb => cb.checked);
+                    updateButtonLabel(allChecked);
+                }
+            });
+            } catch (e) { /* ignore */ }
+        }
+    } catch (e) {
+        console.error('updateSelectedCount error', e);
+    }
+}
+
 // Drawing canvas - move to diagnostics
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
@@ -433,8 +547,22 @@ $(function ()
     $("#filemanagementupload").addClass("dropzone");
 
     $('#FileDeleteButton').on("click", (function () {
+        if ($('#FileDeleteButton').hasClass('disabled')) return;
         RequestFileDeletion();
     }));
+
+    // Keyboard shortcut: Ctrl/Cmd + A toggles select all when filemanagement is visible
+    $(document).on('keydown', function (e) {
+        // ignore when typing in input/textarea/select
+        if ($(e.target).is('input, textarea, select')) return;
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+            if ($('#filemanagement').is(':visible')) {
+                e.preventDefault();
+                const selBtn = document.getElementById('FileSelectAllButton');
+                if (selBtn) selBtn.click();
+            }
+        }
+    });
     /*
         $('#FileUploadButton').on("click", (function () {
             RequestFileUpload();
@@ -977,24 +1105,115 @@ async function ProcessGetFileListResponse(JsonData) {
         }
     }); // end foreach
 
+    // attach change handler to checkboxes to keep selection count up to date
+    try {
+        $('#FileManagementTable input[type="checkbox"]').off('change').on('change', function () { updateSelectedCount(); });
+    } catch (e) {
+        console.error('Failed to attach checkbox change handlers', e);
+    }
+
+    // initialize the selected count
+    updateSelectedCount();
+
+    // enable/disable delete button based on count
+    (function monitorDeleteButton() {
+        try {
+            const el = document.getElementById('FileSelectedCount');
+            const btn = $('#FileDeleteButton');
+            if (el && btn) {
+                const count = parseInt(el.textContent, 10) || 0;
+                if (count === 0) btn.addClass('disabled'); else btn.removeClass('disabled');
+            }
+        } catch (e) { /* ignore */ }
+    })();
+
     SetServerTime();
 
 } // ProcessGetFileListResponse
 
 async function RequestFileDeletion() {
-
+    // Gather selected filenames
+    const selectedFiles = [];
     $('#FileManagementTable > tr').each(function (CurRowId) {
         if (true === $('#FileSelected_' + CurRowId).prop("checked")) {
             let name = $('#FileName_' + CurRowId).val().toString();
-            console.log("delete file: " + name);
-            SendCommand('file/delete/' + name);
-            setTimeout(function()
-            {
-                RequestListOfFiles();
-            }, 5000);
-            // console.debug("delete Response: " + Response);
+            selectedFiles.push(name);
         }
     });
+
+    if (selectedFiles.length === 0) {
+        alert('No files selected');
+        return;
+    }
+
+    if (!confirm('Delete ' + selectedFiles.length + ' file(s)? This action cannot be undone.')) {
+        return;
+    }
+
+    // Show deletion modal and initial message
+    try { $('#fileDeleteMsg').text('Deleting files on the device...'); } catch(e) {}
+    $('#fileDeleteModal').modal('show');
+
+    // Delete sequentially, waiting for each response to avoid overloading the device
+    for (let i = 0; i < selectedFiles.length; i++) {
+        const name = selectedFiles[i];
+        try {
+            console.log('Deleting file:', name);
+            // update modal with progress
+            try { $('#fileDeleteMsg').text('Deleting file ' + (i+1) + ' of ' + selectedFiles.length + ': ' + name); } catch(e) {}
+            const resp = await fetch('file/delete/' + encodeURIComponent(name), { method: 'POST' });
+            if (!resp.ok) {
+                console.error('Failed to delete', name, resp.status, resp.statusText);
+                try { $('#fileDeleteMsg').text('Failed to delete ' + name + ' (' + resp.status + ')'); } catch(e) {}
+            }
+            else {
+                // update selected count and badge as we go
+                try {
+                    // decrement visual selected count
+                    const el = document.getElementById('FileSelectedCount');
+                    if (el) {
+                        const current = parseInt(el.textContent, 10) || 0;
+                        el.textContent = Math.max(0, current - 1);
+                    }
+                } catch(e) { }
+            }
+        }
+        catch (err) {
+            console.error('Exception deleting', name, err);
+        }
+
+        // small pause between deletes
+        await new Promise(resolve => setTimeout(resolve, 700));
+    }
+
+    // After sending deletes, wait for the device to become responsive again (in case it rebooted)
+    async function waitForDeviceResponse(timeoutMs = 60000, intervalMs = 2000) {
+        const start = Date.now();
+        while ((Date.now() - start) < timeoutMs) {
+            try {
+                const r = await fetch('XJ', { method: 'GET' });
+                if (r.ok) return true;
+            } catch (err) { /* ignore */ }
+            await new Promise(resolve => setTimeout(resolve, intervalMs));
+        }
+        return false;
+    }
+
+    const responded = await waitForDeviceResponse(60000, 2000);
+
+    if (responded) {
+        $('#fileDeleteMsg').text('Device is responding. Refreshing file list...');
+        setTimeout(function() { $('#fileDeleteModal').modal('hide'); }, 800);
+        RequestListOfFiles();
+    }
+    else {
+        $('#fileDeleteMsg').text('Timed out waiting for device. You may need to reconnect.');
+        // leave the modal visible for a short time to ensure user sees the message
+        setTimeout(function() { $('#fileDeleteModal').modal('hide'); }, 8000);
+        // Still attempt to refresh file list once more after timeout
+        setTimeout(RequestListOfFiles, 9000);
+    }
+
 } // RequestFileDeletion
 
 function ProcessModeConfigurationDatafppremote(channelConfig) {
@@ -2207,8 +2426,37 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
     let System = Status.system;
     let Network = System.network;
     let Wifi = Network.wifi;
-    let Ethernet = Network.wifi;
+    let Ethernet = Network.eth || null;
 
+    // --- Network Status Indicator Logic ---
+    let indicator = $('#networkStatusIndicator');
+    let ethEnabled = Ethernet && Ethernet.enabled !== undefined ? Ethernet.enabled : (Ethernet !== null);
+    let ethConnected = Ethernet && Ethernet.connected;
+    let wifiEnabled = Wifi && Wifi.enabled;
+    let wifiConnected = Wifi && Wifi.connected;
+    let statusText = '';
+    let statusClass = '';
+    if (ethEnabled && ethConnected) {
+        statusText = 'Ethernet Connected';
+        statusClass = 'alert-success';
+    } else if (ethEnabled && !ethConnected) {
+        statusText = 'Ethernet Connecting...';
+        statusClass = 'alert-warning';
+    } else if (wifiEnabled && wifiConnected) {
+        statusText = 'WiFi Connected (Fallback)';
+        statusClass = 'alert-info';
+    } else if (wifiEnabled && !wifiConnected) {
+        statusText = 'WiFi Connecting...';
+        statusClass = 'alert-warning';
+    } else {
+        statusText = 'No Network Connection';
+        statusClass = 'alert-danger';
+    }
+    indicator.removeClass('alert-success alert-warning alert-info alert-danger');
+    indicator.addClass('alert ' + statusClass);
+    indicator.text(statusText);
+
+    // --- Existing WiFi/Ethernet status logic ---
     let rssi = Wifi.rssi;
     let quality = rssi + 100;
 
