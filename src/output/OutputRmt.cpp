@@ -40,22 +40,28 @@ static uint32_t FrameTimeouts = 0;
 void RMT_Task (void *arg)
 {
     // DEBUG_V(String("Current CPU ID: ") + String(xPortGetCoreID()));
-
+    // pinMode(17, OUTPUT);
+    // digitalWrite(17, HIGH);
     while(1)
     {
         // Give the outputs a chance to catch up.
         delay(1);
+
         // process all possible channels
         for (c_OutputRmt * pRmt : rmt_isr_ThisPtrs)
         {
             // do we have a driver on this channel?
             if(nullptr != pRmt)
             {
+                // digitalWrite(17, LOW);
+
                 // invoke the channel
                 if (pRmt->StartNextFrame())
                 {
                     // sys_delay_ms(500);
                     uint32_t NotificationValue = ulTaskNotifyTake( pdTRUE, pdMS_TO_TICKS(100) );
+                    // digitalWrite(17, HIGH);
+
                     if(1 == NotificationValue)
                     {
                         // DEBUG_V("The transmission ended as expected.");
