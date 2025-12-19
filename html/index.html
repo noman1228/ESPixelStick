@@ -43,6 +43,24 @@
         opacity: 1;
         transform: translateY(-200%);
     }
+
+    /* File management action button disabled state */
+    .button.disabled {
+        pointer-events: none;
+        opacity: 0.5;
+        cursor: default;
+    }
+
+    /* Selected count badge */
+    .selected-badge {
+        margin-left: 12px;
+        font-weight: 600;
+        background: #007bff;
+        color: #fff;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.9em;
+    }
 </style>
 <script>
     (function () {
@@ -986,7 +1004,7 @@
                 <div>
                     <a id="FileDeleteButton" class="button">Remove Selected File(s)</a>
                     <a id="FileSelectAllButton" class="button">Select All Files</a>
-                    <span id="FileSelectedCount" style="margin-left:12px; font-weight:600;">0 selected</span>
+                    <span id="FileSelectedCount" class="selected-badge">0</span>
                     <!-- <a id="FileUploadButton" class="button">Upload Selected File(s)</a> -->
                 </div>
                 <div>
@@ -1154,6 +1172,21 @@
         </div>
     </div>
 
+    <!-- File Deletion Modal -->
+    <div id="fileDeleteModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Deleting Files</h4>
+                </div>
+                <div class="modal-body">
+                    <p id="fileDeleteMsg">Deleting files on the device. Waiting for device to respond...</p>
+                    <div class="bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -1180,7 +1213,7 @@
 
                 const allChecked = boxes.every(cb => cb.checked);
                 const newState = !allChecked;
-                boxes.forEach(cb => cb.checked = newState);
+                boxes.forEach(cb => { cb.checked = newState; cb.dispatchEvent(new Event('change')); });
                 updateButtonLabel(newState);
             });
 
