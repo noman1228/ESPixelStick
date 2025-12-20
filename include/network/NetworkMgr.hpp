@@ -45,6 +45,14 @@ public:
     void SetEthernetIsConnected (bool newState);
 
     bool IsConnected () { return (IsWiFiConnected || IsEthernetConnected); }
+    // Provide explicit connection state getters so other modules can gate behavior
+    bool IsWiFiConnectedState() const { return IsWiFiConnected; }
+    bool IsEthernetConnectedState() const { return IsEthernetConnected; }
+#ifdef SUPPORT_ETHERNET
+    bool HasEthernetSupport() const { return true; }
+#else
+    bool HasEthernetSupport() const { return false; }
+#endif // def SUPPORT_ETHERNET
     void GetHostname (String & name) { name = hostname; }
     IPAddress GetlocalIP ();
     String GetWiFiMacAddress() {return WiFiDriver.GetWiFiMacAddress();}

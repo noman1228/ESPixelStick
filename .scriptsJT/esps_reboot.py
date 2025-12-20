@@ -6,7 +6,7 @@ import requests
 import webbrowser
 
 # Your xLights config path
-XML_FILE = r"C:\Users\jay\Desktop\Lights 2024\xlights_networks.xml"
+XML_FILE = r"F:\Lights 2025\xlights_networks.xml"
 COMMON_PATH = "/X6"  # Endpoint you're POSTing to
 POST_PAYLOAD = {}    # POST payload if needed
 

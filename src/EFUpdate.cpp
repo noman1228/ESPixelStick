@@ -51,7 +51,7 @@ void EFUpdate::begin() {
     Update.onProgress(
         [this] (size_t progress, size_t total)
         {
-            LOG_PORT.println(String("\033[Fprogress: ") + String(progress));
+           // LOG_PORT.println(String("\033[Fprogress: ") + String(progress));
         }
     );
     // DEBUG_END;

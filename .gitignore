@@ -16,3 +16,6 @@ Changelog.pdf
 *.ino.generic.bin
 *.gz
 *.pyc
+*.gulp_stamp
+*.efu*
+*.build_stamp*

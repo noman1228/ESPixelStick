@@ -165,6 +165,16 @@
     </nav>
 
     <div class="container">
+        <!-- Network Status and Notifications -->
+        <div id="statusNotifications" style="margin-top: 20px;">
+            <div id="networkStatusIndicator" class="alert alert-info" style="display: none; margin-bottom: 10px;"></div>
+            <div id="unzipStatusIndicator" class="alert alert-warning" style="display: none; margin-bottom: 10px;">
+                <strong>Decompressing Files</strong>
+                <span id="unzipCounter" style="margin-left:6px;"></span>:
+                <span id="unzipFileName"></span>
+            </div>
+        </div>
+
         <!-- Home / Status page -->
         <div id="home" class="collapse in mdiv anchor">
             <div class="row">
@@ -1060,7 +1070,20 @@
                         <label class="control-label col-sm-3 col-xs-4">Flash ID</label>
                         <p class="col-sm-9 col-xs-8 form-control-static" id="flashchipid"></p>
                         <label class="control-label col-sm-3 col-xs-4">Project Links</label>
-                                             </p>
+                        <p class="col-sm-9 col-xs-8 form-control-static">
+                            <a href="https://github.com/forkineye/ESPixelStick" target="_blank">ESPixelStick</a> |
+                            <a href="https://github.com/forkineye/ESPixelStick/issues" target="_blank">Report an
+                                Issue</a>
+                        </p>
+                        <label class="control-label col-sm-3 col-xs-4">Firmware Links</label>
+                        <p class="col-sm-9 col-xs-8 form-control-static">
+                            <a href="https://github.com/forkineye/ESPixelStick/releases/latest" target="_blank">Latest
+                                Release</a> |
+                            <a href="https://github.com/forkineye/ESPixelStick/releases" target="_blank">Beta
+                                Releases</a> |
+                            <a href="https://github.com/forkineye/ESPixelStick/actions/workflows/build.yaml"
+                                target="_blank">CI Builds (untested)</a>
+                        </p>
                     </div>
                     <div class="form-group">
                         <div class="col-sm-offset-3 col-sm-3 col-xs-12">

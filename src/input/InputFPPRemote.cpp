@@ -268,14 +268,41 @@ void c_InputFPPRemote::Process ()
         if (PlayingRemoteFile ())
         {
             // DEBUG_V ("Remote File Play");
-            while(Poll ()) {}
+            // Avoid starving the IDLE task: bound the number of immediate FSM transitions
+            // and yield/feed WDT between iterations.
+            {
+                uint8_t maxTransitions = 10; // cap burst transitions per call
+                while (Poll ())
+                {
+                    FeedWDT();
+#ifdef ARDUINO_ARCH_ESP32
+                    vTaskDelay(1);
+#else
+                    delay(1);
+#endif
+                    if (--maxTransitions == 0) break;
+                }
+            }
             break;
         }
 
         if (PlayingFile ())
         {
             // DEBUG_V ("Local File Play");
-            while(Poll ()) {}
+            // Avoid starving the IDLE task: bound immediate transitions and yield.
+            {
+                uint8_t maxTransitions = 10;
+                while (Poll ())
+                {
+                    FeedWDT();
+#ifdef ARDUINO_ARCH_ESP32
+                    vTaskDelay(1);
+#else
+                    delay(1);
+#endif
+                    if (--maxTransitions == 0) break;
+                }
+            }
 
             if (pInputFPPRemotePlayItem->IsIdle ())
             {

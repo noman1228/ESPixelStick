@@ -41,6 +41,10 @@
 // File System Interface
 #include "FileMgr.hpp"
 
+#ifdef SUPPORT_UNZIP
+#include "UnzipFiles.hpp"
+#endif // def SUPPORT_UNZIP
+
 // Services
 #include "service/FPPDiscovery.h"
 #include <TimeLib.h>
@@ -567,6 +571,11 @@ void loop()
 
     FileMgr.Poll ();
     // DEBUG_V();
+
+    #ifdef SUPPORT_UNZIP
+    gUnzipFiles.Poll();
+    // DEBUG_V();
+    #endif // def SUPPORT_UNZIP
 
     FPPDiscovery.Poll ();
     // DEBUG_V();

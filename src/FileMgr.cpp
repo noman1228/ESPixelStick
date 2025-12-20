@@ -206,13 +206,13 @@ void c_FileMgr::StartSdCard ()
     // DEBUG_V(String("FoundZipFile: ") + String(FoundZipFile))
     if(FoundZipFile)
     {
-        // DEBUG_V("Start Unzipping");
+        // DEBUG_V("Found zip file, will decompress after network connection");
+        // Initialize the global unzipper to search for the zip file
+        // It will check for network connection and decompress in Poll() from the main loop
         FeedWDT();
-        UnzipFiles * Unzipper = new UnzipFiles();
-        Unzipper->Run();
-        delete Unzipper;
-        String Reason = F("Requesting reboot after unzipping files");
-        RequestReboot(Reason, 1, true);
+        extern UnzipFiles gUnzipFiles;
+        gUnzipFiles.Run();
+        // Note: Decompression will happen asynchronously in the main loop via gUnzipFiles.Poll()
     }
     #endif // def SUPPORT_UNZIP
 
@@ -2252,9 +2252,9 @@ bool c_FileMgr::handleFileUpload (
             bytesWritten = WriteSdFileBuf (fsUploadFileHandle, data, len);
             // DEBUG_V (String ("Writing bytes: ") + String (index));
 #ifdef ARDUINO_ARCH_ESP32
-            LOG_PORT.println(String("\033[Fprogress: ") + String(expectedIndex) + ", heap: " + String(heap_caps_get_largest_free_block(0x1800)));
+           // LOG_PORT.println(String("\033[Fprogress: ") + String(expectedIndex) + ", heap: " + String(heap_caps_get_largest_free_block(0x1800)));
 #else
-            LOG_PORT.println(String("\033[Fprogress: ") + String(expectedIndex) + ", heap: " + String(ESP.getFreeHeap ()));
+          //  LOG_PORT.println(String("\033[Fprogress: ") + String(expectedIndex) + ", heap: " + String(ESP.getFreeHeap ()));
 #endif // def ARDUINO_ARCH_ESP32
             LOG_PORT.flush();
         }

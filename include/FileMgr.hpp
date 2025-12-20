@@ -116,6 +116,7 @@ public:
     void     FindFirstZipFile (String &FileName);
     int      FileListFindSdFileHandle (FileId HandleToFind);
     void     GetSdInfo(SdInfo & Response);
+    bool     IsFileUploadInProgress() const { return (fsUploadFileHandle != INVALID_FILE_HANDLE); }
 
 #define SD_BLOCK_SIZE 512
 
