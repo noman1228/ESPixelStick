@@ -188,6 +188,10 @@ public:
         OutputType_GRINCH = 15,
         #endif // def SUPPORT_OutputType_GRINCH
 
+        #ifdef SUPPORT_OutputType_I2S_Parallel
+        OutputType_I2S_Parallel = 16,
+        #endif // def SUPPORT_OutputType_I2S_Parallel
+
         // Add new types here
         OutputType_End, // must be last
         OutputType_Start = OutputType_Disabled,
