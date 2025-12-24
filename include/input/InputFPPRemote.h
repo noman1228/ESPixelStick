@@ -45,7 +45,7 @@ class c_InputFPPRemote : public c_InputCommon
       void SetOperationalState (bool ActiveFlag);
       void SetBlankTimerIsRunning (bool BlankTimerRunning);
 
-      void StartPlaying (String & FileName, time_t SecondsElapsed = 0, bool IsRemote = false);
+      void StartPlaying (String & FileName, time_t SecondsElapsed, bool IsRemote);
       void StopPlaying ();
       void FppSyncRemoteFilePlay  (String & FileName, uint32_t ElapsedTimeMS);
       void GetFppRemotePlayStatus (JsonObject& jsonStatus);
