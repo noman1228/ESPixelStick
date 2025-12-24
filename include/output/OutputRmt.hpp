@@ -122,7 +122,7 @@ private:
     inline void IRAM_ATTR ISR_WriteToBuffer(uint32_t value);
     inline bool IRAM_ATTR ISR_MoreDataToSend();
     inline bool IRAM_ATTR ISR_GetNextIntensityToSend(uint32_t &DataToSend);
-    inline void IRAM_ATTR ISR_StartNewDataFrame();
+    inline void StartNewDataFrame();
     inline void IRAM_ATTR ISR_ResetRmtBlockPointers();
 
 #ifndef HasBeenInitialized
