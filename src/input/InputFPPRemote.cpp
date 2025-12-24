@@ -63,10 +63,10 @@ c_InputFPPRemote::c_InputFPPRemote (c_InputMgr::e_InputChannelIds NewInputChanne
     // DEBUG_START;
 
     memset(FileBeingPlayed, 0x0, sizeof(FileBeingPlayed));
-    strncpy(FileBeingPlayed, CN_No_LocalFileToPlay, sizeof(FileBeingPlayed));
+    strcpy(FileBeingPlayed, CN_No_LocalFileToPlay);
 
     memset(ConfiguredFileToPlay, 0x0, sizeof(ConfiguredFileToPlay));
-    strncpy(ConfiguredFileToPlay, CN_No_LocalFileToPlay, sizeof(ConfiguredFileToPlay));
+    strcpy(ConfiguredFileToPlay, CN_No_LocalFileToPlay);
 
     memset(StatusType, 0x0, sizeof(StatusType));
 
@@ -245,7 +245,7 @@ void c_InputFPPRemote::PlayNextFile ()
 
             // DEBUG_V(String("Succes - we have found a new file to play: '") + *CurrentFileInList + "'");
             // StopPlaying();
-            StartPlaying(*CurrentFileInList);
+            StartPlaying(*CurrentFileInList, 0, false);
             break;
         } while (FileIterator != CurrentFileInList);
 
@@ -453,7 +453,7 @@ void c_InputFPPRemote::StartPlaying (String& FileName, time_t ElapsedSeconds, bo
             StartPlayingRemoteFile (FileName, ElapsedSeconds);
             pInputFPPRemotePlayItem->SetPlayedFileCount (++FilePlayCount);
         }
-        else if ((!FileName.isEmpty ()) && (!FileName.equals("null")))
+        else if (!FileName.isEmpty () && !FileName.equals("null") && ConfiguredLocalFileToPlay)
         {
             // DEBUG_V("we are only allowed to play local files");
             StartPlayingLocalFile (FileName);
@@ -461,10 +461,9 @@ void c_InputFPPRemote::StartPlaying (String& FileName, time_t ElapsedSeconds, bo
         }
         else
         {
-            // DEBUG_V("No file to play");
+            logcon("No file to play");
             break;
         }
-
 
     } while (false);
 
@@ -522,7 +521,7 @@ void c_InputFPPRemote::StartPlayingLocalFile (String& FileName)
             if (String(CN_Dotfseq) != Last_fseq_Text)
             {
                 logcon(String(F("File Name does not end with a valid .fseq or .pl extension: '")) + FileName + "'");
-                strncpy(StatusType, String(F("Invalid File Name")).c_str(), sizeof(StatusType));
+                strcpy(StatusType, String(F("Invalid File Name")).c_str());
                 memset(FileBeingPlayed, 0x0, sizeof(FileBeingPlayed));
                 break;
             }
@@ -536,7 +535,7 @@ void c_InputFPPRemote::StartPlayingLocalFile (String& FileName)
             }
             // DEBUG_V ("Start Local FSEQ file player");
             AllocatePlayer(c_InputFPPRemotePlayFile, GetInputChannelId ());
-            strncpy(StatusType, CN_File, sizeof(StatusType));
+            strcpy(StatusType, CN_File);
             // DEBUG_V(String("pInputFPPRemotePlayItem: 0x") + String(uint32_t(pInputFPPRemotePlayItem), HEX));
         }
 
@@ -545,8 +544,8 @@ void c_InputFPPRemote::StartPlayingLocalFile (String& FileName)
         pInputFPPRemotePlayItem->SetSyncOffsetMS (SyncOffsetMS);
         pInputFPPRemotePlayItem->SetSendFppSync (SendFppSync);
         pInputFPPRemotePlayItem->Start (FileName, 0, 1);
-        strncpy(FileBeingPlayed, FileName.c_str(), sizeof(FileBeingPlayed));
-
+        memset(FileBeingPlayed, 0x00, sizeof(FileBeingPlayed));
+        strncpy(FileBeingPlayed, FileName.c_str(), sizeof(FileBeingPlayed)-1);
     } while (false);
 
     // DEBUG_END;
