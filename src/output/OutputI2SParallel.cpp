@@ -38,10 +38,40 @@ c_OutputI2SParallel::c_OutputI2SParallel (c_OutputMgr::e_OutputChannelIds Output
                                           c_OutputMgr::e_OutputType outputType) :
     c_OutputWS2811(OutputChannelId, outputGpio, uart, outputType)
 {
-    for (uint8_t index = 0; index < ParallelBitCount; ++index)
+    DataPins.fill(GPIO_NUM_NC);
+#ifdef DEFAULT_RMT_0_GPIO
+    DataPins[0] = DEFAULT_RMT_0_GPIO;
+#endif
+#ifdef DEFAULT_RMT_1_GPIO
+    DataPins[1] = DEFAULT_RMT_1_GPIO;
+#endif
+#ifdef DEFAULT_RMT_2_GPIO
+    DataPins[2] = DEFAULT_RMT_2_GPIO;
+#endif
+#ifdef DEFAULT_RMT_3_GPIO
+    DataPins[3] = DEFAULT_RMT_3_GPIO;
+#endif
+#ifdef DEFAULT_RMT_4_GPIO
+    DataPins[4] = DEFAULT_RMT_4_GPIO;
+#endif
+#ifdef DEFAULT_RMT_5_GPIO
+    DataPins[5] = DEFAULT_RMT_5_GPIO;
+#endif
+#ifdef DEFAULT_RMT_6_GPIO
+    DataPins[6] = DEFAULT_RMT_6_GPIO;
+#endif
+#ifdef DEFAULT_RMT_7_GPIO
+    DataPins[7] = DEFAULT_RMT_7_GPIO;
+#endif
+
+    if (GPIO_NUM_NC == DataPins[0])
     {
-        DataPins[index] = gpio_num_t(int(outputGpio) + index);
+        for (uint8_t index = 0; index < ParallelBitCount; ++index)
+        {
+            DataPins[index] = gpio_num_t(int(outputGpio) + index);
+        }
     }
+    UpdateLaneConfiguration();
 } // c_OutputI2SParallel
 
 //----------------------------------------------------------------------------
@@ -54,6 +84,7 @@ c_OutputI2SParallel::~c_OutputI2SParallel()
 void c_OutputI2SParallel::Begin()
 {
     c_OutputWS2811::Begin();
+    UpdateLaneConfiguration();
     ConfigureI2S();
     ConfigureParallelPins();
     HasBeenInitialized = true;
@@ -65,7 +96,13 @@ bool c_OutputI2SParallel::SetConfig(ArduinoJson::JsonObject & jsonConfig)
     bool response = c_OutputWS2811::SetConfig(jsonConfig);
     InterFrameGapMicros = InterFrameGapInMicroSec;
     PixelsPerString = GetPixelCount();
+    UpdateLaneConfiguration();
+
+    uint32_t totalPixels = PixelsPerString * ActiveLaneCount;
+    SetPixelCount(totalPixels);
     SetOutputBufferSize(GetNumOutputBufferBytesNeeded());
+
+    JsonWrite(jsonConfig, CN_pixel_count, PixelsPerString);
     return response;
 } // SetConfig
 
@@ -73,6 +110,7 @@ bool c_OutputI2SParallel::SetConfig(ArduinoJson::JsonObject & jsonConfig)
 void c_OutputI2SParallel::GetConfig(ArduinoJson::JsonObject & jsonConfig)
 {
     c_OutputWS2811::GetConfig(jsonConfig);
+    JsonWrite(jsonConfig, CN_pixel_count, PixelsPerString);
 } // GetConfig
 
 //----------------------------------------------------------------------------
@@ -86,6 +124,10 @@ uint32_t c_OutputI2SParallel::Poll()
 
     StartNewFrame();
     BuildFrameBuffer();
+    if (FrameBuffer.empty())
+    {
+        return ActualFrameDurationMicroSec;
+    }
 
     size_t bytes_written = 0;
     IsSendingData = true;
@@ -109,7 +151,7 @@ void c_OutputI2SParallel::GetStatus (ArduinoJson::JsonObject & jsonStatus)
 //----------------------------------------------------------------------------
 uint32_t c_OutputI2SParallel::GetNumOutputBufferBytesNeeded ()
 {
-    return GetPixelCount() * uint32_t(PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL) * ParallelBitCount;
+    return PixelsPerString * uint32_t(PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL) * ActiveLaneCount;
 }
 
 //----------------------------------------------------------------------------
@@ -121,9 +163,17 @@ uint32_t c_OutputI2SParallel::GetNumOutputBufferChannelsServiced ()
 //----------------------------------------------------------------------------
 void c_OutputI2SParallel::SetOutputBufferSize (uint32_t NumChannelsAvailable)
 {
-    PixelsPerString = NumChannelsAvailable / (ParallelBitCount * PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL);
-    SetPixelCount(PixelsPerString);
-    c_OutputWS2811::SetOutputBufferSize(PixelsPerString * PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL * ParallelBitCount);
+    if (0 == ActiveLaneCount)
+    {
+        PixelsPerString = 0;
+        SetPixelCount(0);
+        c_OutputWS2811::SetOutputBufferSize(0);
+        return;
+    }
+
+    PixelsPerString = NumChannelsAvailable / (ActiveLaneCount * PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL);
+    SetPixelCount(PixelsPerString * ActiveLaneCount);
+    c_OutputWS2811::SetOutputBufferSize(PixelsPerString * PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL * ActiveLaneCount);
 }
 
 //----------------------------------------------------------------------------
@@ -135,11 +185,41 @@ void c_OutputI2SParallel::PauseOutput(bool State)
 
 #ifdef ARDUINO_ARCH_ESP32
 //----------------------------------------------------------------------------
-void c_OutputI2SParallel::ConfigureParallelPins()
+void c_OutputI2SParallel::UpdateLaneConfiguration()
 {
+    ActivePins.fill(GPIO_NUM_NC);
+    ActiveLaneCount = 0;
     for (uint8_t index = 0; index < ParallelBitCount; ++index)
     {
         gpio_num_t pin = DataPins[index];
+        if (GPIO_NUM_NC == pin)
+        {
+            continue;
+        }
+        ActivePins[ActiveLaneCount++] = pin;
+    }
+}
+
+//----------------------------------------------------------------------------
+uint32_t c_OutputI2SParallel::GetLaneStrideBytes() const
+{
+    return PixelsPerString * PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL;
+}
+
+//----------------------------------------------------------------------------
+uint32_t c_OutputI2SParallel::GetFrameSampleCount() const
+{
+    const uint32_t bitsPerPixel = PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL * 8;
+    const uint32_t totalBits = bitsPerPixel * PixelsPerString;
+    return totalBits * SamplesPerBit;
+}
+
+//----------------------------------------------------------------------------
+void c_OutputI2SParallel::ConfigureParallelPins()
+{
+    for (uint8_t index = 0; index < ActiveLaneCount; ++index)
+    {
+        gpio_num_t pin = ActivePins[index];
         if (GPIO_NUM_NC == pin)
         {
             continue;
@@ -159,15 +239,23 @@ void c_OutputI2SParallel::ConfigureI2S()
     i2s_config.sample_rate = I2SClockHz;
     i2s_config.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
     i2s_config.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;
+#if defined(I2S_COMM_FORMAT_STAND_I2S)
+    i2s_config.communication_format = I2S_COMM_FORMAT_STAND_I2S;
+#else
     i2s_config.communication_format = I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB;
+#endif
     i2s_config.dma_buf_count = 8;
     i2s_config.dma_buf_len = 64;
     i2s_config.use_apll = false;
     i2s_config.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;
     i2s_config.tx_desc_auto_clear = true;
     i2s_config.fixed_mclk = 0;
+#if defined(I2S_MCLK_MULTIPLE_DEFAULT)
     i2s_config.mclk_multiple = I2S_MCLK_MULTIPLE_DEFAULT;
+#endif
+#if defined(I2S_BITS_PER_CHAN_DEFAULT)
     i2s_config.bits_per_chan = I2S_BITS_PER_CHAN_DEFAULT;
+#endif
 
     i2s_driver_install(I2S_NUM_0, &i2s_config, 0, nullptr);
 
@@ -180,7 +268,10 @@ void c_OutputI2SParallel::ConfigureI2S()
 
     REG_SET_BIT(I2S0_CONF_REG, I2S_TX_RIGHT_FIRST);
     REG_SET_BIT(I2S0_CONF2_REG, I2S_LCD_EN);
-    REG_SET_FIELD(I2S0_SAMPLE_RATE_CONF_REG, I2S_TX_BITS_MOD, ParallelBitCount);
+    if (ActiveLaneCount > 0)
+    {
+        REG_SET_FIELD(I2S0_SAMPLE_RATE_CONF_REG, I2S_TX_BITS_MOD, ActiveLaneCount);
+    }
     REG_SET_FIELD(I2S0_CONF_CHAN_REG, I2S_TX_CHAN_MOD, 1);
     REG_SET_FIELD(I2S0_FIFO_CONF_REG, I2S_TX_FIFO_MOD, 1);
 }
@@ -188,40 +279,43 @@ void c_OutputI2SParallel::ConfigureI2S()
 //----------------------------------------------------------------------------
 void c_OutputI2SParallel::BuildFrameBuffer()
 {
-    const uint32_t bits_per_pixel = PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL * 8;
-    const uint32_t total_bits = bits_per_pixel * PixelsPerString;
-    FrameBuffer.clear();
-    FrameBuffer.reserve(total_bits * SamplesPerBit);
+    FrameBuffer.assign(GetFrameSampleCount(), 0);
+    if (FrameBuffer.empty() || (0 == ActiveLaneCount))
+    {
+        return;
+    }
+
+    const uint32_t laneStride = GetLaneStrideBytes();
+    uint32_t sampleIndex = 0;
 
     for (uint32_t pixelIndex = 0; pixelIndex < PixelsPerString; ++pixelIndex)
     {
-        uint32_t baseIndex = pixelIndex * PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL * ParallelBitCount;
         for (uint32_t colorByte = 0; colorByte < PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL; ++colorByte)
         {
-            uint32_t channelIndex = baseIndex + colorByte;
             for (int8_t bit = 7; bit >= 0; --bit)
             {
-                uint16_t sampleMask = 0;
-                for (uint8_t lane = 0; lane < ParallelBitCount; ++lane)
+                for (uint8_t sample = 0; sample < SamplesPerBit; ++sample)
                 {
-                    uint32_t laneOffset = channelIndex + (lane * PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL);
-                    if (laneOffset >= OutputBufferSize)
+                    uint16_t sampleMask = 0;
+                    for (uint8_t lane = 0; lane < ActiveLaneCount; ++lane)
                     {
-                        continue;
+                        uint32_t laneOffset = (laneStride * lane) + (pixelIndex * PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL) + colorByte;
+                        if (laneOffset >= OutputBufferSize)
+                        {
+                            continue;
+                        }
+
+                        uint8_t value = pOutputBuffer[laneOffset];
+                        bool bitIsOne = (value & (1 << bit)) != 0;
+                        uint8_t highSamples = bitIsOne ? HighSamplesForOne : HighSamplesForZero;
+                        if (sample < highSamples)
+                        {
+                            sampleMask |= (1 << lane);
+                        }
                     }
 
-                    uint8_t value = pOutputBuffer[laneOffset];
-                    if (value & (1 << bit))
-                    {
-                        sampleMask |= (1 << lane);
-                    }
+                    FrameBuffer[sampleIndex++] = sampleMask;
                 }
-
-                uint16_t high_value = sampleMask;
-                FrameBuffer.push_back(high_value);
-                FrameBuffer.push_back(high_value);
-                FrameBuffer.push_back(0);
-                FrameBuffer.push_back(0);
             }
         }
     }

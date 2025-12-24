@@ -57,13 +57,20 @@ public:
 private:
     static constexpr uint8_t ParallelBitCount = 8;
     static constexpr uint8_t SamplesPerBit = 4;
+    static constexpr uint8_t HighSamplesForZero = 1;
+    static constexpr uint8_t HighSamplesForOne = 2;
     static constexpr uint32_t I2SClockHz = 3200000; // 4x WS2811 bit clock (1.25us bits)
 
     void BuildFrameBuffer();
     void ConfigureParallelPins();
     void ConfigureI2S();
+    void UpdateLaneConfiguration();
+    uint32_t GetLaneStrideBytes() const;
+    uint32_t GetFrameSampleCount() const;
 
     std::array<gpio_num_t, ParallelBitCount> DataPins {};
+    std::array<gpio_num_t, ParallelBitCount> ActivePins {};
+    uint8_t ActiveLaneCount = 0;
     std::vector<uint16_t> FrameBuffer;
     bool IsSendingData = false;
     uint32_t PixelsPerString = 0;
