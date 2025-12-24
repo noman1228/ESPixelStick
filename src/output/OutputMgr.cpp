@@ -36,6 +36,7 @@
 #include "output/OutputSerialUart.hpp"
 #include "output/OutputSerialRmt.hpp"
 #include "output/OutputServoPCA9685.hpp"
+#include "output/OutputI2SParallel.hpp"
 #include "output/OutputTM1814Rmt.hpp"
 #include "output/OutputTM1814Uart.hpp"
 #include "output/OutputUCS1903Rmt.hpp"
@@ -89,6 +90,10 @@ static const OutputTypeXlateMap_t OutputTypeXlateMap[c_OutputMgr::e_OutputType::
 #ifdef SUPPORT_OutputType_GRINCH
         {c_OutputMgr::e_OutputType::OutputType_GRINCH, "Grinch"},
 #endif // def SUPPORT_OutputType_GRINCH
+
+#ifdef SUPPORT_OutputType_I2S_Parallel
+        {c_OutputMgr::e_OutputType::OutputType_I2S_Parallel, "I2S_Parallel"},
+#endif // def SUPPORT_OutputType_I2S_Parallel
 
 #ifdef SUPPORT_OutputType_GS8208
         {c_OutputMgr::e_OutputType::OutputType_GS8208, "GS8208"},
@@ -876,6 +881,14 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
                 break;
             }
 #endif // def SUPPORT_OutputType_GRINCH
+
+#ifdef SUPPORT_OutputType_I2S_Parallel
+            case e_OutputType::OutputType_I2S_Parallel:
+            {
+                AllocatePort(c_OutputI2SParallel,CurrentOutput,CurrentOutput.DriverId,CurrentOutput.GpioPin,CurrentOutput.PortId,OutputType_I2S_Parallel);
+                break;
+            }
+#endif // def SUPPORT_OutputType_I2S_Parallel
 
 #ifdef SUPPORT_OutputType_WS2801
             case e_OutputType::OutputType_WS2801:
