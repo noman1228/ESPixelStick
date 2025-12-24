@@ -164,6 +164,12 @@ bool c_OutputWS2811Rmt::RmtPoll ()
             break;
         }
 
+        if(!canRefresh())
+        {
+            // DEBUG_V ("not ready to send yet");
+            break;
+        }
+
         // DEBUG_V(String("get the next frame started on ") + String(DataPin));
         ReportNewFrame ();
         Response = Rmt.StartNewFrame ();
