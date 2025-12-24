@@ -86,7 +86,6 @@ protected:
 
     inline bool canRefresh ()
     {
-        bool response = false;
         uint32_t Now = micros ();
         uint32_t FrameTimeDeltaInMicroSec = Now - FrameStartTimeInMicroSec; // how many us since the frame started
 
@@ -96,11 +95,7 @@ protected:
             FrameTimeDeltaInMicroSec = Now + (0 - FrameStartTimeInMicroSec);
         }
 
-        if(FrameTimeDeltaInMicroSec > FrameDurationInMicroSec)
-        {
-            response = true;
-        }
-        return response;
+        return (FrameTimeDeltaInMicroSec > FrameDurationInMicroSec);
     }
 
 private:
