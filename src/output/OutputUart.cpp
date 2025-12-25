@@ -183,11 +183,11 @@ void c_OutputUart::Begin (OutputUartConfig_t & config )
     {
         // save the initial config
         OutputUartConfig = config;
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
         if ((nullptr == OutputUartConfig.pPixelDataSource) && (nullptr == OutputUartConfig.pSerialDataSource))
-#else
+        #else
         if (nullptr == OutputUartConfig.pPixelDataSource)
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
 
         {
             String Reason = (F("Invalid UART configuration parameters. Rebooting"));
@@ -212,9 +212,9 @@ void c_OutputUart::Begin (OutputUartConfig_t & config )
             }
         }
 
-#if defined(ARDUINO_ARCH_ESP32)
+        #if defined(ARDUINO_ARCH_ESP32)
         WaitFrameDone = xSemaphoreCreateBinary();
-#endif // defined(ARDUINO_ARCH_ESP32)
+        #endif // defined(ARDUINO_ARCH_ESP32)
 
         HasBeenInitialized = true;
     } while (false);
@@ -540,11 +540,11 @@ bool inline IRAM_ATTR c_OutputUart::MoreDataToSend()
     }
     else
     {
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
         return OutputUartConfig.pSerialDataSource->ISR_MoreDataToSend();
-#else
+        #else
         return false;
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     }
 } // MoreDataToSend
 
@@ -557,11 +557,11 @@ bool inline IRAM_ATTR c_OutputUart::GetNextIntensityToSend(uint32_t &DataToSend)
     }
     else
     {
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
         return OutputUartConfig.pSerialDataSource->ISR_GetNextIntensityToSend(DataToSend);
-#else
+        #else
         return false;
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     }
 } // GetNextIntensityToSend
 
@@ -572,12 +572,12 @@ void IRAM_ATTR c_OutputUart::StartNewDataFrame()
     {
         OutputUartConfig.pPixelDataSource->StartNewFrame();
     }
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+    #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     else
     {
         OutputUartConfig.pSerialDataSource->StartNewFrame();
     }
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+    #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
 } // StartNewDataFrame
 
 //----------------------------------------------------------------------------
