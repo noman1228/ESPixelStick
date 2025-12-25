@@ -165,7 +165,6 @@ uint32_t c_OutputGECEUart::Poll ()
         TimeLastFrameStartedMS = millis();
 #endif // def GECE_UART_DEBUG_COUNTERS
 
-        ReportNewFrame();
         Uart.StartNewFrame();
 
         // DEBUG_V();

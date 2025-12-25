@@ -119,7 +119,6 @@ uint32_t c_OutputSerialUart::Poll ()
 
     if (canRefresh())
     {
-        ReportNewFrame();
         Uart.StartNewFrame();
     }
     else

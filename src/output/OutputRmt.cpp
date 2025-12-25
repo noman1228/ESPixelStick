@@ -596,7 +596,7 @@ inline void IRAM_ATTR c_OutputRmt::ISR_ResetRmtBlockPointers()
 }
 
 //----------------------------------------------------------------------------
-inline void IRAM_ATTR c_OutputRmt::ISR_StartNewDataFrame()
+inline void c_OutputRmt::StartNewDataFrame()
 {
     if (nullptr != OutputRmtConfig.pPixelDataSource)
     {
@@ -725,7 +725,7 @@ bool c_OutputRmt::StartNewFrame ()
         #endif // def USE_RMT_DEBUG_COUNTERS
 
         // set up to send a new frame
-        ISR_StartNewDataFrame ();
+        StartNewDataFrame ();
         // DEBUG_V();
 
         ThereIsDataToSend = ISR_MoreDataToSend();

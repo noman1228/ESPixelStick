@@ -158,6 +158,7 @@ void c_OutputGrinch::StartNewFrame()
     }
 
     SpiOutputDataByteIndex = NumberOfGrinchDataBytes;
+    ReportNewFrame();
 
     // DEBUG_END;
 } // StartNewFrame

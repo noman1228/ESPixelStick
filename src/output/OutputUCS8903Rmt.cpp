@@ -167,7 +167,6 @@ bool c_OutputUCS8903Rmt::RmtPoll ()
         }
 
         // DEBUG_V("get the next frame started");
-        ReportNewFrame ();
         Response = Rmt.StartNewFrame ();
 
         // DEBUG_V();

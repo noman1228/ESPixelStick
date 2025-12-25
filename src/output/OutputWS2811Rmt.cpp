@@ -139,6 +139,16 @@ void c_OutputWS2811Rmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
     // // DEBUG_START;
     c_OutputWS2811::GetStatus (jsonStatus);
     Rmt.GetStatus (jsonStatus);
+#ifdef USE_RMT_DEBUG_COUNTERS
+    jsonStatus[F("Can Refresh")] = CannotRefresh;
+    jsonStatus[F("Cannot Refresh")] = CanRefresh;
+    jsonStatus[F("FrameDurationInMicroSec")] = FrameDurationInMicroSec;
+    jsonStatus[F("FrameStartTimeInMicroSec")] = FrameStartTimeInMicroSec;
+    uint32_t now = micros();
+    jsonStatus[F("Now")] = now;
+    jsonStatus[F("FrameStartDelta")] = now - FrameStartTimeInMicroSec;
+#endif // def USE_RMT_DEBUG_COUNTERS
+
     // // DEBUG_END;
 } // GetStatus
 
@@ -166,16 +176,19 @@ bool c_OutputWS2811Rmt::RmtPoll ()
 
         if(!canRefresh())
         {
+            RMT_DEBUG_COUNTER(CannotRefresh++);
+
             // DEBUG_V ("not ready to send yet");
             break;
         }
+        RMT_DEBUG_COUNTER(CanRefresh++);
 
         // DEBUG_V(String("get the next frame started on ") + String(DataPin));
-        ReportNewFrame ();
         Response = Rmt.StartNewFrame ();
-#ifdef DEBUG_RMT_XLAT_ISSUES
+
+        #ifdef DEBUG_RMT_XLAT_ISSUES
         Rmt.ValidateBitXlatTable(ConvertIntensityToRmtDataStream);
-#endif // def DEBUG_RMT_XLAT_ISSUES
+        #endif // def DEBUG_RMT_XLAT_ISSUES
 
         // DEBUG_V();
 

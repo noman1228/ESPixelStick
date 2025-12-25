@@ -156,7 +156,6 @@ bool c_OutputTLS3001Rmt::RmtPoll ()
         }
 
         // DEBUG_V("get the next frame started");
-        ReportNewFrame ();
         pCurrentFsmState->Poll();
         Response = Rmt.StartNewFrame ();
 

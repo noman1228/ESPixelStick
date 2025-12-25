@@ -138,7 +138,6 @@ uint32_t c_OutputUCS1903Uart::Poll ()
 
     // get the next frame started
     Uart.StartNewFrame ();
-    ReportNewFrame ();
 
     // DEBUG_END;
     return FrameLen;

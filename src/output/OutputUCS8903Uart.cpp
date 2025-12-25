@@ -164,7 +164,6 @@ uint32_t c_OutputUCS8903Uart::Poll ()
         }
 
         // DEBUG_V("get the next frame started");
-        // StartNewFrame();
         // DEBUG_V();
 #ifdef UCS8903_UART_DEBUG_COUNTERS
         NewFrameCounter++;

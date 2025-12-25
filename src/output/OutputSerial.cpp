@@ -387,7 +387,7 @@ void c_OutputSerial::StartNewFrame ()
 
     } // end switch (OutputType)
 
-    // ReportNewFrame();
+    ReportNewFrame();
 
     // DEBUG_END;
 
