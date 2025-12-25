@@ -461,7 +461,8 @@ void c_InputFPPRemote::StartPlaying (String& FileName, time_t ElapsedSeconds, bo
         }
         else
         {
-            logcon("No file to play");
+            // Very noisy message
+            // logcon("No file to play");
             break;
         }
 
