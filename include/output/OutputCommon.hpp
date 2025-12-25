@@ -98,7 +98,10 @@ protected:
         return (FrameTimeDeltaInMicroSec > FrameDurationInMicroSec);
     }
 
-private:
-    uint32_t    FrameStartTimeInMicroSec   = 0;
+    #ifdef USE_RMT_DEBUG_COUNTERS
+    protected: uint32_t FrameStartTimeInMicroSec = 0;
+    #else
+    private:   uint32_t FrameStartTimeInMicroSec = 0;
+    #endif // def USE_RMT_DEBUG_COUNTERS
 
 }; // c_OutputCommon
