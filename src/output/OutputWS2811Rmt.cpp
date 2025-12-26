@@ -140,8 +140,8 @@ void c_OutputWS2811Rmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
     c_OutputWS2811::GetStatus (jsonStatus);
     Rmt.GetStatus (jsonStatus);
 #ifdef USE_RMT_DEBUG_COUNTERS
-    jsonStatus[F("Can Refresh")] = CannotRefresh;
-    jsonStatus[F("Cannot Refresh")] = CanRefresh;
+    jsonStatus[F("Can Refresh")] = CanRefresh;
+    jsonStatus[F("Cannot Refresh")] = CannotRefresh;
     jsonStatus[F("FrameDurationInMicroSec")] = FrameDurationInMicroSec;
     jsonStatus[F("FrameStartTimeInMicroSec")] = FrameStartTimeInMicroSec;
     uint32_t now = micros();
