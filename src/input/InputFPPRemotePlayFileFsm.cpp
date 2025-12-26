@@ -71,7 +71,7 @@ void fsm_PlayFile_state_Idle::Start (String& FileName, float ElapsedSeconds, uin
     // DEBUG_V (String ("FileName: ") + FileName);
     // DEBUG_V (String ("NextFile: ") + String(NextFile));
 
-    strcpy(&p_Parent->FileControl[NextFile].FileName[0], FileName.c_str());
+    SafeStrncpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str(), sizeof(p_Parent->FileControl[NextFile].FileName));
     p_Parent->FileControl[NextFile].ElapsedPlayTimeMS = uint32_t (ElapsedSeconds * 1000.0);
     p_Parent->FileControl[NextFile].LastPollTimeMS = millis();
     p_Parent->FileControl[NextFile].StartingTimeMS = p_Parent->FileControl[NextFile].LastPollTimeMS - p_Parent->FileControl[NextFile].ElapsedPlayTimeMS;
@@ -180,8 +180,7 @@ void fsm_PlayFile_state_Starting::Start (String& FileName, float ElapsedSeconds,
 {
     // DEBUG_START;
     // DEBUG_V("fsm_PlayFile_state_Starting::Start");
-
-    strcpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str());
+    SafeStrncpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str(), sizeof(p_Parent->FileControl[NextFile].FileName));
     p_Parent->FileControl[NextFile].ElapsedPlayTimeMS = uint32_t (ElapsedSeconds * 1000.0);
     p_Parent->FileControl[NextFile].LastPollTimeMS = millis();
     p_Parent->FileControl[NextFile].StartingTimeMS = p_Parent->FileControl[NextFile].LastPollTimeMS - p_Parent->FileControl[NextFile].ElapsedPlayTimeMS;
@@ -371,7 +370,7 @@ void fsm_PlayFile_state_PlayingFile::Start (String& FileName, float ElapsedSecon
     // DEBUG_V("fsm_PlayFile_state_PlayingFile::Start");
 
     // DEBUG_V("Set up the next file");
-    strcpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str());
+    SafeStrncpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str(), sizeof(p_Parent->FileControl[NextFile].FileName));
     p_Parent->FileControl[NextFile].ElapsedPlayTimeMS = uint32_t (ElapsedSeconds * 1000.0);
     p_Parent->FileControl[NextFile].LastPollTimeMS = millis();
     p_Parent->FileControl[NextFile].StartingTimeMS = p_Parent->FileControl[NextFile].LastPollTimeMS - p_Parent->FileControl[NextFile].ElapsedPlayTimeMS;
@@ -545,7 +544,7 @@ void fsm_PlayFile_state_Stopping::Start (String& FileName, float ElapsedSeconds,
 
     // DEBUG_V("Set up a next file");
 
-    strcpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str());
+    SafeStrncpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str(), sizeof(p_Parent->FileControl[NextFile].FileName));
     p_Parent->FileControl[NextFile].ElapsedPlayTimeMS = uint32_t (ElapsedSeconds * 1000.0);
     p_Parent->FileControl[NextFile].LastPollTimeMS = millis();
     p_Parent->FileControl[NextFile].StartingTimeMS = p_Parent->FileControl[NextFile].LastPollTimeMS - p_Parent->FileControl[NextFile].ElapsedPlayTimeMS;
@@ -629,7 +628,7 @@ void fsm_PlayFile_state_Error::Start (String& FileName, float ElapsedSeconds, ui
 
     // DEBUG_V("Set up a next file");
 
-    strcpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str());
+    SafeStrncpy(p_Parent->FileControl[NextFile].FileName, FileName.c_str(), sizeof(p_Parent->FileControl[NextFile].FileName));
     p_Parent->FileControl[NextFile].ElapsedPlayTimeMS = uint32_t (ElapsedSeconds * 1000.0);
     p_Parent->FileControl[NextFile].LastPollTimeMS = millis();
     p_Parent->FileControl[NextFile].StartingTimeMS = p_Parent->FileControl[NextFile].LastPollTimeMS - p_Parent->FileControl[NextFile].ElapsedPlayTimeMS;

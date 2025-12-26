@@ -56,7 +56,7 @@ void fsm_PlayList_state_WaitForStart::Start (String & FileName, float, uint32_t)
 
     do // once
     {
-        strcpy(pInputFPPRemotePlayList->FileControl[CurrentFile].FileName, FileName.c_str());
+        SafeStrncpy(pInputFPPRemotePlayList->FileControl[CurrentFile].FileName, FileName.c_str(), sizeof(pInputFPPRemotePlayList->FileControl[CurrentFile].FileName));
         pInputFPPRemotePlayList->PlayListEntryId = 0;
 
         // DEBUG_V (String ("PlayItemName: '") + pInputFPPRemotePlayList->PlayItemName + "'");

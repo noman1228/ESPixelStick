@@ -616,9 +616,9 @@ void c_FPPDiscovery::sendPingPacket (IPAddress destination)
     memcpy (packet.ipAddress, &ip, 4);
     String Hostname;
     NetworkMgr.GetHostname (Hostname);
-    strcpy (packet.hostName, Hostname.c_str ());
-    strcpy (packet.version, ConstConfig.Version);
-    strcpy (packet.hardwareType, FPP_VARIANT_NAME.c_str());
+    SafeStrncpy (packet.hostName, Hostname.c_str (), sizeof(packet.hostName));
+    SafeStrncpy (packet.version, ConstConfig.Version, sizeof(packet.version));
+    SafeStrncpy (packet.hardwareType, FPP_VARIANT_NAME.c_str(), sizeof(packet.hardwareType));
     packet.ranges[0] = 0;
 
     // DEBUG_V(String("packet.version: '") + String(packet.version) + "'");
@@ -1001,7 +1001,7 @@ void c_FPPDiscovery::ProcessFile (
             // DEBUG_V("Stop Input");
             StopPlaying();
             inFileUpload = true;
-            strcpy(UploadFileName, filename.c_str());
+            SafeStrncpy(UploadFileName, filename.c_str(), sizeof(UploadFileName));
             InputMgr.SetOperationalState(false);
             OutputMgr.PauseOutputs(true);
         }
@@ -1016,7 +1016,7 @@ void c_FPPDiscovery::ProcessFile (
 
             // DEBUG_V("New file starting. Aborting: '" + String(UploadFileName) + "' and starting '" + filename + "'");
             FileMgr.AbortSdFileUpload();
-            strcpy(UploadFileName, filename.c_str());
+            SafeStrncpy(UploadFileName, filename.c_str(), sizeof(UploadFileName));
         }
 
         // DEBUG_V("Write the file block");
@@ -1089,7 +1089,7 @@ void c_FPPDiscovery::ProcessBody (
                     request->send (404);
                     break;
                 }
-                strcpy(UploadFileName, request->getParam (CN_filename)->value ().c_str());
+                SafeStrncpy(UploadFileName, request->getParam (CN_filename)->value ().c_str(), sizeof(UploadFileName));
                 // DEBUG_V (emptyString);
             }
 
@@ -1511,7 +1511,7 @@ void c_FPPDiscovery::GenerateFppSyncMsg(uint8_t Action, const String & FileName,
         SyncPacket.seconds_elapsed = ElpsedTime;
 
         // copy the file name and make sure a truncated file name has a proper line termination.
-        strncpy(SyncPacket.filename, FileName.c_str(), size_t(sizeof(SyncPacket.filename)-1));
+        SafeStrncpy(SyncPacket.filename, FileName.c_str(), size_t(sizeof(SyncPacket.filename)));
         SyncPacket.filename[sizeof(SyncPacket.filename)-1] = 0x00;
 
         if(NetworkMgr.IsConnected())

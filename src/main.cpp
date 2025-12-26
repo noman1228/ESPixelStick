@@ -159,7 +159,7 @@ void setup()
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
 
-    strcpy_P(config.id, String(F("ESPixelStick")).c_str());
+    SafeStrncpy(config.id, String(F("ESPixelStick")).c_str(), sizeof(config.id));
 
     config.BlankDelay = 5;
 #ifdef ARDUINO_ARCH_ESP32
@@ -267,7 +267,7 @@ bool validateConfig()
     // Device defaults
     if (0 == strlen(config.id))
     {
-        strcpy(config.id, String(F("ESPixelStick")).c_str());
+        SafeStrncpy(config.id, String(F("ESPixelStick")).c_str(), sizeof(config.id));
         configValid = false;
         // DEBUG_V ();
     }

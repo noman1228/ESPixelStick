@@ -163,7 +163,7 @@ void c_WiFiDriver::Begin ()
     {
         String Hostname;
         NetworkMgr.GetHostname (Hostname);
-        strcpy(ap_ssid, (String(F("ESPixelStick-AP-")) + Hostname).c_str());
+        SafeStrncpy(ap_ssid, (String(F("ESPixelStick-AP-")) + Hostname).c_str(), sizeof(ap_ssid));
     }
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -865,7 +865,7 @@ void fsm_WiFi_state_ConnectingAsAP::Init ()
         {
             String Hostname;
             NetworkMgr.GetHostname (Hostname);
-            strcpy(pWiFiDriver->ap_ssid, (String(F("ESPixelStick-")) + Hostname).c_str());
+            SafeStrncpy(pWiFiDriver->ap_ssid, (String(F("ESPixelStick-")) + Hostname).c_str(), sizeof(pWiFiDriver->ap_ssid));
         }
         // DEBUG_V (String("ap_channelNumber: ") + String(pWiFiDriver->ap_channelNumber));
         WiFi.softAPConfig(IPAddress(192,168,4,1), IPAddress(192,168,4,1), IPAddress(255,255,255,0));

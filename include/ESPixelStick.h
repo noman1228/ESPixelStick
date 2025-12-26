@@ -136,7 +136,7 @@ bool setFromJSON (char (&OutValue)[S], JsonObject & Json, N Name)
         String temp = Json[(char*)Name];
         if (!temp.equals(String(OutValue)))
         {
-            strncpy(OutValue, temp.c_str(), S);
+            SafeStrncpy(OutValue, temp.c_str(), S);
             HasBeenModified = true;
         }
     }
@@ -209,3 +209,9 @@ extern bool ConfigSaveNeeded;
 #define LOAD_CONFIG_DELAY 4
 // #define DEBUG_GPIO gpio_num_t::GPIO_NUM_25
 // #define DEBUG_GPIO1 gpio_num_t::GPIO_NUM_14
+
+void inline SafeStrncpy(char* dest, const char* src, uint destSize)
+{
+    memset(dest, 0x00, destSize);
+    strncpy(dest, src, destSize-1);
+} // SafeStrncpy

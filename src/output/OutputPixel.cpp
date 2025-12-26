@@ -35,7 +35,7 @@ c_OutputPixel::c_OutputPixel (c_OutputMgr::e_OutputChannelIds OutputChannelId,
 
     FrameStateFuncPtr = &c_OutputPixel::FrameDone;
 
-    strcpy(color_order, String(F("rgb")).c_str());
+    SafeStrncpy(color_order, String(F("rgb")).c_str(), sizeof(color_order));
 
     // DEBUG_END;
 } // c_OutputPixel
@@ -275,7 +275,7 @@ void c_OutputPixel::updateColorOrderOffsets ()
     else
     {
         // DEBUG_V(String(F("Error: Unsupported Color Order: '")) + _color_order + F("'. Using RGB"));
-        strcpy(color_order, String(F ("rgb")).c_str());
+        SafeStrncpy(color_order, String(F ("rgb")).c_str(), sizeof(color_order));
         ColorOffsets.offset.r = 0;
         ColorOffsets.offset.g = 1;
         ColorOffsets.offset.b = 2;

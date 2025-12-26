@@ -1412,8 +1412,7 @@ bool c_FileMgr::OpenSdFile (const String & _FileName, FileMode Mode, FileId & Fi
         if (-1 != FileListIndex)
         {
             // DEBUG_V(String("Valid FileListIndex: ") + String(FileListIndex));
-            memset(FileList[FileListIndex].Filename, 0x0, sizeof(FileList[FileListIndex].Filename));
-            strncpy(FileList[FileListIndex].Filename, FileName.c_str(), min(uint(sizeof(FileList[FileListIndex].Filename) - 1), FileName.length()));
+            SafeStrncpy(FileList[FileListIndex].Filename, FileName.c_str(), sizeof(FileList[FileListIndex].Filename));
             // DEBUG_V(String("Got file handle: ") + String(FileHandle));
             LockSd();
             #ifdef SIMULATE_SD
