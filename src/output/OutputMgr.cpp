@@ -1204,6 +1204,8 @@ bool c_OutputMgr::ProcessJsonConfig (JsonDocument& jsonConfig)
 
     do // once
     {
+        PauseOutputs(true);
+
         // for each output channel
         for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
         {
@@ -1277,6 +1279,8 @@ bool c_OutputMgr::ProcessJsonConfig (JsonDocument& jsonConfig)
     // DEBUG_V ();
 
     SetSerialUart();
+
+    PauseOutputs(false);
 
     // DEBUG_END;
     return Response;
