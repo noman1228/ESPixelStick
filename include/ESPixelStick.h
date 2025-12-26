@@ -103,6 +103,12 @@ extern void PrettyPrint (JsonObject& jsonStuff, String Name);
 extern void PrettyPrint (JsonArray& jsonStuff, String Name);
 extern void PrettyPrint(JsonDocument &jsonStuff, String Name);
 
+void inline SafeStrncpy(char* dest, const char* src, uint destSize)
+{
+    memset(dest, 0x00, destSize);
+    strncpy(dest, src, destSize-1);
+} // SafeStrncpy
+
 template <typename T, typename N>
 bool setFromJSON (T& OutValue, JsonObject & Json, N Name)
 {
@@ -209,9 +215,3 @@ extern bool ConfigSaveNeeded;
 #define LOAD_CONFIG_DELAY 4
 // #define DEBUG_GPIO gpio_num_t::GPIO_NUM_25
 // #define DEBUG_GPIO1 gpio_num_t::GPIO_NUM_14
-
-void inline SafeStrncpy(char* dest, const char* src, uint destSize)
-{
-    memset(dest, 0x00, destSize);
-    strncpy(dest, src, destSize-1);
-} // SafeStrncpy
