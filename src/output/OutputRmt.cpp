@@ -758,7 +758,7 @@ bool c_OutputRmt::StartNewFrame ()
         // digitalWrite(42, LOW);
         // DEBUG_V("start the transmitter");
         rmt_ll_power_down_mem(&RMT, false);
-        rmt_set_pin (OutputRmtConfig.RmtChannelId, rmt_mode_t::RMT_MODE_TX, OutputRmtConfig.DataPin);
+        rmt_set_gpio (OutputRmtConfig.RmtChannelId, rmt_mode_t::RMT_MODE_TX, OutputRmtConfig.DataPin, false);
         rmt_ll_tx_start(&RMT, OutputRmtConfig.RmtChannelId);
         // digitalWrite(42, HIGH);
         // delay(1);
