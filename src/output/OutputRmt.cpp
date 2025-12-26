@@ -103,7 +103,7 @@ c_OutputRmt::~c_OutputRmt ()
         String Reason = (F("Shutting down an RMT channel requires a reboot"));
         RequestReboot(Reason, 100000);
 
-        ISR_ResetRmtBlockPointers (); // Stop transmitter
+        ResetRmtBlockPointers (); // Stop transmitter
         DisableRmtInterrupts();
         ClearRmtInterrupts();
         yield();
@@ -236,7 +236,7 @@ void c_OutputRmt::Begin (OutputRmtConfig_t config, c_OutputCommon * _pParent )
         }
 
         // reset the internal and external pointers to the start of the mem block
-        ISR_ResetRmtBlockPointers ();
+        ResetRmtBlockPointers ();
 
         // DEBUG_V();
 
@@ -331,20 +331,20 @@ void c_OutputRmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
     debugStatus["RmtChannelId"]                 = OutputRmtConfig.RmtChannelId;
     debugStatus["GPIO"]                         = OutputRmtConfig.DataPin;
     #ifdef CONFIG_IDF_TARGET_ESP32S3
-    debugStatus["conf0"]                        = String(RMT.chnconf0[OutputRmtConfig.RmtChannelId].val, HEX);
-    debugStatus["conf1"]                        = String(RMT.chmconf[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
+    debugStatus["conf0"]                        = "0x" + String(RMT.chnconf0[OutputRmtConfig.RmtChannelId].val, HEX);
+    debugStatus["conf1"]                        = "0x" + String(RMT.chmconf[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
     debugStatus["tx_lim_ch"]                    = String(RMT.chn_tx_lim[OutputRmtConfig.RmtChannelId].tx_lim_chn);
     #else
-    debugStatus["conf0"]                        = String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
-    debugStatus["conf1"]                        = String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf1.val, HEX);
+    debugStatus["conf0"]                        = "0x" + String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
+    debugStatus["conf1"]                        = "0x" + String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf1.val, HEX);
     debugStatus["tx_lim_ch"]                    = String(RMT.tx_lim_ch[OutputRmtConfig.RmtChannelId].limit);
     #endif // def CONFIG_IDF_TARGET_ESP32S3
 
     debugStatus["ErrorIsr"]                     = ErrorIsr;
-    debugStatus["FrameCompletes"]               = String (FrameCompletes);
+    debugStatus["FrameCompletes"]               = FrameCompletes;
     debugStatus["FrameStartCounter"]            = FrameStartCounter;
-    debugStatus["FrameTimeouts"]                = String (FrameTimeouts);
-    debugStatus["FailedToSendAllData"]          = String (FailedToSendAllData);
+    debugStatus["FrameTimeouts"]                = FrameTimeouts;
+    debugStatus["FailedToSendAllData"]          = FailedToSendAllData;
     debugStatus["IncompleteFrame"]              = IncompleteFrame;
     debugStatus["IntensityValuesSent"]          = IntensityValuesSent;
     debugStatus["IntensityValuesSentLastFrame"] = IntensityValuesSentLastFrame;
@@ -357,19 +357,19 @@ void c_OutputRmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
     debugStatus["NumFrameStartBits"]            = OutputRmtConfig.NumFrameStartBits;
     debugStatus["NumFrameStopBits"]             = OutputRmtConfig.NumFrameStopBits;
     debugStatus["NumRmtSlotsPerIntensityValue"] = NumRmtSlotsPerIntensityValue;
-    debugStatus["OneBitValue"]                  = String (Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ONE_ID].val,  HEX);
+    debugStatus["OneBitValue"]                  = "0x" + String (Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ONE_ID].val,  HEX);
     debugStatus["RanOutOfData"]                 = RanOutOfData;
     debugStatus["RawIsrCounter"]                = RawIsrCounter;
     debugStatus["RMT_INT_BIT"]                  = "0x" + String (RMT_INT_BIT, HEX);
     debugStatus["RmtEntriesTransfered"]         = RmtEntriesTransfered;
-    debugStatus["RmtWhiteDetected"]             = String (RmtWhiteDetected);
+    debugStatus["RmtWhiteDetected"]             = RmtWhiteDetected;
     debugStatus["RmtXmtFills"]                  = RmtXmtFills;
     debugStatus["RxIsr"]                        = RxIsr;
     debugStatus["SendBlockIsrCounter"]          = SendBlockIsrCounter;
     debugStatus["SendInterIntensityBits"]       = OutputRmtConfig.SendInterIntensityBits;
     debugStatus["SendEndOfFrameBits"]           = OutputRmtConfig.SendEndOfFrameBits;
     debugStatus["UnknownISRcounter"]            = UnknownISRcounter;
-    debugStatus["ZeroBitValue"]                 = String (Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ZERO_ID].val, HEX);
+    debugStatus["ZeroBitValue"]                 = "0x" + String (Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ZERO_ID].val, HEX);
 
 #ifdef IncludeBufferData
     {
@@ -580,7 +580,7 @@ inline bool IRAM_ATTR c_OutputRmt::ISR_MoreDataToSend()
 }
 
 //----------------------------------------------------------------------------
-inline void IRAM_ATTR c_OutputRmt::ISR_ResetRmtBlockPointers()
+inline void IRAM_ATTR c_OutputRmt::ResetRmtBlockPointers()
 {
     rmt_ll_tx_stop(&RMT, OutputRmtConfig.RmtChannelId);
     rmt_ll_rx_set_mem_owner(&RMT, OutputRmtConfig.RmtChannelId,RMT_MEM_OWNER_TX);
@@ -685,7 +685,9 @@ bool c_OutputRmt::StartNewFrame ()
         if(OutputIsPaused)
         {
             // DEBUG_V("Paused");
-            DisableRmtInterrupts();
+            // Stop the transmitter
+            DisableRmtInterrupts ();
+            ResetRmtBlockPointers ();
             break;
         }
 
@@ -694,10 +696,9 @@ bool c_OutputRmt::StartNewFrame ()
             RMT_DEBUG_COUNTER(IncompleteFrame++);
         }
 
-        DisableRmtInterrupts();
-
 		// Stop the transmitter
-        ISR_ResetRmtBlockPointers ();
+        DisableRmtInterrupts ();
+        ResetRmtBlockPointers ();
 
         ///DEBUG_V(String("NumIdleBits: ") + String(OutputRmtConfig.NumIdleBits));
         uint32_t NumInterFrameRmtSlotsCount = 0;
@@ -757,6 +758,7 @@ bool c_OutputRmt::StartNewFrame ()
         // digitalWrite(42, LOW);
         // DEBUG_V("start the transmitter");
         rmt_ll_power_down_mem(&RMT, false);
+        rmt_set_pin (OutputRmtConfig.RmtChannelId, rmt_mode_t::RMT_MODE_TX, OutputRmtConfig.DataPin);
         rmt_ll_tx_start(&RMT, OutputRmtConfig.RmtChannelId);
         // digitalWrite(42, HIGH);
         // delay(1);
