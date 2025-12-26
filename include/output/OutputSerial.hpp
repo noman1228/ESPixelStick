@@ -98,10 +98,12 @@ private:
     uint32_t      SerialFooterSize  = 0;
     uint32_t      SerialFooterIndex = 0;
 
+#if defined(SUPPORT_OutputType_FireGod)
     uint16_t      FireGodCurrentController = 0;
     uint8_t       FireGodBytesInFrameCount = 0;
     const uint8_t FireGodNumMaxControllers = 4;
     const uint8_t FireGodNumChanPerController = 32;
+#endif // defined(SUPPORT_OutputType_FireGod)
 
 #ifdef USE_SERIAL_DEBUG_COUNTERS
     uint32_t   IntensityBytesSent = 0;
