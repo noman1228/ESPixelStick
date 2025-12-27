@@ -1586,6 +1586,18 @@ function ProcessReceivedJsonConfigMessage(JsonConfigData) {
         else {
             $('#TemperatureSensorGrp').addClass("hidden");
         }
+
+        if ({}.hasOwnProperty.call(System_Config.device, 'sd_pwr_pin'))
+        {
+            $('#SdPowerControlGrp').removeClass("hidden");
+            $('#config #device #sd_pwr_pin').val(System_Config.device.sd_pwr_pin);
+            $('#config #device #sd_pwr_on').val(System_Config.device.sd_pwr_on);
+            $('#config #device #sd_pwr_dly').val(System_Config.device.sd_pwr_dly);
+        }
+        else
+        {
+            $('#SdPowerControlGrp').addClass("hidden");
+        }
     }
 
     // is this a file list?
@@ -1824,6 +1836,13 @@ function submitNetworkConfig() {
     System_Config.device.user = $('#ftpusername').val();
     System_Config.device.password = $('#ftppassword').val();
     System_Config.device.enabled = $('#ftp_enable').prop('checked');
+
+    if ({}.hasOwnProperty.call(System_Config.device, 'sd_pwr_pin'))
+    {
+        System_Config.device.sd_pwr_pin = parseInt($('#config #device #sd_pwr_pin').val());
+        System_Config.device.sd_pwr_on  = parseInt($('#config #device #sd_pwr_on').val());
+        System_Config.device.sd_pwr_dly = parseInt($('#config #device #sd_pwr_dly').val());
+    }
 
     if ({}.hasOwnProperty.call(System_Config, 'sensor')) {
         System_Config.sensor.units = parseInt($('#TemperatureSensorUnits').val());

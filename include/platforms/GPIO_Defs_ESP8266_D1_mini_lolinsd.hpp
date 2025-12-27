@@ -28,6 +28,10 @@
 #define SD_CARD_CLK_PIN         gpio_num_t::GPIO_NUM_14
 #define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_0
 
+// enable these if your HW aupport SW control of SD power
+// #define DEFAULT_SD_POWER_PIN    gpio_num_t::GPIO_NUM_3
+// #define DEFAULT_SD_POWER_ON     1
+
 // Output Types
 // Not Finished - #define SUPPORT_OutputType_TLS3001
 // #define SUPPORT_OutputType_APA102           // SPI

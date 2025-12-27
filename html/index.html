@@ -774,6 +774,26 @@
                                     value="0" required title="GPIO on which Chip Select will be sent">
                             </div>
                         </div>
+
+                        <div class="form-group hidden" id="SdPowerControlGrp">
+                            <label class="control-label col-sm-2" for="sd_pwr_pin">SD Power Pin</label>
+                            <div class="col-sm-4">
+                                <input type="number" class="form-control is-valid" id="sd_pwr_pin" step="1" min="0"
+                                    max="50" value="0" required title="GPIO on which SD POWER will be sent">
+                            </div>
+                            <label class="control-label col-sm-2" for="sd_pwr_dly">SD Cycle Durration</label>
+                            <div class="col-sm-4">
+                                <input type="number" class="form-control is-valid" id="sd_pwr_dly" step="100" min="100"
+                                    max="65000" value="100" required title="Num MS to hold SD card off after boot">
+                            </div>
+                            <label class="control-label col-sm-2" for="sd_pwr_on">SD Power ON</label>
+                            <div>
+                                <select name="sd_pwr_on_choices" style="width:15%;max-width:20%;" class="form-control is-valid" id="sd_pwr_on">
+                                    <option value="0">ON = LOW</option>
+                                    <option value="1">ON = HIGH</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Dynamic input / output config -->

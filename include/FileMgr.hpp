@@ -142,6 +142,9 @@ private:
     bool    SeekSdFile(const FileId & FileHandle, uint64_t position, SeekMode Mode);
     void    BuildDefaultFseqList ();
     bool    IsCompressed(String FileName);
+    #ifdef DEFAULT_SD_POWER_PIN
+    void    PowerCycleSdCard();
+    #endif // def DEFAULT_SD_POWER_PIN
 
 #   define SD_CARD_CLK_MHZ     SD_SCK_MHZ(37)  // 50 MHz SPI clock
 #ifndef MaxSdTransSpeedMHz
@@ -166,6 +169,11 @@ private:
     uint8_t  mosi_pin = SD_CARD_MOSI_PIN;
     uint8_t  clk_pin  = SD_CARD_CLK_PIN;
     uint8_t  cs_pin   = SD_CARD_CS_PIN;
+    #ifdef DEFAULT_SD_POWER_PIN
+    uint8_t  sd_pwr_pin = DEFAULT_SD_POWER_PIN;
+    uint8_t  sd_pwr_on  = DEFAULT_SD_POWER_ON;
+    uint16_t sd_pwr_dly = 1000;
+    #endif // def DEFAULT_SD_POWER_PIN
     FileId   fsUploadFileHandle;
     String   fsUploadFileName;
     bool     fsUploadFileSavedIsEnabled = false;
