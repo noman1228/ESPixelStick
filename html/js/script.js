@@ -287,7 +287,7 @@ $(function ()
     }
 
     $('#v_columns').on('input', function () {
-        $.cookie('DiagColumns', parseInt($('#v_columns').val()));
+        $.cookie('DiagColumns', parseInt($('#v_columns').val(), 10));
         clearStream();
     });
     if(undefined !== $.cookie('DiagColumns'))
@@ -1652,7 +1652,7 @@ function updateFromJSON(obj) {
 } // updateFromJSON
 
 function GenerateInputOutputControlLabel(OptionListName, DisplayedChannelId) {
-    let Id = parseInt(DisplayedChannelId) + 1;
+    let Id = parseInt(DisplayedChannelId, 10) + 1;
     let NewName = '';
     //TODO: Dirty Hack to clean-up Input lables
     if (OptionListName === `input`) {
@@ -1769,7 +1769,7 @@ function CreateOptionsFromConfig(OptionListName, Config) {
 function ExtractNetworkWiFiConfigFromHtmlPage() {
     let wifi = System_Config.network.wifi;
 
-    wifi.sta_timeout = parseInt($('#network #wifi #sta_timeout').val());
+    wifi.sta_timeout = parseInt($('#network #wifi #sta_timeout').val(), 10);
     wifi.ip = $('#network #wifi #ip').val();
     wifi.netmask = $('#network #wifi #netmask').val();
     wifi.gateway = $('#network #wifi #gateway').val();
@@ -1778,10 +1778,10 @@ function ExtractNetworkWiFiConfigFromHtmlPage() {
     wifi.dhcp = $('#network #wifi #dhcp').prop('checked');
     wifi.ap_ssid = $('#network #wifi #ap_ssid').val();
     wifi.ap_passphrase = $('#network #wifi #ap_passphrase').val();
-    wifi.ap_channel = parseInt($('#network #wifi #ap_channel').val());
+    wifi.ap_channel = parseInt($('#network #wifi #ap_channel').val(), 10);
     wifi.ap_fallback = $('#network #wifi #ap_fallback').prop('checked');
     wifi.ap_reboot = $('#network #wifi #ap_reboot').prop('checked');
-    wifi.ap_timeout = parseInt($('#network #wifi #ap_timeout').val());
+    wifi.ap_timeout = parseInt($('#network #wifi #ap_timeout').val(), 10);
     wifi.StayInApMode = $('#network #wifi #StayInApMode').prop('checked');
 
     let CurrentRowId = 0;
@@ -1804,13 +1804,13 @@ function ExtractNetworkEthernetConfigFromHtmlPage() {
         System_Config.network.eth.dnss = $('#network #eth #dnss').val();
         System_Config.network.eth.dhcp = $('#network #eth #dhcp').prop('checked');
         System_Config.network.eth.type = parseInt($('#network #eth #type option:selected').val(), 10);
-        System_Config.network.eth.addr = parseInt($('#network #eth #addr').val());
-        System_Config.network.eth.power_pin = parseInt($('#network #eth #power_pin').val());
-        System_Config.network.eth.mode = parseInt($('#network #eth #mode option:selected').val());
-        System_Config.network.eth.mdc_pin = parseInt($('#network #eth #mdc_pin').val());
-        System_Config.network.eth.mdio_pin = parseInt($('#network #eth #mdio_pin').val());
+        System_Config.network.eth.addr = parseInt($('#network #eth #addr').val(), 10);
+        System_Config.network.eth.power_pin = parseInt($('#network #eth #power_pin').val(), 10);
+        System_Config.network.eth.mode = parseInt($('#network #eth #mode option:selected').val(), 10);
+        System_Config.network.eth.mdc_pin = parseInt($('#network #eth #mdc_pin').val(), 10);
+        System_Config.network.eth.mdio_pin = parseInt($('#network #eth #mdio_pin').val(), 10);
         System_Config.network.eth.activevalue = (parseInt($('#network #eth #activevalue option:selected').val(), 10) === 1);
-        System_Config.network.eth.activedelay = parseInt($('#network #eth #activedelay').val());
+        System_Config.network.eth.activedelay = parseInt($('#network #eth #activedelay').val(), 10);
     }
 
 } // ExtractNetworkEthernetConfigFromHtmlPage
@@ -1827,25 +1827,25 @@ function ExtractNetworkConfigFromHtmlPage() {
 // Builds JSON config submission for "WiFi" tab
 function submitNetworkConfig() {
     System_Config.device.id = $('#config #device #id').val();
-    System_Config.device.blanktime = parseInt($('#config #device #blanktime').val());
-    System_Config.device.miso_pin = parseInt($('#config #device #miso_pin').val());
-    System_Config.device.mosi_pin = parseInt($('#config #device #mosi_pin').val());
-    System_Config.device.clock_pin = parseInt($('#config #device #clock_pin').val());
-    System_Config.device.cs_pin = parseInt($('#config #device #cs_pin').val());
-    System_Config.device.sdspeed = parseInt($('#config #device #sdspeed').val());
+    System_Config.device.blanktime = parseInt($('#config #device #blanktime').val(), 10);
+    System_Config.device.miso_pin = parseInt($('#config #device #miso_pin').val(), 10);
+    System_Config.device.mosi_pin = parseInt($('#config #device #mosi_pin').val(), 10);
+    System_Config.device.clock_pin = parseInt($('#config #device #clock_pin').val(), 10);
+    System_Config.device.cs_pin = parseInt($('#config #device #cs_pin').val(), 10);
+    System_Config.device.sdspeed = parseInt($('#config #device #sdspeed').val(), 10);
     System_Config.device.user = $('#ftpusername').val();
     System_Config.device.password = $('#ftppassword').val();
     System_Config.device.enabled = $('#ftp_enable').prop('checked');
 
     if ({}.hasOwnProperty.call(System_Config.device, 'sd_pwr_pin'))
     {
-        System_Config.device.sd_pwr_pin = parseInt($('#config #device #sd_pwr_pin').val());
-        System_Config.device.sd_pwr_on  = parseInt($('#config #device #sd_pwr_on').val());
-        System_Config.device.sd_pwr_dly = parseInt($('#config #device #sd_pwr_dly').val());
+        System_Config.device.sd_pwr_pin = parseInt($('#config #device #sd_pwr_pin').val(), 10);
+        System_Config.device.sd_pwr_on  = parseInt($('#config #device #sd_pwr_on').val(), 10);
+        System_Config.device.sd_pwr_dly = parseInt($('#config #device #sd_pwr_dly').val(), 10);
     }
 
     if ({}.hasOwnProperty.call(System_Config, 'sensor')) {
-        System_Config.sensor.units = parseInt($('#TemperatureSensorUnits').val());
+        System_Config.sensor.units = parseInt($('#TemperatureSensorUnits').val(), 10);
     }
 
     ExtractNetworkConfigFromHtmlPage();
@@ -2006,10 +2006,10 @@ function ExtractChannelConfigFromHtmlPage(JsonConfig, SectionName) {
         }
         else if(ChannelConfig.type === "Grinch")
         {
-            ChannelConfig.count             = parseInt($('#grinch #controller_count' ).val());
-            ChannelConfig.dataspi.cs_pin    = parseInt($('#grinch #cs_pin' ).val());
-            ChannelConfig.dataspi.clock_pin = parseInt($('#grinch #clock_pin' ).val());
-            ChannelConfig.dataspi.data_pin  = parseInt($('#grinch #data_pin' ).val());
+            ChannelConfig.count             = parseInt($('#grinch #controller_count' ).val(), 10);
+            ChannelConfig.dataspi.cs_pin    = parseInt($('#grinch #cs_pin' ).val(), 10);
+            ChannelConfig.dataspi.clock_pin = parseInt($('#grinch #clock_pin' ).val(), 10);
+            ChannelConfig.dataspi.data_pin  = parseInt($('#grinch #data_pin' ).val(), 10);
         }
         else
         {
@@ -2059,7 +2059,7 @@ function ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig)
             }
             else
             {
-                ChannelConfig[elementid] = parseInt(inputValue);
+                ChannelConfig[elementid] = parseInt(inputValue, 10);
             }
         }
         else
@@ -2099,12 +2099,12 @@ function submitDeviceConfig()
     ExtractChannelConfigFromHtmlPage(Input_Config.channels, "input");
 
     Input_Config.ecb.enabled = $('#ecb_enable').is(':checked');
-    Input_Config.ecb.id = parseInt($('#ecb_gpioid').val());
+    Input_Config.ecb.id = parseInt($('#ecb_gpioid').val(), 10);
     Input_Config.ecb.polarity = $("#ecb_polarity").val();
-    Input_Config.ecb.long = parseInt($("#ecb_longPress").val());
+    Input_Config.ecb.long = parseInt($("#ecb_longPress").val(), 10);
 
     if ({}.hasOwnProperty.call(System_Config, 'sensor')) {
-        System_Config.sensor.units = parseInt($('#TemperatureSensorUnits').val());
+        System_Config.sensor.units = parseInt($('#TemperatureSensorUnits').val(), 10);
     }
 
     ExtractChannelConfigFromHtmlPage(Output_Config.channels, "output");
@@ -2151,7 +2151,7 @@ function MonitorServerConnection()
 } // MonitorServerConnection
 
 function drawStream(streamData) {
-    let cols = parseInt($('#v_columns').val());
+    let cols = parseInt($('#v_columns').val(), 10);
     let size = Math.floor((canvas.width - 20) / cols);
     let maxDisplay = 0;
 
@@ -2345,7 +2345,7 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
         $('#pkts').text(InputStatus.e131.num_packets);
         $('#chanlim').text(InputStatus.e131.unichanlim);
         $('#perr').text(InputStatus.e131.packet_errors);
-        $('#clientip').text(int2ip(parseInt(InputStatus.e131.last_clientIP)));
+        $('#clientip').text(int2ip(parseInt(InputStatus.e131.last_clientIP, 10)));
     }
     else {
         $('#E131Status').addClass("hidden")

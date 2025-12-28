@@ -144,7 +144,7 @@
 
     function apa102_OnChange ()
     {
-        // var NumberOfPixels       = parseInt ($ ('#pixel_count').val ());
+        // var NumberOfPixels       = parseInt ($ ('#pixel_count').val (), 10);
         // var BytesPerPixel = $ ('#color_order option:selected').val ().length;
         // console.info ("BytesPerPixel: " + BytesPerPixel);
         // var NumberOfBytesInFrame = NumberOfPixels * BytesPerPixel;
@@ -152,9 +152,9 @@
         // var TimePerBit           = 1 / PixelBaudRate;
         // var BitsPerByte          = 8;
         // var TimePerByte          = TimePerBit * BitsPerByte; = 0.00001
-        // var InterFrameGap        = parseInt ($ ('#interframetime').val ()) / 1000000;
+        // var InterFrameGap        = parseInt ($ ('#interframetime').val (), 10) / 1000000;
         // var TimePerFrame         = (TimePerByte * NumberOfBytesInFrame) + InterFrameGap;
-        var TimePerFrame = (0.00001 * (parseInt ($ ('#pixel_count').val ()) * $ ('#color_order option:selected').val ().length)) + (parseInt ($ ('#interframetime').val ()) / 1000000);
+        var TimePerFrame = (0.00001 * (parseInt ($ ('#pixel_count').val (), 10) * $ ('#color_order option:selected').val ().length)) + (parseInt ($ ('#interframetime').val (), 10) / 1000000);
 
         var rateMs = TimePerFrame * 1000;
         var hz = 1 / TimePerFrame;
