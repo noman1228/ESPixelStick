@@ -1413,10 +1413,10 @@
             }
         },
         {
-            "name": "ESP32S",
+            "name": "ESP32S DevkitC",
             "description": "ESP32S based controller",
             "chip": "esp32",
-            "appbin": "esp32/esp32_s3-app.bin",
+            "appbin": "esp32/esp32s3_devkitc-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "",
@@ -1424,11 +1424,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/esp32_s3-bootloader.bin",
+                    "name": "esp32/esp32s3_devkitc-bootloader.bin",
                     "offset": "0x01000"
                 },
                 {
-                    "name": "esp32/esp32_s3-partitions.bin",
+                    "name": "esp32/esp32s3_devkitc-partitions.bin",
                     "offset": "0x08000"
                 },
                 {
@@ -1436,7 +1436,42 @@
                     "offset": "0x0e000"
                 },
                 {
-                    "name": "esp32/esp32_s3-app.bin",
+                    "name": "esp32/esp32s3_devkitc-app.bin",
+                    "offset": "0x10000"
+                }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0x50000",
+                "offset": "0x3B0000"
+            }
+        },
+        {
+            "name": "ESP32S DevkitC Internal SD",
+            "description": "ESP32S based controller",
+            "chip": "esp32",
+            "appbin": "esp32/esp32s3_devkitc_Internal_SD-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                {
+                    "name": "esp32/esp32s3_devkitc_Internal_SD-bootloader.bin",
+                    "offset": "0x01000"
+                },
+                {
+                    "name": "esp32/esp32s3_devkitc_Internal_SD-partitions.bin",
+                    "offset": "0x08000"
+                },
+                {
+                    "name": "esp32/boot_app0.bin",
+                    "offset": "0x0e000"
+                },
+                {
+                    "name": "esp32/esp32s3_devkitc_Internal_SD-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -1451,7 +1486,7 @@
             "name": "Seeed Studio XIAO ESP32-S3",
             "description": "ESP32-S3 mini Controller",
             "chip": "esp32s3",
-            "appbin": "esp32s3/seeed_xiao_esp32s3-app.bin",
+            "appbin": "esp32s3/esp32s3_seeed_xiao-app.bin",
             "esptool": {
                 "baudrate": "115200",
                 "options": "--before default_reset --after hard_reset",
@@ -1459,11 +1494,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32s3/seeed_xiao_esp32s3-bootloader.bin",
+                    "name": "esp32s3/esp32s3_seeed_xiao-bootloader.bin",
                     "offset": "0x00000"
                 },
                 {
-                    "name": "esp32s3/seeed_xiao_esp32s3-partitions.bin",
+                    "name": "esp32s3/esp32s3_seeed_xiao-partitions.bin",
                     "offset": "0x08000"
                 },
                 {
@@ -1471,7 +1506,7 @@
                     "offset": "0x0e000"
                 },
                 {
-                    "name": "esp32s3/seeed_xiao_esp32s3-app.bin",
+                    "name": "esp32s3/esp32s3_seeed_xiao-app.bin",
                     "offset": "0x10000"
                 }
             ],
