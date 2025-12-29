@@ -1413,10 +1413,10 @@
             }
         },
         {
-            "name": "ESP32S DevkitC",
-            "description": "ESP32S based controller",
-            "chip": "esp32",
-            "appbin": "esp32/esp32s3_devkitc-app.bin",
+            "name": "ESP32S3 DevkitC",
+            "description": "ESP32S3 based controller",
+            "chip": "esp32s3",
+            "appbin": "esp32s3/esp32s3_devkitc-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "",
@@ -1424,11 +1424,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/esp32s3_devkitc-bootloader.bin",
+                    "name": "esp32s3/esp32s3_devkitc-bootloader.bin",
                     "offset": "0x01000"
                 },
                 {
-                    "name": "esp32/esp32s3_devkitc-partitions.bin",
+                    "name": "esp32s3/esp32s3_devkitc-partitions.bin",
                     "offset": "0x08000"
                 },
                 {
@@ -1436,7 +1436,7 @@
                     "offset": "0x0e000"
                 },
                 {
-                    "name": "esp32/esp32s3_devkitc-app.bin",
+                    "name": "esp32s3/esp32s3_devkitc-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -1448,10 +1448,10 @@
             }
         },
         {
-            "name": "ESP32S DevkitC Internal SD",
-            "description": "ESP32S based controller",
-            "chip": "esp32",
-            "appbin": "esp32/esp32s3_devkitc_Internal_SD-app.bin",
+            "name": "ESP32S3 DevkitC Internal SD",
+            "description": "ESP32S3 based controller",
+            "chip": "esp32s3",
+            "appbin": "esp32s3/esp32s3_devkitc_Internal_SD-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "",
@@ -1459,19 +1459,19 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/esp32s3_devkitc_Internal_SD-bootloader.bin",
+                    "name": "esp32s3/esp32s3_devkitc_Internal_SD-bootloader.bin",
                     "offset": "0x01000"
                 },
                 {
-                    "name": "esp32/esp32s3_devkitc_Internal_SD-partitions.bin",
+                    "name": "esp32s3/esp32s3_devkitc_Internal_SD-partitions.bin",
                     "offset": "0x08000"
                 },
                 {
-                    "name": "esp32/boot_app0.bin",
+                    "name": "esp32s3/boot_app0.bin",
                     "offset": "0x0e000"
                 },
                 {
-                    "name": "esp32/esp32s3_devkitc_Internal_SD-app.bin",
+                    "name": "esp32s3/esp32s3_devkitc_Internal_SD-app.bin",
                     "offset": "0x10000"
                 }
             ],
