@@ -133,7 +133,7 @@
             "name": "D1 Mini32 ETH",
             "description": "D1 ESP32 module with PSRAM support for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/esp32_wemos_d1_mini32-app.bin",
+            "appbin": "esp32/esp32_wemos_d1_mini32_eth-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -141,11 +141,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/esp32_wemos_d1_mini32-bootloader.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32_eth-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/esp32_wemos_d1_mini32-partitions.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32_eth-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -153,7 +153,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/esp32_wemos_d1_mini32-app.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32_eth-app.bin",
                     "offset": "0x10000"
                 }
             ],

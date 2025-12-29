@@ -23,7 +23,7 @@ jobs:
           - target: "esp32_wemos_d1_mini32"
             chip: "esp32"
           # Wemos D1 Mini ESP32
-          - target: "d1_mini32_eth"
+          - target: "esp32_wemos_d1_mini32_eth"
             chip: "esp32"
           # ESP32 Bong69
           - target: "esp32_bong69"
