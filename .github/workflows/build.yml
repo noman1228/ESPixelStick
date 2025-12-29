@@ -8,28 +8,25 @@ jobs:
       matrix:
         include:
           # ESPixelStick V3
-          - target: "espsv3"
+          - target: "esp8266_espsv3"
             chip: "esp8266"
           # Wemos D1 Mini ESP8266
-          - target: "d1_mini"
+          - target: "esp8266_wemos_d1_mini"
             chip: "esp8266"
           # Wemos D1 Mini PRO ESP8266
-          - target: "d1_mini_pro"
+          - target: "esp8266_wemos_d1_mini_pro"
             chip: "esp8266"
           # Wemos D1 Mini ESP8266 Plus LoLinSD Card
           - target: "d1_mini_lolinsd"
             chip: "esp8266"
           # ESP01S
-          - target: "esp01s"
+          - target: "esp8266_esp01s"
             chip: "esp8266"
           # Wemos D1 Mini ESP32
-          - target: "d1_mini32"
+          - target: "esp32_wemos_d1_mini32"
             chip: "esp32"
           # Wemos D1 Mini ESP32
           - target: "d1_mini32_eth"
-            chip: "esp32"
-          # Lolin D32 Pro
-          - target: "d32_pro"
             chip: "esp32"
           # ESP32 Bong69
           - target: "esp32_bong69"
@@ -37,8 +34,11 @@ jobs:
           # ESP32 CAM
           - target: "esp32_cam"
             chip: "esp32"
+          # Lolin D32 Pro
+          - target: "esp32_lolin_d1_pro"
+            chip: "esp32"
           # Lolin D32 Pro eth
-          - target: "d32_pro_eth"
+          - target: "esp32_lolin_d1_pro_eth"
             chip: "esp32"
           # TTGO T8
           - target: "esp32_ttgo_t8"
@@ -83,25 +83,25 @@ jobs:
           - target: "esp32_wasatch"
             chip: "esp32"
           # mh et esp32 mini kit
-          - target: "d1_mini_mhetesp32minikit"
+          - target: "esp32_d1_mini_mhetesp32minikit"
             chip: "esp32"
           # Olimex ESP32 Gateway
-          - target: "olimex_esp32_gw"
+          - target: "esp32_olimex_gw"
             chip: "esp32"
           # Twilight Lord
-          - target: "d1_mini_twilightlord"
+          - target: "esp32_d1_mini_twilightlord"
             chip: "esp32"
           # Twilight Lord ETH
-          - target: "d1_mini_twilightlord_eth"
+          - target: "esp32_d1_mini_twilightlord_eth"
             chip: "esp32"
           # DEVKITC
           - target: "esp32_devkitc"
             chip: "esp32"
           # M5Stack Atom
-          - target: "m5stack_atom"
+          - target: "esp32_m5stack_atom"
             chip: "esp32"
           #
-          - target: "esp3deuxquatro_dmx"
+          - target: "esp32_deuxquatro_dmx"
             chip: "esp32"
           #
           - target: "esp32_quinled_uno_espsv3"
