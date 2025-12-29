@@ -3,7 +3,7 @@
 * GPIO_Defs_ESP8266_D1_mini_lolinsd.hpp - Output Management class
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2021 Shelby Merrick
+* Copyright (c) 2021-2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -28,6 +28,10 @@
 #define SD_CARD_CLK_PIN         gpio_num_t::GPIO_NUM_14
 #define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_0
 
+// enable these if your HW aupport SW control of SD power
+// #define DEFAULT_SD_POWER_PIN    gpio_num_t::GPIO_NUM_3
+// #define DEFAULT_SD_POWER_ON     1
+
 // Output Types
 // Not Finished - #define SUPPORT_OutputType_TLS3001
 // #define SUPPORT_OutputType_APA102           // SPI
@@ -43,3 +47,4 @@
 #define SUPPORT_OutputType_WS2811           // UART / RMT
 #define SUPPORT_OutputType_Relay            // GPIO
 // #define SUPPORT_OutputType_Servo_PCA9685    // I2C (default pins)
+#define SUPPORT_OutputType_FireGod          // UART / RMT

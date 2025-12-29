@@ -40,22 +40,28 @@ static uint32_t FrameTimeouts = 0;
 void RMT_Task (void *arg)
 {
     // DEBUG_V(String("Current CPU ID: ") + String(xPortGetCoreID()));
-
+    // pinMode(17, OUTPUT);
+    // digitalWrite(17, HIGH);
     while(1)
     {
         // Give the outputs a chance to catch up.
         delay(1);
+
         // process all possible channels
         for (c_OutputRmt * pRmt : rmt_isr_ThisPtrs)
         {
             // do we have a driver on this channel?
             if(nullptr != pRmt)
             {
+                // digitalWrite(17, LOW);
+
                 // invoke the channel
                 if (pRmt->StartNextFrame())
                 {
                     // sys_delay_ms(500);
                     uint32_t NotificationValue = ulTaskNotifyTake( pdTRUE, pdMS_TO_TICKS(100) );
+                    // digitalWrite(17, HIGH);
+
                     if(1 == NotificationValue)
                     {
                         // DEBUG_V("The transmission ended as expected.");
@@ -97,7 +103,7 @@ c_OutputRmt::~c_OutputRmt ()
         String Reason = (F("Shutting down an RMT channel requires a reboot"));
         RequestReboot(Reason, 100000);
 
-        ISR_ResetRmtBlockPointers (); // Stop transmitter
+        ResetRmtBlockPointers (); // Stop transmitter
         DisableRmtInterrupts();
         ClearRmtInterrupts();
         yield();
@@ -160,20 +166,14 @@ void c_OutputRmt::Begin (OutputRmtConfig_t config, c_OutputCommon * _pParent )
 
     do // once
     {
-        if(HasBeenInitialized)
-        {
-            // release the old GPIO pin.
-            ResetGpio(OutputRmtConfig.DataPin);
-        }
-
         // save the new config
         OutputRmtConfig = config;
 
-        #if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
         if ((nullptr == OutputRmtConfig.pPixelDataSource) && (nullptr == OutputRmtConfig.pSerialDataSource))
         #else
         if (nullptr == OutputRmtConfig.pPixelDataSource)
-        #endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
         {
             String Reason = (F("Invalid RMT configuration parameters. Rebooting"));
             RequestReboot(Reason, 10000);
@@ -230,7 +230,7 @@ void c_OutputRmt::Begin (OutputRmtConfig_t config, c_OutputCommon * _pParent )
         }
 
         // reset the internal and external pointers to the start of the mem block
-        ISR_ResetRmtBlockPointers ();
+        ResetRmtBlockPointers ();
 
         // DEBUG_V();
 
@@ -325,20 +325,20 @@ void c_OutputRmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
     debugStatus["RmtChannelId"]                 = OutputRmtConfig.RmtChannelId;
     debugStatus["GPIO"]                         = OutputRmtConfig.DataPin;
     #ifdef CONFIG_IDF_TARGET_ESP32S3
-    debugStatus["conf0"]                        = String(RMT.chnconf0[OutputRmtConfig.RmtChannelId].val, HEX);
-    debugStatus["conf1"]                        = String(RMT.chmconf[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
+    debugStatus["conf0"]                        = "0x" + String(RMT.chnconf0[OutputRmtConfig.RmtChannelId].val, HEX);
+    debugStatus["conf1"]                        = "0x" + String(RMT.chmconf[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
     debugStatus["tx_lim_ch"]                    = String(RMT.chn_tx_lim[OutputRmtConfig.RmtChannelId].tx_lim_chn);
     #else
-    debugStatus["conf0"]                        = String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
-    debugStatus["conf1"]                        = String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf1.val, HEX);
+    debugStatus["conf0"]                        = "0x" + String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
+    debugStatus["conf1"]                        = "0x" + String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf1.val, HEX);
     debugStatus["tx_lim_ch"]                    = String(RMT.tx_lim_ch[OutputRmtConfig.RmtChannelId].limit);
     #endif // def CONFIG_IDF_TARGET_ESP32S3
 
     debugStatus["ErrorIsr"]                     = ErrorIsr;
-    debugStatus["FrameCompletes"]               = String (FrameCompletes);
+    debugStatus["FrameCompletes"]               = FrameCompletes;
     debugStatus["FrameStartCounter"]            = FrameStartCounter;
-    debugStatus["FrameTimeouts"]                = String (FrameTimeouts);
-    debugStatus["FailedToSendAllData"]          = String (FailedToSendAllData);
+    debugStatus["FrameTimeouts"]                = FrameTimeouts;
+    debugStatus["FailedToSendAllData"]          = FailedToSendAllData;
     debugStatus["IncompleteFrame"]              = IncompleteFrame;
     debugStatus["IntensityValuesSent"]          = IntensityValuesSent;
     debugStatus["IntensityValuesSentLastFrame"] = IntensityValuesSentLastFrame;
@@ -351,19 +351,19 @@ void c_OutputRmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
     debugStatus["NumFrameStartBits"]            = OutputRmtConfig.NumFrameStartBits;
     debugStatus["NumFrameStopBits"]             = OutputRmtConfig.NumFrameStopBits;
     debugStatus["NumRmtSlotsPerIntensityValue"] = NumRmtSlotsPerIntensityValue;
-    debugStatus["OneBitValue"]                  = String (Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ONE_ID].val,  HEX);
+    debugStatus["OneBitValue"]                  = "0x" + String (Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ONE_ID].val,  HEX);
     debugStatus["RanOutOfData"]                 = RanOutOfData;
     debugStatus["RawIsrCounter"]                = RawIsrCounter;
     debugStatus["RMT_INT_BIT"]                  = "0x" + String (RMT_INT_BIT, HEX);
     debugStatus["RmtEntriesTransfered"]         = RmtEntriesTransfered;
-    debugStatus["RmtWhiteDetected"]             = String (RmtWhiteDetected);
+    debugStatus["RmtWhiteDetected"]             = RmtWhiteDetected;
     debugStatus["RmtXmtFills"]                  = RmtXmtFills;
     debugStatus["RxIsr"]                        = RxIsr;
     debugStatus["SendBlockIsrCounter"]          = SendBlockIsrCounter;
     debugStatus["SendInterIntensityBits"]       = OutputRmtConfig.SendInterIntensityBits;
     debugStatus["SendEndOfFrameBits"]           = OutputRmtConfig.SendEndOfFrameBits;
     debugStatus["UnknownISRcounter"]            = UnknownISRcounter;
-    debugStatus["ZeroBitValue"]                 = String (Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ZERO_ID].val, HEX);
+    debugStatus["ZeroBitValue"]                 = "0x" + String (Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ZERO_ID].val, HEX);
 
 #ifdef IncludeBufferData
     {
@@ -472,14 +472,14 @@ inline bool IRAM_ATTR c_OutputRmt::ISR_GetNextIntensityToSend(uint32_t &DataToSe
     {
         return OutputRmtConfig.pPixelDataSource->ISR_GetNextIntensityToSend(DataToSend);
     }
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+	#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     else
     {
         return OutputRmtConfig.pSerialDataSource->ISR_GetNextIntensityToSend(DataToSend);
     }
-#else
+	#else
     return false;
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+	#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
 } // GetNextIntensityToSend
 
 //----------------------------------------------------------------------------
@@ -559,7 +559,7 @@ void IRAM_ATTR c_OutputRmt::ISR_Handler (isrTxFlags_t isrTxFlags)
 //----------------------------------------------------------------------------
 inline bool IRAM_ATTR c_OutputRmt::ISR_MoreDataToSend()
 {
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+	#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     if (nullptr != OutputRmtConfig.pPixelDataSource)
     {
         return OutputRmtConfig.pPixelDataSource->ISR_MoreDataToSend();
@@ -568,13 +568,13 @@ inline bool IRAM_ATTR c_OutputRmt::ISR_MoreDataToSend()
     {
         return OutputRmtConfig.pSerialDataSource->ISR_MoreDataToSend();
     }
-#else
+	#else
     return OutputRmtConfig.pPixelDataSource->ISR_MoreDataToSend();
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+	#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
 }
 
 //----------------------------------------------------------------------------
-inline void IRAM_ATTR c_OutputRmt::ISR_ResetRmtBlockPointers()
+inline void IRAM_ATTR c_OutputRmt::ResetRmtBlockPointers()
 {
     rmt_ll_tx_stop(&RMT, OutputRmtConfig.RmtChannelId);
     rmt_ll_rx_set_mem_owner(&RMT, OutputRmtConfig.RmtChannelId,RMT_MEM_OWNER_TX);
@@ -590,18 +590,18 @@ inline void IRAM_ATTR c_OutputRmt::ISR_ResetRmtBlockPointers()
 }
 
 //----------------------------------------------------------------------------
-inline void IRAM_ATTR c_OutputRmt::ISR_StartNewDataFrame()
+inline void c_OutputRmt::StartNewDataFrame()
 {
     if (nullptr != OutputRmtConfig.pPixelDataSource)
     {
         OutputRmtConfig.pPixelDataSource->StartNewFrame();
     }
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+	#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     else
     {
         OutputRmtConfig.pSerialDataSource->StartNewFrame();
     }
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+	#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
 } // StartNewDataFrame
 
 //----------------------------------------------------------------------------
@@ -679,7 +679,9 @@ bool c_OutputRmt::StartNewFrame ()
         if(OutputIsPaused)
         {
             // DEBUG_V("Paused");
-            DisableRmtInterrupts();
+            // Stop the transmitter
+            DisableRmtInterrupts ();
+            ResetRmtBlockPointers ();
             break;
         }
 
@@ -688,10 +690,9 @@ bool c_OutputRmt::StartNewFrame ()
             RMT_DEBUG_COUNTER(IncompleteFrame++);
         }
 
-        DisableRmtInterrupts();
-
 		// Stop the transmitter
-        ISR_ResetRmtBlockPointers ();
+        DisableRmtInterrupts ();
+        ResetRmtBlockPointers ();
 
         ///DEBUG_V(String("NumIdleBits: ") + String(OutputRmtConfig.NumIdleBits));
         uint32_t NumInterFrameRmtSlotsCount = 0;
@@ -719,7 +720,7 @@ bool c_OutputRmt::StartNewFrame ()
         #endif // def USE_RMT_DEBUG_COUNTERS
 
         // set up to send a new frame
-        ISR_StartNewDataFrame ();
+        StartNewDataFrame ();
         // DEBUG_V();
 
         ThereIsDataToSend = ISR_MoreDataToSend();
@@ -751,6 +752,7 @@ bool c_OutputRmt::StartNewFrame ()
         // digitalWrite(42, LOW);
         // DEBUG_V("start the transmitter");
         rmt_ll_power_down_mem(&RMT, false);
+        // rmt_set_gpio (OutputRmtConfig.RmtChannelId, rmt_mode_t::RMT_MODE_TX, OutputRmtConfig.DataPin, false);
         rmt_ll_tx_start(&RMT, OutputRmtConfig.RmtChannelId);
         // digitalWrite(42, HIGH);
         // delay(1);

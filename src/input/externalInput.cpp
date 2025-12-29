@@ -54,7 +54,7 @@ void c_ExternalInput::Init(uint32_t iInputId, uint32_t iPinId, Polarity_t Polari
 
 	// Remember the pin number for future calls
 	GpioId   = iPinId;
-	strcpy(name, sName.c_str());
+    SafeStrncpy(name, sName.c_str(), sizeof(name));
 	polarity = Polarity;
 
 	// set the pin direction to input
@@ -111,7 +111,7 @@ void c_ExternalInput::ProcessConfig (JsonObject JsonData)
 	setFromJSON (Polarity,        JsonData, CN_polarity);
 	setFromJSON (TriggerChannel,  JsonData, CN_channels);
 	setFromJSON (LongPushDelayMS, JsonData, CN_long);
-    strcpy(name, temp.c_str());
+    SafeStrncpy(name, temp.c_str(), sizeof(name));
 
 	polarity = (String(CN_ActiveHigh) == Polarity) ? ActiveHigh : ActiveLow;
 

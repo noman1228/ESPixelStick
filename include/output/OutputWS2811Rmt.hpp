@@ -49,6 +49,11 @@ public:
 
 private:
 
+#ifdef USE_RMT_DEBUG_COUNTERS
+    uint32_t CanRefresh = 0;
+    uint32_t CannotRefresh = 0;
+#endif // def USE_RMT_DEBUG_COUNTERS
+
     c_OutputRmt Rmt;
 
 }; // c_OutputWS2811Rmt

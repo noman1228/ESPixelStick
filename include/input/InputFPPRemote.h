@@ -45,13 +45,12 @@ class c_InputFPPRemote : public c_InputCommon
       void SetOperationalState (bool ActiveFlag);
       void SetBlankTimerIsRunning (bool BlankTimerRunning);
 
-      void FppStartRemoteFilePlay (String & FileName, uint32_t ElapsedTimeSec);
-      void FppStopRemoteFilePlay  ();
+      void StartPlaying (String & FileName, time_t SecondsElapsed, bool IsRemote);
+      void StopPlaying ();
       void FppSyncRemoteFilePlay  (String & FileName, uint32_t ElapsedTimeMS);
       void GetFppRemotePlayStatus (JsonObject& jsonStatus);
       bool IsIdle();
       bool AllowedToPlayRemoteFile();
-      void SetBackgroundFile      ();
 
 protected:
 
@@ -64,14 +63,13 @@ protected:
 private:
 
     void validateConfiguration ();
-    void StartPlaying (String & FileName);
     void StartPlayingLocalFile (String & FileName);
-    void StartPlayingRemoteFile (String & FileName);
-    void StopPlaying ();
+    void StartPlayingRemoteFile (String & FileName, time_t ElapsedSeconds);
     bool PlayingFile ();
     bool PlayingRemoteFile ();
     void PlayNextFile ();
     bool Poll ();
+    void FppStopRemoteFilePlay  ();
 
     void load ();          ///< Load configuration from File System
     void save ();          ///< Save configuration to File System
@@ -84,7 +82,7 @@ private:
     bool     FppSyncOverride = false;
     uint32_t FilePlayCount = 0;
 
-    #define PlayerMemorySize 1096
+    #define PlayerMemorySize 2000
     struct PlayerInfo_t
     {
         alignas(16) byte    Player[PlayerMemorySize];

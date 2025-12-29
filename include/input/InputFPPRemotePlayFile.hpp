@@ -74,8 +74,6 @@ private:
         float             LastRcvdElapsedSeconds = 0.0;
     } SyncControl;
 
-    uint32_t  PlayedFileCount = 0;
-
 #define MAX_NUM_SPARSE_RANGES 5
     FSEQParsedRangeEntry SparseRanges[MAX_NUM_SPARSE_RANGES];
 

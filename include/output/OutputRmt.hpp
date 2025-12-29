@@ -71,9 +71,9 @@ public:
         const CitrdsArray_t *CitrdsArray           = nullptr;
 
         c_OutputPixel  *pPixelDataSource      = nullptr;
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+		#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
         c_OutputSerial *pSerialDataSource = nullptr;
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+		#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
     };
 
 struct isrTxFlags_t
@@ -122,8 +122,8 @@ private:
     inline void IRAM_ATTR ISR_WriteToBuffer(uint32_t value);
     inline bool IRAM_ATTR ISR_MoreDataToSend();
     inline bool IRAM_ATTR ISR_GetNextIntensityToSend(uint32_t &DataToSend);
-    inline void IRAM_ATTR ISR_StartNewDataFrame();
-    inline void IRAM_ATTR ISR_ResetRmtBlockPointers();
+    inline void StartNewDataFrame();
+    inline void ResetRmtBlockPointers();
 
 #ifndef HasBeenInitialized
     bool HasBeenInitialized = false;

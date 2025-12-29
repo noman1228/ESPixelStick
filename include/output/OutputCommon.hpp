@@ -86,7 +86,6 @@ protected:
 
     inline bool canRefresh ()
     {
-        bool response = false;
         uint32_t Now = micros ();
         uint32_t FrameTimeDeltaInMicroSec = Now - FrameStartTimeInMicroSec; // how many us since the frame started
 
@@ -96,14 +95,13 @@ protected:
             FrameTimeDeltaInMicroSec = Now + (0 - FrameStartTimeInMicroSec);
         }
 
-        if(FrameTimeDeltaInMicroSec > FrameDurationInMicroSec)
-        {
-            response = true;
-        }
-        return response;
+        return (FrameTimeDeltaInMicroSec > FrameDurationInMicroSec);
     }
 
-private:
-    uint32_t    FrameStartTimeInMicroSec   = 0;
+    #ifdef USE_RMT_DEBUG_COUNTERS
+    protected: uint32_t FrameStartTimeInMicroSec = 0;
+    #else
+    private:   uint32_t FrameStartTimeInMicroSec = 0;
+    #endif // def USE_RMT_DEBUG_COUNTERS
 
 }; // c_OutputCommon

@@ -230,7 +230,6 @@ void c_FPPDiscovery::GetConfig (JsonObject& jsonConfig)
 
     JsonWrite(jsonConfig, CN_fseqfilename, ConfiguredFileToPlay);
     JsonWrite(jsonConfig, CN_BlankOnStop,  BlankOnStop);
-    JsonWrite(jsonConfig, CN_FPPoverride,  FppSyncOverride);
 
     // DEBUG_END;
 
@@ -275,7 +274,7 @@ void c_FPPDiscovery::GetStatus (JsonObject & jsonStatus)
         JsonWrite(MyJsonStatus, F ("FppRemoteIp"), FppRemoteIp.toString ());
         if (AllowedToPlayRemoteFile())
         {
-            // DEBUG_V();
+            // DEBUG_V("GetFppRemotePlayStatus");
             InputFPPRemote->GetFppRemotePlayStatus (MyJsonStatus);
         }
         else
@@ -503,17 +502,15 @@ void c_FPPDiscovery::ProcessSyncPacket (uint8_t action, String FileName, float S
                 MultiSyncStats.pktSyncSeqStop++;
                 if(BlankOnStop)
                 {
+                    // DEBUG_V("Blank on stop");
                     ProcessBlankPacket();
                 }
                 else
                 {
+                    // DEBUG_V("NO Blank on stop");
                     StopPlaying ();
                 }
 
-                if(FppSyncOverride)
-                {
-                    InputFPPRemote->SetBackgroundFile();
-                }
                 break;
             }
 
@@ -571,6 +568,7 @@ void c_FPPDiscovery::ProcessBlankPacket ()
 
     if (IsEnabled)
     {
+        // DEBUG_V("Blanking is enabled");
         StopPlaying ();
         OutputMgr.ClearBuffer();
     }
@@ -618,9 +616,9 @@ void c_FPPDiscovery::sendPingPacket (IPAddress destination)
     memcpy (packet.ipAddress, &ip, 4);
     String Hostname;
     NetworkMgr.GetHostname (Hostname);
-    strcpy (packet.hostName, Hostname.c_str ());
-    strcpy (packet.version, ConstConfig.Version);
-    strcpy (packet.hardwareType, FPP_VARIANT_NAME.c_str());
+    SafeStrncpy (packet.hostName, Hostname.c_str (), sizeof(packet.hostName));
+    SafeStrncpy (packet.version, ConstConfig.Version, sizeof(packet.version));
+    SafeStrncpy (packet.hardwareType, FPP_VARIANT_NAME.c_str(), sizeof(packet.hardwareType));
     packet.ranges[0] = 0;
 
     // DEBUG_V(String("packet.version: '") + String(packet.version) + "'");
@@ -1003,7 +1001,7 @@ void c_FPPDiscovery::ProcessFile (
             // DEBUG_V("Stop Input");
             StopPlaying();
             inFileUpload = true;
-            strcpy(UploadFileName, filename.c_str());
+            SafeStrncpy(UploadFileName, filename.c_str(), sizeof(UploadFileName));
             InputMgr.SetOperationalState(false);
             OutputMgr.PauseOutputs(true);
         }
@@ -1018,7 +1016,7 @@ void c_FPPDiscovery::ProcessFile (
 
             // DEBUG_V("New file starting. Aborting: '" + String(UploadFileName) + "' and starting '" + filename + "'");
             FileMgr.AbortSdFileUpload();
-            strcpy(UploadFileName, filename.c_str());
+            SafeStrncpy(UploadFileName, filename.c_str(), sizeof(UploadFileName));
         }
 
         // DEBUG_V("Write the file block");
@@ -1091,7 +1089,7 @@ void c_FPPDiscovery::ProcessBody (
                     request->send (404);
                     break;
                 }
-                strcpy(UploadFileName, request->getParam (CN_filename)->value ().c_str());
+                SafeStrncpy(UploadFileName, request->getParam (CN_filename)->value ().c_str(), sizeof(UploadFileName));
                 // DEBUG_V (emptyString);
             }
 
@@ -1419,7 +1417,6 @@ bool c_FPPDiscovery::SetConfig (JsonObject& jsonConfig)
 
     setFromJSON (ConfiguredFileToPlay, jsonConfig, CN_fseqfilename);
     setFromJSON (BlankOnStop,          jsonConfig, CN_BlankOnStop);
-    setFromJSON (FppSyncOverride,      jsonConfig, CN_FPPoverride);
 
     // DEBUG_END;
 
@@ -1459,7 +1456,7 @@ void c_FPPDiscovery::StartPlaying (String & FileName, float SecondsElapsed)
         if (AllowedToPlayRemoteFile())
         {
             // DEBUG_V ("Ask FSM to start playing");
-            InputFPPRemote->FppStartRemoteFilePlay (FileName, SecondsElapsed);
+            InputFPPRemote->StartPlaying (FileName, SecondsElapsed, true);
         }
 
     } while (false);
@@ -1479,7 +1476,7 @@ void c_FPPDiscovery::StopPlaying ()
 
     if(AllowedToPlayRemoteFile())
     {
-        InputFPPRemote->FppStopRemoteFilePlay();
+        InputFPPRemote->StopPlaying();
     }
 
     // DEBUG_END;
@@ -1514,7 +1511,7 @@ void c_FPPDiscovery::GenerateFppSyncMsg(uint8_t Action, const String & FileName,
         SyncPacket.seconds_elapsed = ElpsedTime;
 
         // copy the file name and make sure a truncated file name has a proper line termination.
-        strncpy(SyncPacket.filename, FileName.c_str(), size_t(sizeof(SyncPacket.filename)-1));
+        SafeStrncpy(SyncPacket.filename, FileName.c_str(), size_t(sizeof(SyncPacket.filename)));
         SyncPacket.filename[sizeof(SyncPacket.filename)-1] = 0x00;
 
         if(NetworkMgr.IsConnected())

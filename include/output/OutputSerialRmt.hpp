@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if (defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)
+#if (defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)
 
 #include "OutputSerial.hpp"
 #include "OutputRmt.hpp"
@@ -50,7 +50,8 @@ private:
     void SetUpRmtBitTimes();
 
     c_OutputRmt Rmt;
+    rmt_idle_level_t idle_level = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
 
 }; // c_OutputSerialRmt
 
-#endif // (defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)
+#endif // defined(SUPPORT_OutputType_FireGod) || (defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)

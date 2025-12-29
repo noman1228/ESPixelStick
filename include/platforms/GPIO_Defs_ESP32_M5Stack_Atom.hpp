@@ -3,7 +3,7 @@
 * GPIO_Defs_ESP32_M5Stack_Atom.hpp - Output Management class
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2021 Shelby Merrick
+* Copyright (c) 2021-2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -74,3 +74,4 @@
 #define SUPPORT_OutputType_Relay            // GPIO
 // Disabled by default, on Atom Matrix I2C is shared with a 6-Axis IMU (MPU-6886)
 // #define SUPPORT_OutputType_Servo_PCA9685    // I2C (default pins)
+#define SUPPORT_OutputType_FireGod          // UART / RMT

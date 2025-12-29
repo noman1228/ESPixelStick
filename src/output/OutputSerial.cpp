@@ -1,8 +1,8 @@
 /*
-* OutputSerial.cpp - Pixel driver code for ESPixelStick UART
+* OutputSerial.cpp - Serial driver code for ESPixelStick UART
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2015, 2025 Shelby Merrick
+* Copyright (c) 2015, 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -18,7 +18,7 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
 
 #include "output/OutputSerial.hpp"
 #define ADJUST_INTENSITY_AT_ISR
@@ -34,12 +34,21 @@ c_OutputSerial::c_OutputSerial (c_OutputMgr::e_OutputChannelIds OutputChannelId,
     memset(GenericSerialHeader, 0x0, sizeof(GenericSerialHeader));
     memset(GenericSerialFooter, 0x0, sizeof(GenericSerialFooter));
 
-#if defined(SUPPORT_OutputType_DMX)
+    #if defined(SUPPORT_OutputType_DMX)
     if (outputType == c_OutputMgr::e_OutputType::OutputType_DMX)
     {
         CurrentBaudrate = uint32_t(BaudRate::BR_DMX);
     }
-#endif // defined(SUPPORT_OutputType_DMX)
+    #endif // defined(SUPPORT_OutputType_DMX)
+
+    #if defined(SUPPORT_OutputType_FireGod)
+    if (OutputType == c_OutputMgr::e_OutputType::OutputType_FireGod)
+    {
+        CurrentBaudrate = uint32_t(BaudRate::BR_FIREGOD);
+        Num_Channels = FireGodNumChanPerController;
+    }
+    #endif // defined(SUPPORT_OutputType_FireGod)
+
     // DEBUG_END;
 } // c_OutputSerial
 
@@ -55,12 +64,20 @@ c_OutputSerial::~c_OutputSerial ()
 void c_OutputSerial::Begin()
 {
     // DEBUG_START;
-#if defined(SUPPORT_OutputType_DMX)
+    #if defined(SUPPORT_OutputType_DMX)
     if (OutputType == c_OutputMgr::e_OutputType::OutputType_DMX)
     {
         CurrentBaudrate = uint32_t(BaudRate::BR_DMX);
     }
-#endif // defined(SUPPORT_OutputType_DMX)
+    #endif // defined(SUPPORT_OutputType_DMX)
+
+    #if defined(SUPPORT_OutputType_FireGod)
+    if (OutputType == c_OutputMgr::e_OutputType::OutputType_FireGod)
+    {
+        CurrentBaudrate = uint32_t(BaudRate::BR_FIREGOD);
+    }
+    #endif // defined(SUPPORT_OutputType_FireGod)
+
     // DEBUG_END;
 } // Begin
 
@@ -69,10 +86,26 @@ void c_OutputSerial::GetConfig(ArduinoJson::JsonObject &jsonConfig)
 {
     // DEBUG_START;
 
-    JsonWrite(jsonConfig, CN_gen_ser_hdr, GenericSerialHeader);
-    JsonWrite(jsonConfig, CN_gen_ser_ftr, GenericSerialFooter);
-    JsonWrite(jsonConfig, CN_num_chan,    Num_Channels);
-    JsonWrite(jsonConfig, CN_baudrate,    CurrentBaudrate);
+    JsonWrite(jsonConfig, CN_num_chan, Num_Channels);
+
+    #if defined(SUPPORT_OutputType_Serial)
+    if (OutputType == c_OutputMgr::e_OutputType::OutputType_Serial)
+    {
+        JsonWrite(jsonConfig, CN_gen_ser_hdr, GenericSerialHeader);
+        JsonWrite(jsonConfig, CN_gen_ser_ftr, GenericSerialFooter);
+    }
+    #endif // defined(SUPPORT_OutputType_FireGod)
+
+    #if defined(SUPPORT_OutputType_DMX)
+    if (OutputType != c_OutputMgr::e_OutputType::OutputType_DMX)
+    {
+        // not DMX
+        JsonWrite(jsonConfig, CN_baudrate, CurrentBaudrate);
+    }
+    #else
+    // DMX is not supported
+    JsonWrite(jsonConfig, CN_baudrate, CurrentBaudrate);
+    #endif // defined(SUPPORT_OutputType_DMX)
 
     c_OutputCommon::GetConfig (jsonConfig);
 
@@ -135,6 +168,15 @@ void c_OutputSerial::GetDriverName(String &sDriverName)
     }
 #endif // def SUPPORT_OutputType_Renard
 
+#ifdef SUPPORT_OutputType_FireGod
+    case c_OutputMgr::e_OutputType::OutputType_FireGod:
+    {
+        // DEBUG_V("Init Firegod driver name");
+        sDriverName = CN_FireGod;
+        break;
+    }
+#endif // def SUPPORT_OutputType_FireGod
+
     default:
     {
         sDriverName = CN_Default;
@@ -177,17 +219,26 @@ bool c_OutputSerial::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 {
     // DEBUG_START;
 
-#if defined(SUPPORT_OutputType_DMX)
-    if (OutputType == c_OutputMgr::e_OutputType::OutputType_DMX)
-    {
-        JsonWrite(jsonConfig, CN_baudrate, uint32_t(BaudRate::BR_DMX));
-    }
-#endif // defined(SUPPORT_OutputType_DMX)
+    setFromJSON(Num_Channels, jsonConfig, CN_num_chan);
 
-    setFromJSON(GenericSerialHeader, jsonConfig, CN_gen_ser_hdr);
-    setFromJSON(GenericSerialFooter, jsonConfig, CN_gen_ser_ftr);
-    setFromJSON(Num_Channels,        jsonConfig, CN_num_chan);
-    setFromJSON(CurrentBaudrate,     jsonConfig, CN_baudrate);
+    #if defined(SUPPORT_OutputType_Serial)
+    if (OutputType == c_OutputMgr::e_OutputType::OutputType_Serial)
+    {
+        setFromJSON(GenericSerialHeader, jsonConfig, CN_gen_ser_hdr);
+        setFromJSON(GenericSerialFooter, jsonConfig, CN_gen_ser_ftr);
+    }
+    #endif // defined(SUPPORT_OutputType_FireGod)
+
+    #if defined(SUPPORT_OutputType_DMX)
+    if (OutputType != c_OutputMgr::e_OutputType::OutputType_DMX)
+    {
+        // not DMX
+        setFromJSON(CurrentBaudrate, jsonConfig, CN_baudrate);
+    }
+    #else
+    // DMX is not supported
+    setFromJSON(CurrentBaudrate, jsonConfig, CN_baudrate);
+    #endif // defined(SUPPORT_OutputType_DMX)
 
     c_OutputCommon::SetConfig(jsonConfig);
     bool response = validate();
@@ -321,6 +372,14 @@ void c_OutputSerial::StartNewFrame ()
         }  // GENERIC
 #endif // def SUPPORT_OutputType_Serial
 
+#ifdef SUPPORT_OutputType_FireGod
+        case c_OutputMgr::e_OutputType::OutputType_FireGod:
+        {
+            SerialFrameState = SerialFrameState_t::FireGodFrameStart;
+            break;
+        }  // DMX512
+#endif // def SUPPORT_OutputType_DMX
+
         default:
         {
             break;
@@ -328,7 +387,7 @@ void c_OutputSerial::StartNewFrame ()
 
     } // end switch (OutputType)
 
-    // ReportNewFrame();
+    ReportNewFrame();
 
     // DEBUG_END;
 
@@ -375,9 +434,7 @@ bool IRAM_ATTR c_OutputSerial::ISR_GetNextIntensityToSend (uint32_t &DataToSend)
                 if (0 == --intensity_count)
                 {
                     SerialFrameState = SerialFrameState_t::SerialIdle;
-#ifdef USE_SERIAL_DEBUG_COUNTERS
-                    ++FrameEndCounter;
-#endif // def USE_SERIAL_DEBUG_COUNTERS
+                    SERIAL_DEBUG_COUNTER(++FrameEndCounter);
                 }
             }
 
@@ -391,9 +448,7 @@ bool IRAM_ATTR c_OutputSerial::ISR_GetNextIntensityToSend (uint32_t &DataToSend)
             if (0 == --intensity_count)
             {
                 SerialFrameState = SerialFrameState_t::SerialIdle;
-#ifdef USE_SERIAL_DEBUG_COUNTERS
-                ++FrameEndCounter;
-#endif // def USE_SERIAL_DEBUG_COUNTERS
+                SERIAL_DEBUG_COUNTER(++FrameEndCounter);
             }
             else
             {
@@ -444,9 +499,7 @@ bool IRAM_ATTR c_OutputSerial::ISR_GetNextIntensityToSend (uint32_t &DataToSend)
                 else
                 {
                     SerialFrameState = SerialFrameState_t::SerialIdle;
-#ifdef USE_SERIAL_DEBUG_COUNTERS
-                    ++FrameEndCounter;
-#endif // def USE_SERIAL_DEBUG_COUNTERS
+                    SERIAL_DEBUG_COUNTER(++FrameEndCounter);
                 }
             }
             break;
@@ -458,9 +511,75 @@ bool IRAM_ATTR c_OutputSerial::ISR_GetNextIntensityToSend (uint32_t &DataToSend)
             if (SerialFooterSize <= SerialFooterIndex)
             {
                 SerialFrameState = SerialFrameState_t::SerialIdle;
-#ifdef USE_SERIAL_DEBUG_COUNTERS
-                ++FrameEndCounter;
-#endif // def USE_SERIAL_DEBUG_COUNTERS
+                SERIAL_DEBUG_COUNTER(++FrameEndCounter);
+            }
+            break;
+        }
+
+        case SerialFrameState_t::FireGodFrameStart:
+        {
+            FireGodCurrentController = 1;
+            DataToSend = FireGodFrameDefinitions_t::FRAME_START;
+            SerialFrameState = SerialFrameState_t::FireGodSendControllerId;
+            break;
+        }
+
+        case SerialFrameState_t::FireGodSendControllerId:
+        {
+            FireGodBytesInFrameCount = FireGodNumChanPerController;
+            DataToSend = FireGodCurrentController++;
+            SerialFrameState = SerialFrameState_t::FireGodSendData;
+            break;
+        }
+
+        case SerialFrameState_t::FireGodSendData:
+        {
+            DataToSend = *NextIntensityToSend++;
+            DataToSend = ((DataToSend * 100) / 255) + FireGodFrameDefinitions_t::DATA_BASE;
+
+            // adjust the counters
+            --intensity_count;
+            --FireGodBytesInFrameCount;
+
+            if (0 == FireGodBytesInFrameCount)
+            {
+                if (0 == intensity_count || FireGodCurrentController > FireGodNumMaxControllers)
+                {
+                    intensity_count = 0;
+                    FireGodCurrentController = 0;
+                    FireGodBytesInFrameCount = 0;
+                    SerialFrameState = SerialFrameState_t::SerialIdle;
+                    SERIAL_DEBUG_COUNTER(++FrameEndCounter);
+                }
+                else
+                {
+                    // move to the next sub controller
+                    SerialFrameState = SerialFrameState_t::FireGodSendControllerId;
+                }
+            }
+            else if (0 == intensity_count)
+            {
+                // not enough data to fill the frame
+                SerialFrameState = SerialFrameState_t::FireGodSendFill;
+            }
+
+            break;
+        }
+
+        case SerialFrameState_t::FireGodSendFill:
+        {
+            DataToSend = FireGodFrameDefinitions_t::DATA_BASE;
+
+            // adjust the counters
+            --FireGodBytesInFrameCount;
+
+            if (0 == FireGodBytesInFrameCount)
+            {
+                intensity_count = 0;
+                FireGodCurrentController = 0;
+                FireGodBytesInFrameCount = 0;
+                SerialFrameState = SerialFrameState_t::SerialIdle;
+                SERIAL_DEBUG_COUNTER(++FrameEndCounter);
             }
             break;
         }
@@ -477,4 +596,4 @@ bool IRAM_ATTR c_OutputSerial::ISR_GetNextIntensityToSend (uint32_t &DataToSend)
     return ISR_MoreDataToSend();
 } // NextIntensityToSend
 
-#endif // defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)

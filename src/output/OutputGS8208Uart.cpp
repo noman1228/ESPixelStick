@@ -167,7 +167,6 @@ uint32_t c_OutputGS8208Uart::Poll()
 #endif // def GS8208_UART_DEBUG_COUNTERS
 
         Uart.StartNewFrame();
-        ReportNewFrame();
 
         // DEBUG_V();
 

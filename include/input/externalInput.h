@@ -63,7 +63,7 @@ protected:
 #   define M_ID         CN_id
 */
 	char                      name[65];
-    uint32_t                  GpioId              = 0;
+    uint32_t                  GpioId              = -1;
 	uint32_t			      TriggerChannel      = uint32_t(32);
 	Polarity_t                polarity            = Polarity_t::ActiveLow;
 	bool                      Enabled             = false;

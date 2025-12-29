@@ -64,7 +64,6 @@ private:
     bool IsEnabled = false;
     bool BlankOnStop = false;
     bool StopInProgress = false;
-    bool FppSyncOverride = false;
     char ConfiguredFileToPlay[65];
     char UploadFileName[65];
     IPAddress FppRemoteIp = IPAddress (uint32_t(0));
@@ -112,7 +111,7 @@ private:
 #   define CTRL_PKT_PLUGIN      5
 #   define CTRL_PKT_FPPCOMMAND  6
 
-#define FPP_DEBUG_ENABLED
+// #define FPP_DEBUG_ENABLED
 struct SystemDebugStats_t
 {
     uint32_t ProcessFPPJson = 0;

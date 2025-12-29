@@ -160,8 +160,13 @@ bool c_OutputUCS8903Rmt::RmtPoll ()
             break;
         }
 
+        if(!canRefresh())
+        {
+            // DEBUG_V ("not ready to send yet");
+            break;
+        }
+
         // DEBUG_V("get the next frame started");
-        ReportNewFrame ();
         Response = Rmt.StartNewFrame ();
 
         // DEBUG_V();

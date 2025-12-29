@@ -264,7 +264,7 @@ bool c_OutputRelay::SetConfig (ArduinoJson::JsonObject & jsonConfig)
             setFromJSON (temp, JsonChannelData, CN_gid);
             // DEBUGV (String ("temp: ") + String (temp));
 
-            if ((gpio_num_t(-1) != CurrentOutputChannel->GpioId) && (temp != CurrentOutputChannel->GpioId))
+            if ((Relay_DEFAULT_GPIO_ID != CurrentOutputChannel->GpioId) && (temp != CurrentOutputChannel->GpioId))
             {
                 // DEBUGV ("Revert Pin to input");
                 // The pin has changed. Let go of the old pin
@@ -386,7 +386,7 @@ uint32_t c_OutputRelay::Poll ()
         // DEBUG_V (String("OutputDataIndex: ") + String(OutputDataIndex));
         // DEBUG_V (String("        Enabled: ") + String(currentRelay.Enabled));
         if ((currentRelay.Enabled) &&
-            (gpio_num_t(-1) != currentRelay.GpioId) &&
+            (Relay_DEFAULT_GPIO_ID != currentRelay.GpioId) &&
             (!currentRelay.httpEnabled))
         {
             OutputValue(currentRelay, pOutputBuffer[OutputDataIndex]);

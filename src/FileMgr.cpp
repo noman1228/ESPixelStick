@@ -299,6 +299,12 @@ bool c_FileMgr::SetConfig (JsonObject & json)
         ConfigChanged |= setFromJSON (FtpPassword, JsonDeviceConfig, CN_password);
         ConfigChanged |= setFromJSON (FtpEnabled,  JsonDeviceConfig, CN_enabled);
 
+        #ifdef DEFAULT_SD_POWER_PIN
+        ConfigChanged |= setFromJSON (sd_pwr_pin, JsonDeviceConfig, CN_sd_pwr_pin);
+        ConfigChanged |= setFromJSON (sd_pwr_on,  JsonDeviceConfig, CN_sd_pwr_on);
+        ConfigChanged |= setFromJSON (sd_pwr_dly, JsonDeviceConfig, CN_sd_pwr_dly);
+        #endif // def DEFAULT_SD_POWER_PIN
+
         // DEBUG_V("miso_pin: " + String(miso_pin));
         // DEBUG_V("mosi_pin: " + String(mosi_pin));
         // DEBUG_V(" clk_pin: " + String(clk_pin));
@@ -353,6 +359,12 @@ void c_FileMgr::GetConfig (JsonObject& json)
     JsonWrite(json, CN_user,      FtpUserName);
     JsonWrite(json, CN_password,  FtpPassword);
     JsonWrite(json, CN_enabled,   FtpEnabled);
+
+    #ifdef DEFAULT_SD_POWER_PIN
+    JsonWrite(json, CN_sd_pwr_pin, sd_pwr_pin);
+    JsonWrite(json, CN_sd_pwr_on,  sd_pwr_on);
+    JsonWrite(json, CN_sd_pwr_dly, sd_pwr_dly);
+    #endif // def DEFAULT_SD_POWER_PIN
 
     // DEBUG_END;
 
@@ -419,12 +431,15 @@ void c_FileMgr::SetSpiIoPins ()
     SetSdSpeed();
     BuildFseqList(true);
 
-#elif defined (SUPPORT_SD) && defined(SUPPORT_SD_MMC)
+#elif defined (SUPPORT_SD) || defined(SUPPORT_SD_MMC)
     if (SdCardInstalled)
     {
         // DEBUG_V("Terminate current SD session");
         ESP_SD.end ();
     }
+    #ifdef DEFAULT_SD_POWER_PIN
+    PowerCycleSdCard();
+    #endif // def DEFAULT_SD_POWER_PIN
 
     FsDateTime::setCallback(dateTime);
 #ifdef ARDUINO_ARCH_ESP32
@@ -478,7 +493,7 @@ void c_FileMgr::SetSpiIoPins ()
 #endif // !def SUPPORT_SD_MMC
         {
             // DEBUG_V();
-            logcon(String(F("No SD card installed")));
+            // logcon(String(F("No SD card installed")));
             SdCardInstalled = false;
             // DEBUG_V();
             if(nullptr == ESP_SD.card())
@@ -487,17 +502,17 @@ void c_FileMgr::SetSpiIoPins ()
             }
             else if (ESP_SD.card()->errorCode())
             {
-                logcon(String(F("SD initialization failed - code: ")) + String(ESP_SD.card()->errorCode()));
-                // DEBUG_V(String(F("SD initialization failed - data: ")) + String(ESP_SD.card()->errorData()));
-                printSdErrorText(&Serial, ESP_SD.card()->errorCode()); LOG_PORT.println("");
+                logcon(String(F("SD Card Error: initialization failed - code: ")) + String(ESP_SD.card()->errorCode()));
+                // DEBUG_V(String(F("SD Card initialization failed - data: ")) + String(ESP_SD.card()->errorData()));
+                // printSdErrorText(&LOG_PORT, ESP_SD.card()->errorCode()); LOG_PORT.println("");
             }
             else if (ESP_SD.vol()->fatType() == 0)
             {
-                logcon(F("SD Can't find a valid FAT16/FAT32 partition."));
+                logcon(F("SD Card Error: Can't find a valid FAT16/FAT32 partition."));
             }
             else
             {
-                logcon(F("SD Can't determine error type"));
+                logcon(F("SD Card Error: Can't determine SD Card error type"));
             }
         }
         else
@@ -670,6 +685,7 @@ void c_FileMgr::RenameFlashFile (String OldName, String NewName)
 void c_FileMgr::listDir (fs::FS& fs, String dirname, uint8_t levels)
 {
     // DEBUG_START;
+    std::vector<String> ListOfSubDirectories;
     do // once
     {
         logcon (String (F ("Listing directory: ")) + dirname);
@@ -693,10 +709,7 @@ void c_FileMgr::listDir (fs::FS& fs, String dirname, uint8_t levels)
         {
             if (MyFile.isDirectory ())
             {
-                if (levels)
-                {
-                    listDir (fs, dirname + "/" + MyFile.name (), levels - 1);
-                }
+                ListOfSubDirectories.push_back(MyFile.name());
             }
             else
             {
@@ -705,6 +718,13 @@ void c_FileMgr::listDir (fs::FS& fs, String dirname, uint8_t levels)
             MyFile = root.openNextFile ();
         }
 
+        for(auto & CurrentSubDir : ListOfSubDirectories)
+        {
+            if (levels)
+            {
+                listDir (fs, dirname + "/" + CurrentSubDir, levels - 1);
+            }
+        }
     } while (false);
 
 } // listDir
@@ -1407,8 +1427,7 @@ bool c_FileMgr::OpenSdFile (const String & _FileName, FileMode Mode, FileId & Fi
         if (-1 != FileListIndex)
         {
             // DEBUG_V(String("Valid FileListIndex: ") + String(FileListIndex));
-            memset(FileList[FileListIndex].Filename, 0x0, sizeof(FileList[FileListIndex].Filename));
-            strncpy(FileList[FileListIndex].Filename, FileName.c_str(), min(uint(sizeof(FileList[FileListIndex].Filename) - 1), FileName.length()));
+            SafeStrncpy(FileList[FileListIndex].Filename, FileName.c_str(), sizeof(FileList[FileListIndex].Filename));
             // DEBUG_V(String("Got file handle: ") + String(FileHandle));
             LockSd();
             #ifdef SIMULATE_SD
@@ -2061,7 +2080,7 @@ void c_FileMgr::BuildFseqList(bool DisplayFileNames)
         // close the array and add the descriptive data
         JsonWrite(jsonDoc, "numFiles", numFiles);
         JsonWrite(jsonDoc, "SdCardPresent", true);
-        PrettyPrint (jsonDoc, String ("FSEQ File List"));
+        // PrettyPrint (jsonDoc, String ("FSEQ File List"));
         SaveFlashFile(String(CN_fseqfilelist) + F(".json"), jsonDoc);
     } while(false);
 
@@ -2488,6 +2507,21 @@ void c_FileMgr::GetSdInfo(SdInfo & Response)
     Response.Available = SdCardSize - Response.Used;
 
 } // GetSdInfo
+
+#ifdef DEFAULT_SD_POWER_PIN
+//-----------------------------------------------------------------------------
+void c_FileMgr::PowerCycleSdCard()
+{
+    // DEBUG_START;
+
+    pinMode(sd_pwr_pin, OUTPUT);
+    digitalWrite(sd_pwr_pin, !sd_pwr_on);
+    delay(sd_pwr_dly);
+    digitalWrite(sd_pwr_pin, sd_pwr_on);
+
+    // DEBUG_END;
+}
+#endif // def DEFAULT_SD_POWER_PIN
 
 // create a global instance of the File Manager
 c_FileMgr FileMgr;

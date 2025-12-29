@@ -61,11 +61,6 @@ void c_InputFPPRemotePlayFile::Start (String & FileName, float SecondsElapsed, u
     {
         // DEBUG_V("Ask FSM to start the sequence.");
         pCurrentFsmState->Start (FileName, SecondsElapsed, PlayCount);
-        if(!FileName.equals(FileControl[CurrentFile].FileName))
-        {
-            // File changed. Restart counter
-            PlayedFileCount = 0;
-        }
     }
     else
     {
@@ -168,7 +163,7 @@ void c_InputFPPRemotePlayFile::GetStatus (JsonObject& JsonStatus)
     JsonWrite(JsonStatus, CN_seconds_played,    String (secs));
     JsonWrite(JsonStatus, CN_seconds_remaining, String (secsRem));
     JsonWrite(JsonStatus, CN_sequence_filename, temp);
-    JsonWrite(JsonStatus, F("PlayedFileCount"), PlayedFileCount);
+    JsonWrite(JsonStatus, F("PlayedFileCount"), GetPlayedFileCount());
 
     // After inserting the total seconds and total seconds remaining,
     // JsonStatus also includes formatted "minutes + seconds" for both
@@ -194,7 +189,7 @@ void c_InputFPPRemotePlayFile::ClearStatistics ()
     SyncControl.SyncCount = 0;
     SyncControl.SyncAdjustmentCount = 0;
 
-    PlayedFileCount = 0;
+    SetPlayedFileCount(0);
 
     memset(LastFailedPlayStatusMsg, 0x0, sizeof(LastFailedPlayStatusMsg));
 
@@ -295,8 +290,8 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
             if(!String(LastFailedFilename).equals(FileControl[CurrentFile].FileName))
             {
                 // only output the message once
-                strcpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Could not open file: filename: '")) + FileControl[CurrentFile].FileName + "'").c_str());
-                strcpy(LastFailedFilename, FileControl[CurrentFile].FileName);
+                SafeStrncpy(LastFailedPlayStatusMsg, (String(F("ParseFseqFile:: Could not open file: filename: '")) + FileControl[CurrentFile].FileName + "'").c_str(), sizeof(LastFailedPlayStatusMsg));
+                SafeStrncpy(LastFailedFilename, FileControl[CurrentFile].FileName, sizeof(LastFailedFilename));
                 logcon (LastFailedPlayStatusMsg);
             }
             else
@@ -316,7 +311,7 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
 
         if (BytesRead != sizeof (fsqRawHeader))
         {
-            strcpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Could not read FSEQ header: filename: '")) + FileControl[CurrentFile].FileName + "'").c_str());
+            SafeStrncpy(LastFailedPlayStatusMsg, FileControl[CurrentFile].FileName, sizeof(LastFailedFilename));
             logcon (LastFailedPlayStatusMsg);
             // DEBUG_FILE_HANDLE (FileControl[CurrentFile].FileHandleForFileBeingPlayed);
             FileMgr.CloseSdFile(FileControl[CurrentFile].FileHandleForFileBeingPlayed);
@@ -358,7 +353,7 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
 
         if (fsqParsedHeader.majorVersion != 2 || fsqParsedHeader.compressionType != 0)
         {
-            strcpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Could not start. ")) + FileControl[CurrentFile].FileName + F (" is not a v2 uncompressed sequence")).c_str());
+            SafeStrncpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Could not start. ")) + FileControl[CurrentFile].FileName + F (" is not a v2 uncompressed sequence")).c_str(), sizeof(LastFailedFilename));
             logcon (LastFailedPlayStatusMsg);
             // DEBUG_FILE_HANDLE (FileControl[CurrentFile].FileHandleForFileBeingPlayed);
             FileMgr.CloseSdFile(FileControl[CurrentFile].FileHandleForFileBeingPlayed);
@@ -371,9 +366,9 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
         // DEBUG_V("ActualDataSize: " + String(ActualDataSize));
         if (NeededDataSize > ActualDataSize)
         {
-            strcpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Could not start: ")) + FileControl[CurrentFile].FileName +
+            SafeStrncpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Could not start: ")) + FileControl[CurrentFile].FileName +
                                       F (" File does not contain enough data to meet the Stated Channel Count * Number of Frames value. Need: ") +
-                                      String (NeededDataSize) + F (", SD File Size: ") + String (ActualDataSize)).c_str());
+                                      String (NeededDataSize) + F (", SD File Size: ") + String (ActualDataSize)).c_str(), sizeof(LastFailedPlayStatusMsg));
             logcon (LastFailedPlayStatusMsg);
             // DEBUG_FILE_HANDLE (FileControl[CurrentFile].FileHandleForFileBeingPlayed);
             FileMgr.CloseSdFile(FileControl[CurrentFile].FileHandleForFileBeingPlayed);
@@ -391,7 +386,7 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
         {
             if (MAX_NUM_SPARSE_RANGES < fsqParsedHeader.numSparseRanges)
             {
-                strcpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Could not start. ")) + FileControl[CurrentFile].FileName + F (" Too many sparse ranges defined in file header.")).c_str());
+                SafeStrncpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Could not start. ")) + FileControl[CurrentFile].FileName + F (" Too many sparse ranges defined in file header.")).c_str(), sizeof(LastFailedPlayStatusMsg));
                 logcon (LastFailedPlayStatusMsg);
                 // DEBUG_FILE_HANDLE (FileControl[CurrentFile].FileHandleForFileBeingPlayed);
                 FileMgr.CloseSdFile(FileControl[CurrentFile].FileHandleForFileBeingPlayed);
@@ -439,7 +434,7 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
 #endif // def DUMP_FSEQ_HEADER
             if (0 == TotalChannels)
             {
-                strcpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Ignoring Range Info. ")) + FileControl[CurrentFile].FileName + F (" No channels defined in Sparse Ranges.")).c_str());
+                SafeStrncpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Ignoring Range Info. ")) + FileControl[CurrentFile].FileName + F (" No channels defined in Sparse Ranges.")).c_str(), sizeof(LastFailedPlayStatusMsg));
                 logcon (LastFailedPlayStatusMsg);
                 memset ((void*)&SparseRanges, 0x00, sizeof (SparseRanges));
                 SparseRanges[0].ChannelCount = fsqParsedHeader.channelCount;
@@ -447,7 +442,7 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
 
             else if (TotalChannels > fsqParsedHeader.channelCount)
             {
-                strcpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Ignoring Range Info. ")) + FileControl[CurrentFile].FileName + F (" Too many channels defined in Sparse Ranges.")).c_str());
+                SafeStrncpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Ignoring Range Info. ")) + FileControl[CurrentFile].FileName + F (" Too many channels defined in Sparse Ranges.")).c_str(), sizeof(LastFailedPlayStatusMsg));
                 logcon (LastFailedPlayStatusMsg);
                 memset ((void*)&SparseRanges, 0x00, sizeof (SparseRanges));
                 SparseRanges[0].ChannelCount = fsqParsedHeader.channelCount;
@@ -455,7 +450,7 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
 
             else if (LargestBlock > fsqParsedHeader.channelCount)
             {
-                strcpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Ignoring Range Info. ")) + FileControl[CurrentFile].FileName + F (" Sparse Range Frame offset + Num channels is larger than frame size.")).c_str());
+                SafeStrncpy(LastFailedPlayStatusMsg, (String (F ("ParseFseqFile:: Ignoring Range Info. ")) + FileControl[CurrentFile].FileName + F (" Sparse Range Frame offset + Num channels is larger than frame size.")).c_str(), sizeof(LastFailedPlayStatusMsg));
                 logcon (LastFailedPlayStatusMsg);
                 memset ((void*)&SparseRanges, 0x00, sizeof (SparseRanges));
                 SparseRanges[0].ChannelCount = fsqParsedHeader.channelCount;
@@ -467,7 +462,7 @@ bool c_InputFPPRemotePlayFile::ParseFseqFile ()
             SparseRanges[0].ChannelCount = fsqParsedHeader.channelCount;
         }
 
-        PlayedFileCount++;
+        SetPlayedFileCount (GetPlayedFileCount() + 1);
         Response = true;
 
     } while (false);

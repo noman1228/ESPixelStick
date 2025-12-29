@@ -1,8 +1,8 @@
 /*
-* OutputSerialRmt.cpp - WS2811 driver code for ESPixelStick RMT Channel
+* OutputSerialRmt.cpp - Serial protocol driver code for ESPixelStick RMT Channel
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2015 - 2025 Shelby Merrick
+* Copyright (c) 2015 - 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -17,7 +17,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if (defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)
+#if (defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)
 
 #include "output/OutputSerialRmt.hpp"
 
@@ -30,6 +30,7 @@ c_OutputSerialRmt::c_OutputSerialRmt (c_OutputMgr::e_OutputChannelIds OutputChan
 {
     // DEBUG_START;
 
+    idle_level = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
     // DEBUG_END;
 
 } // c_OutputSerialRmt
@@ -62,12 +63,19 @@ bool c_OutputSerialRmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 {
     // DEBUG_START;
 
+    #if defined(SUPPORT_OutputType_FireGod)
+    if (OutputType == c_OutputMgr::e_OutputType::OutputType_FireGod)
+    {
+        idle_level = rmt_idle_level_t::RMT_IDLE_LEVEL_HIGH;
+    }
+    #endif // defined(SUPPORT_OutputType_FireGod)
+
     bool response = c_OutputSerial::SetConfig (jsonConfig);
     // DEBUG_V (String ("DataPin: ") + String (DataPin));
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
     OutputRmtConfig.RmtChannelId            = rmt_channel_t(OutputChannelId);
     OutputRmtConfig.DataPin                 = gpio_num_t(DataPin);
-    OutputRmtConfig.idle_level              = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
+    OutputRmtConfig.idle_level              = idle_level;
     OutputRmtConfig.pSerialDataSource       = this;
     OutputRmtConfig.SendInterIntensityBits  = true;
     OutputRmtConfig.SendEndOfFrameBits      = true;
@@ -184,6 +192,9 @@ void c_OutputSerialRmt::SetUpRmtBitTimes()
 #if defined(SUPPORT_OutputType_Renard)
 #endif // defined(SUPPORT_OutputType_Renard)
 
+#if defined(SUPPORT_OutputType_FireGod)
+#endif // defined(SUPPORT_OutputType_Serial)
+
 } // SetUpRmtBitTimes
 
 //----------------------------------------------------------------------------
@@ -231,8 +242,10 @@ bool c_OutputSerialRmt::RmtPoll ()
             break;
         }
 
+        // What for the next possible frame time
+        if(!canRefresh()) {break;}
+
         // DEBUG_V("get the next frame started");
-        ReportNewFrame ();
         Response = Rmt.StartNewFrame ();
 
         // DEBUG_V();
@@ -255,4 +268,4 @@ void c_OutputSerialRmt::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // (defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)
+#endif // (defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)

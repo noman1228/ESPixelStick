@@ -102,6 +102,10 @@ static const OutputTypeXlateMap_t OutputTypeXlateMap[c_OutputMgr::e_OutputType::
         {c_OutputMgr::e_OutputType::OutputType_Serial, "Serial"},
 #endif // def SUPPORT_OutputType_Serial
 
+#ifdef SUPPORT_OutputType_FireGod
+        {c_OutputMgr::e_OutputType::OutputType_FireGod, "FireGod"},
+#endif // def SUPPORT_OutputType_FireGod
+
 #ifdef SUPPORT_OutputType_TM1814
         {c_OutputMgr::e_OutputType::OutputType_TM1814, "TM1814"},
 #endif // def SUPPORT_OutputType_TM1814
@@ -715,6 +719,40 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             }
 #endif // def SUPPORT_OutputType_Renard
 
+#ifdef SUPPORT_OutputType_FireGod
+            case e_OutputType::OutputType_FireGod:
+            {
+                if (OM_IS_UART)
+                {
+                    // logcon (CN_stars + String (F (" Starting FireGod Serial for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    AllocatePort(c_OutputSerialUart,CurrentOutput,CurrentOutput.DriverId,CurrentOutput.GpioPin,CurrentOutput.PortId,OutputType_FireGod);
+                    // DEBUG_V ();
+                    break;
+                }
+                // DEBUG_V ();
+
+                #if defined(ARDUINO_ARCH_ESP32)
+                if (OM_IS_RMT)
+                {
+                    // logcon (CN_stars + String (F (" Starting FireGod Serial for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    AllocatePort(c_OutputSerialRmt,CurrentOutput,CurrentOutput.DriverId,CurrentOutput.GpioPin,CurrentOutput.PortId,OutputType_FireGod);
+                    // DEBUG_V ();
+                    break;
+                }
+                #endif // defined(ARDUINO_ARCH_ESP32)
+                // DEBUG_V ();
+
+                if (!BuildingNewConfig)
+                {
+                    logcon(CN_stars + String(F(" Cannot Start FireGod Serial for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                }
+                AllocatePort(c_OutputDisabled,CurrentOutput,CurrentOutput.DriverId,CurrentOutput.GpioPin,CurrentOutput.PortId,OutputType_Disabled);
+                // DEBUG_V ();
+
+                break;
+            }
+#endif // def SUPPORT_OutputType_FireGod
+
 #ifdef SUPPORT_OutputType_Relay
             case e_OutputType::OutputType_Relay:
             {
@@ -1166,6 +1204,8 @@ bool c_OutputMgr::ProcessJsonConfig (JsonDocument& jsonConfig)
 
     do // once
     {
+        PauseOutputs(true);
+
         // for each output channel
         for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
         {
@@ -1239,6 +1279,8 @@ bool c_OutputMgr::ProcessJsonConfig (JsonDocument& jsonConfig)
     // DEBUG_V ();
 
     SetSerialUart();
+
+    PauseOutputs(false);
 
     // DEBUG_END;
     return Response;
