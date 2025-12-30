@@ -2403,6 +2403,7 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
 
         if ({}.hasOwnProperty.call(PlayerStatus, 'File')) {
             $('#LocalFilePlayerStatus').removeClass("hidden");
+            $('#localFilePlayerlasterror').removeClass("hidden");
 
             let FilePlayerStatus = PlayerStatus.File;
             $('#localFilePlayerFilename').text(FilePlayerStatus.current_sequence);
@@ -2412,6 +2413,27 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
             $('#localFilePlayerlasterror').text(FilePlayerStatus.errors);
         }
         else {
+            $('#LocalFilePlayerStatus').addClass("hidden");
+        }
+
+        if ({}.hasOwnProperty.call(PlayerStatus, 'PlayList')) {
+            $('#LocalPlayListPlayerStatus').removeClass("hidden");
+            $('#LocalFilePlayerStatus').removeClass("hidden");
+            $('#localFilePlayerlasterror').addClass("hidden");
+
+            let PlayListPlayerStatus = PlayerStatus.PlayList;
+            $('#localPlayListName').text(PlayListPlayerStatus.name);
+            $('#localPlayListEntry').text(PlayListPlayerStatus.entry);
+            $('#localPlayListCount').text(PlayListPlayerStatus.count);
+
+            let FilePlayerStatus = PlayListPlayerStatus.File;
+            $('#localFilePlayerFilename').text(FilePlayerStatus.current_sequence);
+            $('#localFilePlayerTimeElapsed').text(FilePlayerStatus.time_elapsed);
+            $('#localFilePlayerTimeRemaining').text(FilePlayerStatus.time_remaining);
+            $('#localFilePlayerPlayedfilecount').text(FilePlayerStatus.PlayedFileCount);
+        }
+        else {
+            $('#LocalPlayListPlayerStatus').addClass("hidden");
             $('#LocalFilePlayerStatus').addClass("hidden");
         }
 
