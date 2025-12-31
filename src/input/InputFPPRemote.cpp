@@ -443,7 +443,7 @@ void c_InputFPPRemote::StartPlaying (String& FileName, time_t ElapsedSeconds, bo
         if (IsRemote && (FppSyncOverride || !ConfiguredLocalFileToPlay))
         {
             if(FileName.equals(CN_No_LocalFileToPlay))
-            {
+        {
                 FileName.clear();
             }
             // DEBUG_V("we are allowed to play remote files")

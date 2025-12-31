@@ -23,6 +23,9 @@
 #include "input/InputMgr.hpp"
 #include "service/FPPDiscovery.h"
 #include "network/NetworkMgr.hpp"
+#ifdef SUPPORT_UNZIP
+#include "UnzipFiles.hpp"
+#endif // def SUPPORT_UNZIP
 #ifdef ARDUINO_ARCH_ESP8266
 #   include <ESPAsyncTCP.h>
 #endif // def ARDUINO_ARCH_ESP8266
@@ -35,6 +38,9 @@
 #ifdef SUPPORT_SENSOR_DS18B20
 #include "service/SensorDS18B20.h"
 #endif // def SUPPORT_SENSOR_DS18B20
+#ifdef SUPPORT_UNZIP
+extern UnzipFiles gUnzipFiles;
+#endif // def SUPPORT_UNZIP
 
 // #define ESPALEXA_DEBUG
 #define ESPALEXA_MAXDEVICES 2
@@ -814,6 +820,39 @@ void c_WebMgr::ProcessXJRequest (AsyncWebServerRequest* client)
     // DEBUG_V ("FileMgr.GetStatus");
     FileMgr.GetStatus (system);
     // DEBUG_V ("");
+
+    #ifdef SUPPORT_UNZIP
+    // Add unzip status
+    JsonObject unzipStatus = system[F("unzip")].to<JsonObject>();
+    JsonWrite(unzipStatus, F("isUnzipping"), gUnzipFiles.IsUnzipping());
+    JsonWrite(unzipStatus, F("hasPending"), gUnzipFiles.HasPendingZipFile());
+    JsonWrite(unzipStatus, F("isComplete"), gUnzipFiles.IsUnzipComplete());
+    // If Ethernet gating is active, expose it so the UI can indicate why we're waiting
+    JsonWrite(unzipStatus, F("waitingForEth"), gUnzipFiles.IsWaitingForEthernetGate());
+    if (gUnzipFiles.IsWaitingForEthernetGate())
+    {
+        JsonWrite(unzipStatus, F("ethWaitRemainingMs"), gUnzipFiles.GetEthernetGateRemainingMs());
+    }
+    // Multi-file details
+    JsonWrite(unzipStatus, F("totalCount"), gUnzipFiles.GetPendingCount());
+    JsonWrite(unzipStatus, F("currentIndex"), gUnzipFiles.GetCurrentArchiveIndex1Based());
+    if(gUnzipFiles.HasPendingZipFile() || gUnzipFiles.IsUnzipping() || gUnzipFiles.IsUnzipComplete())
+    {
+        JsonWrite(unzipStatus, F("fileName"), gUnzipFiles.GetCurrentZipFileName());
+    }
+    if(gUnzipFiles.IsUnzipping())
+    {
+        uint32_t totalSize = gUnzipFiles.GetUnzipTotalSize();
+        uint32_t bytesWritten = gUnzipFiles.GetUnzipProgress();
+        if(totalSize > 0)
+        {
+            uint8_t progress = (bytesWritten * 100) / totalSize;
+            JsonWrite(unzipStatus, F("progress"), progress);
+            JsonWrite(unzipStatus, F("bytesWritten"), bytesWritten);
+            JsonWrite(unzipStatus, F("totalSize"), totalSize);
+        }
+    }
+    #endif // def SUPPORT_UNZIP
 
     // DEBUG_V("Send XJ response");
     String XjResult;

@@ -23,7 +23,9 @@
 #include "ESPixelStick.h"
 #include "EFUpdate.h"
 #include <Int64String.h>
-
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 // Input modules
 #include "input/InputMgr.hpp"
 
@@ -38,6 +40,10 @@
 
 // File System Interface
 #include "FileMgr.hpp"
+
+#ifdef SUPPORT_UNZIP
+#include "UnzipFiles.hpp"
+#endif // def SUPPORT_UNZIP
 
 // Services
 #include "service/FPPDiscovery.h"
@@ -158,6 +164,9 @@ void setup()
     pinMode(DEBUG_GPIO, OUTPUT);
     digitalWrite(DEBUG_GPIO, HIGH);
 #endif // def DEBUG_GPIO
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif
 
     SafeStrncpy(config.id, String(F("ESPixelStick")).c_str(), sizeof(config.id));
 
@@ -546,7 +555,10 @@ void loop()
     }
 */
     FeedWDT ();
-
+    #ifdef SUPPORT_OLED
+        OLED.Poll();
+        FeedWDT();
+    #endif
     // Keep the Network Open
     NetworkMgr.Poll ();
     // DEBUG_V();
@@ -560,6 +572,11 @@ void loop()
 
     FileMgr.Poll ();
     // DEBUG_V();
+
+    #ifdef SUPPORT_UNZIP
+    gUnzipFiles.Poll();
+    // DEBUG_V();
+    #endif // def SUPPORT_UNZIP
 
     FPPDiscovery.Poll ();
     // DEBUG_V();
