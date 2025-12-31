@@ -256,11 +256,11 @@ bool c_NetworkMgr:: Validate ()
     // DEBUG_V (String ("hostname: \"") + hostname + "\"");
     if (0 == strlen(hostname))
     {
-        #ifdef ARDUINO_ARCH_ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
         String chipId = String (ESP.getChipId (), HEX);
-        #else
+#else
         String chipId = int64String (ESP.getEfuseMac (), HEX);
-        #endif
+#endif
         // DEBUG_V ("Setting Hostname default");
         SafeStrncpy(hostname, (String(F("esps-")) + String (chipId)).c_str(), sizeof(hostname));
         Changed = true;

@@ -20,7 +20,16 @@
 
 #include "UnzipFiles.hpp"
 #include "FileMgr.hpp"
+#include "network/NetworkMgr.hpp"
 #include <TimeLib.h>
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
+
+// Forward declarations
+extern c_NetworkMgr NetworkMgr;
+extern c_FileMgr FileMgr;
+
 //
 // Callback functions needed by the unzipLIB to access a file system
 // The library has built-in code for memory-to-memory transfers, but needs
@@ -82,27 +91,152 @@ UnzipFiles::~UnzipFiles ()
 void UnzipFiles::Run()
 {
     // DEBUG_START;
+    // Find all compressed files and store them in a queue, but don't decompress yet
+    // Decompression will happen in Poll() after network is connected
 
-    String FileName = emptyString;
+    pendingArchives.clear();
+    currentArchiveIndex = 0;
 
-    do
+    std::vector<String> allFiles;
+    FileMgr.GetListOfSdFiles(allFiles);
+    for (auto &fn : allFiles)
     {
         FeedWDT();
-        FileName = emptyString;
-        FileMgr.FindFirstZipFile(FileName);
-        if(FileName.isEmpty())
+        // Check if file has a compression extension (.zip, .xlz, etc.)
+        if (fn.endsWith(".zip") || fn.endsWith(".xlz"))
         {
-            break;
+            pendingArchives.push_back(fn);
         }
+    }
 
-        ProcessZipFile(FileName);
-
-        FileMgr.DeleteSdFile(FileName);
-
-    } while(true);
-
+    hasPendingZipFile = !pendingArchives.empty();
+    if (hasPendingZipFile)
+    {
+        currentZipFileName = pendingArchives[currentArchiveIndex];
+        logcon(String("Found ") + String(pendingArchives.size()) + " compressed file(s); will decompress after network connection");
+    }
+    
     // DEBUG_END;
 } // Run
+
+//-----------------------------------------------------------------------------
+void UnzipFiles::Poll()
+{
+    // DEBUG_START;
+    // Check if we have a pending zip file and network is now connected
+    // If so, proceed with decompression
+    // Also verify that no file upload is in progress
+    
+    // Handle delayed reboot after decompression completes
+    if(isUnzipComplete)
+    {
+        if(millis() - unzipCompleteTime > 3000)  // Wait 3 seconds to let GUI display status
+        {
+            logcon(String(CN_stars) + F("Unzip complete. Requesting reboot"));
+            String Reason = F("Requesting reboot after unzipping files");
+            RequestReboot(Reason, 1, true);
+            isUnzipComplete = false;
+        }
+        return;
+    }
+    
+    if(!hasPendingZipFile || isUnzipping)
+    {
+        return;
+    }
+    
+    // Check network connection periodically (not every millisecond)
+    if(millis() - networkConnectionCheckTime < 1000)
+    {
+        return;
+    }
+    networkConnectionCheckTime = millis();
+    
+    // Before starting, ensure Ethernet has had a chance to attempt/succeed.
+    // We prefer to wait for Ethernet connection if supported, but will fall back
+    // after a short timeout so we don't block indefinitely when WiFi is already up.
+    if (NetworkMgr.HasEthernetSupport())
+    {
+        // Initialize the Ethernet gating window once
+        if (ethGateStartMs == 0)
+        {
+            ethGateStartMs = millis();
+            waitingForEthGate = true;
+            // Defer starting unzip until we've given Ethernet time to power up and attempt
+            return;
+        }
+
+        // If Ethernet is connected, we can proceed (no need to wait out the timeout)
+        if (NetworkMgr.IsEthernetConnectedState())
+        {
+            waitingForEthGate = false;
+        }
+        else
+        {
+            // Still waiting for Ethernet to attempt/succeed within the timeout window
+            if ((millis() - ethGateStartMs) < ethGateTimeoutMs)
+            {
+                return;
+            }
+            // Timeout elapsed → proceed even if Ethernet didn't connect (WiFi may be up)
+            waitingForEthGate = false;
+        }
+    }
+
+    // Require at least one network connection (WiFi or Ethernet) before proceeding
+    if(!NetworkMgr.IsConnected())
+    {
+        return;
+    }
+    
+    // Make sure no file upload is in progress
+    if(FileMgr.IsFileUploadInProgress())
+    {
+        logcon(F("File upload in progress, delaying decompression"));
+        return;
+    }
+    
+    // Network is connected and no upload in progress, proceed with decompression of current archive
+    isUnzipping = true;
+    currentZipFileName = pendingArchives[currentArchiveIndex];
+
+    logcon(String("Network connected. Starting decompression of (") + String(currentArchiveIndex + 1) + " of " + String(pendingArchives.size()) + "): '" + currentZipFileName + "'");
+
+    #ifdef SUPPORT_OLED
+    OLED.ShowToast("DECOMPRESSING", String(currentZipFileName));
+    #endif
+
+    // Feed watchdog before starting decompression
+    FeedWDT();
+    ProcessZipFile(currentZipFileName);
+    FileMgr.DeleteSdFile(currentZipFileName);
+    FeedWDT();
+
+    #ifdef SUPPORT_OLED
+    OLED.ShowToast(" COMPLETED ", String(currentZipFileName));
+    #endif
+
+    isUnzipping = false;
+
+    // Advance to next archive or finish
+    if (currentArchiveIndex + 1 < pendingArchives.size())
+    {
+        currentArchiveIndex++;
+        currentZipFileName = pendingArchives[currentArchiveIndex];
+        hasPendingZipFile = true; // still more files to process
+        // short yield between files
+        FeedWDT();
+    }
+    else
+    {
+        hasPendingZipFile = false;
+        isUnzipComplete = true;
+        unzipCompleteTime = millis();
+        logcon(String("All compressed files processed. Will reboot in 3 seconds"));
+    }
+    
+    // DEBUG_END;
+} // Poll
 
 //-----------------------------------------------------------------------------
 void UnzipFiles::ProcessZipFile(String & ArchiveFileName)
@@ -122,7 +256,7 @@ void UnzipFiles::ProcessZipFile(String & ArchiveFileName)
         // Display the global comment and all of the FileNames within
         // returnCode = zip.getGlobalComment(szComment, sizeof(szComment));
         // logcon(String("Global comment: '") + String(szComment) + "'");
-        logcon("Files in this archive:");
+        logcon(String("Unzipping: ") + ArchiveFileName);
         returnCode = zip.gotoFirstFile();
         while (returnCode == UNZ_OK)
         {
@@ -156,6 +290,10 @@ void UnzipFiles::ProcessZipFile(String & ArchiveFileName)
                 FeedWDT();
 
                 FileMgr.DeleteSdFile(FinalFileName);
+                
+                // Store total size for progress tracking
+                unzipTotalSize = fi.uncompressed_size;
+                unzipBytesWritten = 0;
 
                 ProcessCurrentFileInZip(fi, ArchiveSubFileName);
 
@@ -189,10 +327,6 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
     int BytesRead = 0;
     uint32_t TotalBytesWritten = 0;
 
-    logcon(String("Uncompressing '") + FileName + "'" +
-    " - " + String(fi.compressed_size, DEC) +
-    "/" + String(fi.uncompressed_size, DEC) + " Started.\n");
-
     do // once
     {
         int ReturnCode = zip.openCurrentFile();
@@ -208,7 +342,7 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
         if(FileHandle == c_FileMgr::INVALID_FILE_HANDLE)
         {
             zip.closeCurrentFile();
-            logcon(String("Could not open '") + FileName + "' for writting");
+            logcon(String("Could not open '") + FileName + "' for writing");
             break;
         }
 
@@ -222,15 +356,20 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
                 break;
             }
             TotalBytesWritten += BytesRead;
-            LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
-            LOG_PORT.flush();
+            unzipBytesWritten = TotalBytesWritten;
+            
+            // Feed watchdog every 64KB written
+            if(TotalBytesWritten % 65536 == 0)
+            {
+                FeedWDT();
+            }
 
         } while (BytesRead > 0);
 
         // DEBUG_FILE_HANDLE (FileHandle);
         FileMgr.CloseSdFile(FileHandle);
         zip.closeCurrentFile();
-        logcon(FileName + F(" - Done."));
+        logcon(String(FileName) + F(" - ") + String(TotalBytesWritten) + F(" bytes"));
     } while(false);
 
     // DEBUG_V(String("Close Filename: ") + FileName);
