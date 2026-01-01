@@ -137,13 +137,13 @@ void c_WebMgr::init ()
 {
     if(!HasBeenInitialized)
     {
-#ifdef ARDUINO_ARCH_ESP8266
+        #ifdef ARDUINO_ARCH_ESP8266
         {
             AsyncServer * async = new AsyncServer(HTTP_PORT);
             async->SetMaxNumOpenTcpSessions(2);
             delete async;
         }
-#endif // def ARDUINO_ARCH_ESP8266
+        #endif // def ARDUINO_ARCH_ESP8266
         // DEBUG_START;
         // Add header for SVG plot support?
     	DefaultHeaders::Instance ().addHeader (F ("Access-Control-Allow-Origin"),  "*");
@@ -879,19 +879,19 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
                                uint32_t len,
                                bool final)
 {
-    // DEBUG_START;
+    DEBUG_START;
 
     do // once
     {
-        // DEBUG_V (String (" file: '") + filename + "'");
-        // DEBUG_V (String ("index: ") + String (index));
-        // DEBUG_V (String (" data: 0x") + String (uint32_t(data), HEX));
-        // DEBUG_V (String ("  len: ") + String (len));
-        // DEBUG_V (String ("final: ") + String (final));
+        DEBUG_V (String (" file: '") + filename + "'");
+        DEBUG_V (String ("index: ") + String (index));
+        DEBUG_V (String (" data: 0x") + String (uint32_t(data), HEX));
+        DEBUG_V (String ("  len: ") + String (len));
+        DEBUG_V (String ("final: ") + String (final));
         if (efupdate.hasError ())
         {
             // logcon (String(CN_stars) + F (" UPDATE ERROR: ") + String (efupdate.getError ()));
-            // DEBUG_V ("efupdate.hasError");
+            DEBUG_V ("efupdate.hasError");
             String ErrorMsg;
             WebMgr.efupdate.getError (ErrorMsg);
             request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
@@ -909,30 +909,32 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
                 break;
             }
 
-#ifdef ARDUINO_ARCH_ESP8266
+            #ifdef ARDUINO_ARCH_ESP8266
             WiFiUDP::stopAll ();
-#else
+            #else
             // this is not supported for ESP32
-#endif
+            #endif
             logcon (String(F ("Upload Started: ")) + filename);
             // stop all input and output processing of intensity data.
-            // InputMgr.SetOperationalState(false);
-            // OutputMgr.PauseOutputs(true);
+            OutputMgr.PauseOutputs(true);
+            InputMgr.SetOperationalState(false);
+            OutputMgr.ClearBuffer();
 
             // start the update
             efupdate.begin ();
             if (efupdate.hasError ())
             {
                 // logcon (String(CN_stars) + F (" UPDATE ERROR: ") + String (efupdate.getError ()));
-                // DEBUG_V ("efupdate.hasError");
+                DEBUG_V ("efupdate.hasError");
                 String ErrorMsg;
                 WebMgr.efupdate.getError (ErrorMsg);
                 request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
+                RequestReboot(ErrorMsg, 100000);
                 break;
             }
         }
 
-        // DEBUG_V ("Sending data to efupdate");
+        DEBUG_V ("Sending data to efupdate");
 
         efupdate.process (data, len);
         // DEBUG_V ("Packet has been processed");
@@ -940,10 +942,11 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
         if (efupdate.hasError ())
         {
             // logcon (String(CN_stars) + F (" UPDATE ERROR: ") + String (efupdate.getError ()));
-            // DEBUG_V ("efupdate.hasError");
+            DEBUG_V ("efupdate.hasError");
             String ErrorMsg;
             WebMgr.efupdate.getError (ErrorMsg);
             request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
+            RequestReboot(ErrorMsg, 100000);
             break;
         }
         // DEBUG_V ("No EFUpdate Error");
@@ -951,14 +954,14 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
         if (final)
         {
             request->send (200, CN_applicationSLASHjson, F("{\"status\":\"Update Finished\""));
-            String Reason = (F ("EFU Upload Finished. Rebooting"));
             efupdate.end ();
+            String Reason = (F ("EFU Upload Finished. Rebooting"));
             RequestReboot(Reason, 100000);
         }
 
     } while (false);
 
-    // DEBUG_END;
+    DEBUG_END;
 
 } // onEvent
 
