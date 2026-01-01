@@ -879,19 +879,19 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
                                uint32_t len,
                                bool final)
 {
-    DEBUG_START;
+    // DEBUG_START;
 
     do // once
     {
-        DEBUG_V (String (" file: '") + filename + "'");
-        DEBUG_V (String ("index: ") + String (index));
-        DEBUG_V (String (" data: 0x") + String (uint32_t(data), HEX));
-        DEBUG_V (String ("  len: ") + String (len));
-        DEBUG_V (String ("final: ") + String (final));
+        // DEBUG_V (String (" file: '") + filename + "'");
+        // DEBUG_V (String ("index: ") + String (index));
+        // DEBUG_V (String (" data: 0x") + String (uint32_t(data), HEX));
+        // DEBUG_V (String ("  len: ") + String (len));
+        // DEBUG_V (String ("final: ") + String (final));
         if (efupdate.hasError ())
         {
             // logcon (String(CN_stars) + F (" UPDATE ERROR: ") + String (efupdate.getError ()));
-            DEBUG_V ("efupdate.hasError");
+            // DEBUG_V ("efupdate.hasError");
             String ErrorMsg;
             WebMgr.efupdate.getError (ErrorMsg);
             request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
@@ -925,7 +925,7 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
             if (efupdate.hasError ())
             {
                 // logcon (String(CN_stars) + F (" UPDATE ERROR: ") + String (efupdate.getError ()));
-                DEBUG_V ("efupdate.hasError");
+                // DEBUG_V ("efupdate.hasError");
                 String ErrorMsg;
                 WebMgr.efupdate.getError (ErrorMsg);
                 request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
@@ -934,7 +934,7 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
             }
         }
 
-        DEBUG_V ("Sending data to efupdate");
+        // DEBUG_V ("Sending data to efupdate");
 
         efupdate.process (data, len);
         // DEBUG_V ("Packet has been processed");
@@ -942,7 +942,7 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
         if (efupdate.hasError ())
         {
             // logcon (String(CN_stars) + F (" UPDATE ERROR: ") + String (efupdate.getError ()));
-            DEBUG_V ("efupdate.hasError");
+            // DEBUG_V ("efupdate.hasError");
             String ErrorMsg;
             WebMgr.efupdate.getError (ErrorMsg);
             request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
@@ -961,7 +961,7 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
 
     } while (false);
 
-    DEBUG_END;
+    // DEBUG_END;
 
 } // onEvent
 
