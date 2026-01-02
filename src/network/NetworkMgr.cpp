@@ -27,7 +27,11 @@
 #include "service/FPPDiscovery.h"
 #include "WebMgr.hpp"
 #include <Int64String.h>
+#ifdef ARDUINO_ARCH_ESP8266
+#include <ESP8266mDNS.h>
+#else
 #include <ESPmDNS.h>
+#endif // def ARDUINO_ARCH_ESP8266
 
 //-----------------------------------------------------------------------------
 // Methods
