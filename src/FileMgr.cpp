@@ -2295,6 +2295,10 @@ bool c_FileMgr::handleFileUpload (
         delay(100);
         BuildFseqList(false);
 
+        OutputMgr.ClearBuffer();
+        OutputMgr.PauseOutputs(false);
+        InputMgr.SetOperationalState(false);
+
         // DEBUG_V(String("Expected: ") + String(totalLen));
         // DEBUG_V(String("     Got: ") + String(GetSdFileSize(fsUploadFileName)));
         if(IsCompressed(fsUploadFileName))
@@ -2349,6 +2353,9 @@ void c_FileMgr::handleFileUploadNewFile (const String & filename)
         FileList[FileListIndex].buffer.offset = 0;
         FileList[FileListIndex].buffer.size = min(uint32_t(OutputMgr.GetBufferSize() & ~(SD_BLOCK_SIZE - 1)), uint32_t(MAX_SD_BUFFER_SIZE));
         FileList[FileListIndex].buffer.DataBuffer = OutputMgr.GetBufferAddress();
+        OutputMgr.PauseOutputs(true);
+        InputMgr.SetOperationalState(false);
+        OutputMgr.ClearBuffer();
         // DEBUG_V(String("Buffer Size: ") + String(FileList[FileListIndex].buffer.size));
     }
 

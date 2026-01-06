@@ -143,13 +143,13 @@ void c_WebMgr::init ()
 {
     if(!HasBeenInitialized)
     {
-#ifdef ARDUINO_ARCH_ESP8266
+        #ifdef ARDUINO_ARCH_ESP8266
         {
             AsyncServer * async = new AsyncServer(HTTP_PORT);
             async->SetMaxNumOpenTcpSessions(2);
             delete async;
         }
-#endif // def ARDUINO_ARCH_ESP8266
+        #endif // def ARDUINO_ARCH_ESP8266
         // DEBUG_START;
         // Add header for SVG plot support?
     	DefaultHeaders::Instance ().addHeader (F ("Access-Control-Allow-Origin"),  "*");
@@ -948,15 +948,16 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
                 break;
             }
 
-#ifdef ARDUINO_ARCH_ESP8266
+            #ifdef ARDUINO_ARCH_ESP8266
             WiFiUDP::stopAll ();
-#else
+            #else
             // this is not supported for ESP32
-#endif
+            #endif
             logcon (String(F ("Upload Started: ")) + filename);
             // stop all input and output processing of intensity data.
-            // InputMgr.SetOperationalState(false);
-            // OutputMgr.PauseOutputs(true);
+            OutputMgr.PauseOutputs(true);
+            InputMgr.SetOperationalState(false);
+            OutputMgr.ClearBuffer();
 
             // start the update
             efupdate.begin ();
@@ -967,6 +968,7 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
                 String ErrorMsg;
                 WebMgr.efupdate.getError (ErrorMsg);
                 request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
+                RequestReboot(ErrorMsg, 100000);
                 break;
             }
         }
@@ -983,6 +985,7 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
             String ErrorMsg;
             WebMgr.efupdate.getError (ErrorMsg);
             request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
+            RequestReboot(ErrorMsg, 100000);
             break;
         }
         // DEBUG_V ("No EFUpdate Error");
@@ -990,8 +993,8 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
         if (final)
         {
             request->send (200, CN_applicationSLASHjson, F("{\"status\":\"Update Finished\""));
-            String Reason = (F ("EFU Upload Finished. Rebooting"));
             efupdate.end ();
+            String Reason = (F ("EFU Upload Finished. Rebooting"));
             RequestReboot(Reason, 100000);
         }
 
