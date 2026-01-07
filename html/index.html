@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,131 +10,6 @@
     <link rel="icon" href="#">
 
 </head>
-<style>
-    .copyable {
-        cursor: pointer;
-        color: var(--link-color, #0078d7);
-        text-decoration: underline dotted;
-        position: relative;
-        transition: color 0.2s ease;
-    }
-
-    .copyable:hover {
-        color: var(--link-hover-color, #c00);
-    }
-
-    /* Tooltip styling */
-    .copy-tooltip {
-        position: absolute;
-        background: #333;
-        color: #fff;
-        font-size: 0.75em;
-        padding: 4px 8px;
-        border-radius: 6px;
-        white-space: nowrap;
-        transform: translateY(-150%);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease, transform 0.2s ease;
-        z-index: 999;
-    }
-
-    .copy-tooltip.show {
-        opacity: 1;
-        transform: translateY(-200%);
-    }
-
-    /* File management action button disabled state */
-    .button.disabled {
-        pointer-events: none;
-        opacity: 0.5;
-        cursor: default;
-    }
-
-    /* Selected count badge */
-    .selected-badge {
-        margin-left: 12px;
-        font-weight: 600;
-        background: #007bff;
-        color: #fff;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 0.9em;
-    }
-</style>
-<script>
-    (function () {
-        // Fallback copy for insecure contexts (HTTP) and older browsers
-        function legacyCopy(text) {
-            try {
-                const ta = document.createElement('textarea');
-                ta.value = text;
-                ta.setAttribute('readonly', '');
-                ta.style.position = 'fixed';
-                ta.style.top = '-9999px';
-                ta.style.left = '-9999px';
-                document.body.appendChild(ta);
-
-                // iOS/Safari quirks
-                ta.focus();
-                ta.select();
-                const ok = document.execCommand('copy');
-                document.body.removeChild(ta);
-                return ok;
-            } catch {
-                return false;
-            }
-        }
-
-        function showTooltip(el, msg) {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'copy-tooltip';
-            tooltip.textContent = msg;
-            el.appendChild(tooltip);
-            // force reflow for transition
-            void tooltip.offsetWidth;
-            tooltip.classList.add('show');
-            setTimeout(() => {
-                tooltip.classList.remove('show');
-                setTimeout(() => tooltip.remove(), 200);
-            }, 900);
-        }
-
-        async function copyTextFromEl(el) {
-            const text = el.textContent.trim();
-            if (!text) return;
-
-            // Prefer modern API only in secure contexts
-            if (navigator.clipboard && window.isSecureContext) {
-                try {
-                    await navigator.clipboard.writeText(text);
-                    showTooltip(el, 'Copied!');
-                    return;
-                } catch {
-                    // fall through to legacy
-                }
-            }
-
-            // Legacy path (works on HTTP)
-            const ok = legacyCopy(text);
-            showTooltip(el, ok ? 'Copied!' : 'Press Ctrl+C');
-            // If even legacy fails, pre-select the text so Ctrl+C works
-            if (!ok) {
-                const range = document.createRange();
-                range.selectNodeContents(el);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.copyable').forEach(el => {
-                el.addEventListener('click', () => copyTextFromEl(el));
-            });
-        });
-    })();
-</script>
 <style>
     .copyable {
         cursor: pointer;
@@ -300,16 +175,6 @@
             </div>
         </div>
 
-        <!-- Network Status and Notifications -->
-        <div id="statusNotifications" style="margin-top: 20px;">
-            <div id="networkStatusIndicator" class="alert alert-info" style="display: none; margin-bottom: 10px;"></div>
-            <div id="unzipStatusIndicator" class="alert alert-warning" style="display: none; margin-bottom: 10px;">
-                <strong>Decompressing Files</strong>
-                <span id="unzipCounter" style="margin-left:6px;"></span>:
-                <span id="unzipFileName"></span>
-            </div>
-        </div>
-
         <!-- Home / Status page -->
         <div id="home" class="collapse in mdiv anchor">
             <div class="row">
@@ -363,9 +228,6 @@
                                 <td>
                                     <span id="w_ip" class="copyable" title="Click to copy"></span>
                                 </td>
-                                <td>
-                                    <span id="w_ip" class="copyable" title="Click to copy"></span>
-                                </td>
                             </tr>
                             <tr>
                                 <td width="33%">SubNet</td>
@@ -373,9 +235,6 @@
                             </tr>
                             <tr>
                                 <td width="33%">MAC</td>
-                                <td>
-                                    <span id="w_mac" class="copyable" title="Click to copy"></span>
-                                </td>
                                 <td>
                                     <span id="w_mac" class="copyable" title="Click to copy"></span>
                                 </td>
@@ -400,7 +259,6 @@
                             <tr>
                                 <td width="33%">IP</td>
                                 <td><span id="e_ip" class="copyable" title="Click to copy"></span></td>
-                                <td><span id="e_ip" class="copyable" title="Click to copy"></span></td>
                             </tr>
                             <tr>
                                 <td width="33%">SubNet</td>
@@ -408,7 +266,6 @@
                             </tr>
                             <tr>
                                 <td width="33%">MAC</td>
-                                <td><span id="e_mac" class="copyable" title="Click to copy"></span></td>
                                 <td><span id="e_mac" class="copyable" title="Click to copy"></span></td>
                             </tr>
                         </table>
@@ -685,9 +542,7 @@
                 </div>
                 <div class="col-sm-offset-2 col-sm-8">
                     <br><br><center>
-                    <br><br><center>
                     <button id="btn_clearstatistics" type="button" class="btn btn-primary">Clear Statistics</button>
-                    </center>
                     </center>
                 </div>
             </div>
@@ -1172,8 +1027,6 @@
                     <a id="FileDeleteButton" class="button">Remove Selected File(s)</a>
                     <a id="FileSelectAllButton" class="button">Select All Files</a>
                     <span id="FileSelectedCount" class="selected-badge">0</span>
-                    <a id="FileSelectAllButton" class="button">Select All Files</a>
-                    <span id="FileSelectedCount" class="selected-badge">0</span>
                     <!-- <a id="FileUploadButton" class="button">Upload Selected File(s)</a> -->
                 </div>
                 <div>
@@ -1370,21 +1223,6 @@
         </div>
     </div>
 
-    <!-- File Deletion Modal -->
-    <div id="fileDeleteModal" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Deleting Files</h4>
-                </div>
-                <div class="modal-body">
-                    <p id="fileDeleteMsg">Deleting files on the device. Waiting for device to respond...</p>
-                    <div class="bar"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -1393,36 +1231,6 @@
     </footer>
 
     <script type="text/javascript" src="js/loader.js"></script>
-
-    <script>
-        // File Select toggle: selects or deselects all file checkboxes and updates button label
-        document.addEventListener('DOMContentLoaded', function () {
-            const btn = document.getElementById('FileSelectAllButton');
-            if (!btn) return;
-
-            function updateButtonLabel(allChecked) {
-                btn.textContent = allChecked ? 'Deselect All Files' : 'Select All Files';
-            }
-
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const boxes = Array.from(document.querySelectorAll('#FileManagementTable input[type="checkbox"]'));
-                if (boxes.length === 0) return;
-
-                const allChecked = boxes.every(cb => cb.checked);
-                const newState = !allChecked;
-                boxes.forEach(cb => { cb.checked = newState; cb.dispatchEvent(new Event('change')); });
-                updateButtonLabel(newState);
-            });
-
-            // Initialize label based on current state (if any checkboxes exist)
-            const initialBoxes = Array.from(document.querySelectorAll('#FileManagementTable input[type="checkbox"]'));
-            if (initialBoxes.length) {
-                const allChecked = initialBoxes.every(cb => cb.checked);
-                updateButtonLabel(allChecked);
-            }
-        });
-    </script>
 
     <script>
         // File Select toggle: selects or deselects all file checkboxes and updates button label
