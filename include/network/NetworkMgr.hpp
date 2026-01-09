@@ -61,6 +61,7 @@ private:
     bool Validate ();
     void AdvertiseNewState ();
     void SetWiFiEnable ();
+    void UpdateMdns (bool currentState);
 
     c_WiFiDriver     WiFiDriver;
 #ifdef SUPPORT_ETHERNET
