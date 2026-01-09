@@ -256,7 +256,7 @@ private:
 
     String ConfigFileName;
 
-    uint8_t    pOutputBuffer = nullptr;
+    uint8_t    *pOutputBuffer = nullptr;
     uint32_t   UsedBufferSize = 0;
 
     #ifndef DEFAULT_CONSOLE_TX_GPIO
