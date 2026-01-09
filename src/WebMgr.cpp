@@ -157,9 +157,9 @@ void c_WebMgr::init ()
    	 	webServer.serveStatic ("/UpdRecipe/", LittleFS, "/UpdRecipe.json");
 
         // Heap status handler
-    	webServer.on ("/heap", HTTP_GET | HTTP_OPTIONS, [](AsyncWebServerRequest* request)
+    	webServer.on ("/heap", HTTP_GET | HTTP_OPTIONS, [this](AsyncWebServerRequest* request)
         {
-            request->send (200, CN_textSLASHplain, String (ESP.getFreeHeap ()).c_str());
+            ProcessHeapRequest (request);
         });
 
     	webServer.on ("/XJ", HTTP_POST | HTTP_GET | HTTP_OPTIONS, [this](AsyncWebServerRequest* request)
@@ -818,6 +818,48 @@ void c_WebMgr::ProcessXJRequest (AsyncWebServerRequest* client)
     // DEBUG_V("Send XJ response");
     String XjResult;
     serializeJson(WebJsonDoc, XjResult);
+    client->send (200, CN_applicationSLASHjson, XjResult);
+
+    // WebJsonDoc.clear();
+    // DEBUG_END;
+
+} // ProcessXJRequest
+
+//-----------------------------------------------------------------------------
+void c_WebMgr::ProcessHeapRequest (AsyncWebServerRequest* client)
+{
+    // DEBUG_START;
+
+    // WebJsonDoc.clear ();
+    DynamicJsonDocument WebJsonDoc(1024);
+    WebJsonDoc.to<JsonObject>();
+    JsonObject status = WebJsonDoc[(char*)CN_Heap_colon].to<JsonObject> ();
+    // DEBUG_V();
+
+    JsonWrite(status, F ("freeheap"), ESP.getFreeHeap ());
+    // DEBUG_V();
+#ifdef ARDUINO_ARCH_ESP32
+    JsonWrite(status, F ("n804_Free_Max"),  heap_caps_get_largest_free_block(0x804));
+    // DEBUG_V();
+    JsonWrite(status, F ("n804_Free_Tot"),  heap_caps_get_free_size(0x804));
+    // DEBUG_V();
+    JsonWrite(status, F ("n80C_Free_Max"),  heap_caps_get_largest_free_block(0x80C));
+    // DEBUG_V();
+    JsonWrite(status, F ("n80C_Free_Tot"),  heap_caps_get_free_size(0x80C));
+    // DEBUG_V();
+    JsonWrite(status, F ("n1800_Free_Max"), heap_caps_get_largest_free_block(0x1800));
+    // DEBUG_V();
+    JsonWrite(status, F ("n1800_Free_Tot"), heap_caps_get_free_size(0x1800));
+#else
+    JsonWrite(status, F ("n804_Free_Max"),  ESP.getMaxFreeBlockSize());
+    JsonWrite(status, F ("n804_Free_Tot"),  ESP.getFreeHeap());
+#endif // def ARDUINO_ARCH_ESP32
+
+    // DEBUG_V("Send ProcessHeapRequest response");
+    String XjResult;
+    serializeJson(WebJsonDoc, XjResult);
+    // DEBUG_V(XjResult);
+
     client->send (200, CN_applicationSLASHjson, XjResult);
 
     // WebJsonDoc.clear();
