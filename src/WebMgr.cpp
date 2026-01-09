@@ -831,7 +831,7 @@ void c_WebMgr::ProcessHeapRequest (AsyncWebServerRequest* client)
     // DEBUG_START;
 
     // WebJsonDoc.clear ();
-    DynamicJsonDocument WebJsonDoc(1024);
+    JsonDocument WebJsonDoc;
     WebJsonDoc.to<JsonObject>();
     JsonObject status = WebJsonDoc[(char*)CN_Heap_colon].to<JsonObject> ();
     // DEBUG_V();
