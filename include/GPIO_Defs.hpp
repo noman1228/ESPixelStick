@@ -3,7 +3,7 @@
 * GPIO_Defs.hpp - Output Management class
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2021, 2022 Shelby Merrick
+* Copyright (c) 2021, 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -154,6 +154,8 @@ typedef enum
 #   include "platforms/GPIO_Defs_ESP32_kr_lights_msm.hpp"
 #elif defined (BOARD_ESP32_BREAKDANCEV2)
 #   include "platforms/GPIO_Defs_ESP32_BreakDanceV2.hpp"
+#elif defined(BOARD_ESP32_DEVKITV_ETH)
+#   include "platforms/GPIO_Defs_ESP32_DevkitV_ETH.hpp"
 #elif defined (ARDUINO_ARCH_ESP32)
 #   include "platforms/GPIO_Defs_ESP32_generic.hpp"
 #elif defined (ARDUINO_ARCH_ESP8266)
