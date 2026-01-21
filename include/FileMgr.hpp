@@ -278,7 +278,6 @@ public: struct __attribute__((__packed__, aligned(4))) CSD {
             uint64_t  offset = 0;
         } buffer;
     };
-#define DATABUFFERSIZE (5 * 1024)
 
     FileListEntry_t FileList[MaxOpenFiles];
     void InitSdFileList ();

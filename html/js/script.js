@@ -2679,8 +2679,14 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
     }
 
     InputStatus = Status.input[1];
+    $('#LocalPlayListPlayerStatus').addClass("hidden");
+    $('#LocalFilePlayerStatus').addClass("hidden");
+    $('#LocalEffectPlayerStatus').addClass("hidden");
+    $('#PausedPlayerStatus').addClass("hidden");
+    $('#FPPRemoteStatus').addClass("hidden");
 
-    if ({}.hasOwnProperty.call(InputStatus, 'Player')) {
+    if ({}.hasOwnProperty.call(InputStatus, 'Player'))
+    {
         let PlayerStatus = InputStatus.Player;
         if ({}.hasOwnProperty.call(PlayerStatus, 'FPPDiscovery')) {
             $('#FPPRemoteStatus').removeClass("hidden")
@@ -2697,11 +2703,8 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
             $('#fppremoteFilePlayerTimeRemaining').text(FPPDstatus.time_remaining);
             $('#fppremoteFilePlayerlasterror').text(FPPDstatus.errors);
         }
-        else {
-            $('#FPPRemoteStatus').addClass("hidden")
-        }
 
-        if ({}.hasOwnProperty.call(PlayerStatus, 'File')) {
+        else if ({}.hasOwnProperty.call(PlayerStatus, 'File')) {
             $('#LocalFilePlayerStatus').removeClass("hidden");
 
             let FilePlayerStatus = PlayerStatus.File;
@@ -2711,35 +2714,36 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
             $('#localFilePlayerPlayedfilecount').text(FilePlayerStatus.count);
             $('#localFilePlayerlasterror').text(FilePlayerStatus.errors);
         }
-        else {
-            $('#LocalFilePlayerStatus').addClass("hidden");
+
+        else if ({}.hasOwnProperty.call(PlayerStatus, 'PlayList')) {
+            $('#LocalPlayListPlayerStatus').removeClass("hidden");
+            $('#LocalFilePlayerStatus').removeClass("hidden");
+            $('#localFilePlayerlasterror').addClass("hidden");
+
+            let PlayListPlayerStatus = PlayerStatus.PlayList;
+            $('#localPlayListName').text(PlayListPlayerStatus.name);
+            $('#localPlayListEntry').text(PlayListPlayerStatus.entry);
+            $('#localPlayListCount').text(PlayListPlayerStatus.count);
+
+            let FilePlayerStatus = PlayListPlayerStatus.File;
+            $('#localFilePlayerFilename').text(FilePlayerStatus.current_sequence);
+            $('#localFilePlayerTimeElapsed').text(FilePlayerStatus.time_elapsed);
+            $('#localFilePlayerTimeRemaining').text(FilePlayerStatus.time_remaining);
+            $('#localFilePlayerPlayedfilecount').text(FilePlayerStatus.PlayedFileCount);
         }
 
-        if ({}.hasOwnProperty.call(PlayerStatus, 'Effect')) {
+        else if ({}.hasOwnProperty.call(PlayerStatus, 'Effect')) {
             $('#LocalEffectPlayerStatus').removeClass("hidden");
 
             $('#localFilePlayerEffectName').text(PlayerStatus.Effect.currenteffect);
             $('#localFilePlayerEffectTimeRemaining').text(PlayerStatus.Effect.TimeRemaining);
         }
-        else {
-            $('#LocalEffectPlayerStatus').addClass("hidden")
-        }
 
-        if ({}.hasOwnProperty.call(PlayerStatus, 'Paused')) {
+        else if ({}.hasOwnProperty.call(PlayerStatus, 'Paused')) {
             $('#PausedPlayerStatus').removeClass("hidden");
 
             $('#PausedTimeRemaining').text(PlayerStatus.Paused.TimeRemaining);
         }
-        else {
-            $('#PausedPlayerStatus').addClass("hidden")
-        }
-    }
-    else {
-        $('#LocalPlayListPlayerStatus').addClass("hidden");
-        $('#LocalFilePlayerStatus').addClass("hidden");
-        $('#LocalEffectPlayerStatus').addClass("hidden");
-        $('#PausedPlayerStatus').addClass("hidden");
-        $('#FPPRemoteStatus').addClass("hidden");
     }
 
     let OutputStatus = Status.output[1];
@@ -2747,7 +2751,7 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
     {
         if ({}.hasOwnProperty.call(OutputStatus, 'Relay')) {
             $('#RelayStatus').removeClass("hidden")
-    
+
             OutputStatus.Relay.forEach(function (currentRelay) {
                 $('#RelayValue_' + currentRelay.id).text(currentRelay.activevalue);
             });
