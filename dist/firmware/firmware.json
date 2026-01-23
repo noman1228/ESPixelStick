@@ -6,7 +6,7 @@
             "name": "ESPixelStick V3",
             "description": "Official hardware from Forkineye",
             "chip": "esp8266",
-            "appbin": "esp8266/espsv3-app.bin",
+            "appbin": "esp8266/esp8266_espsv3-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -14,7 +14,7 @@
             },
             "binfiles": [
                 {
-                    "name": "esp8266/espsv3-app.bin",
+                    "name": "esp8266/esp8266_espsv3-app.bin",
                     "offset": "0x0"
                 }
             ],
@@ -29,7 +29,7 @@
             "name": "ESPixelStick V2 ESP01S",
             "description": "Official hardware from Forkineye",
             "chip": "esp8266",
-            "appbin": "esp8266/esp01s-app.bin",
+            "appbin": "esp8266/esp8266_esp01s-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -37,7 +37,7 @@
             },
             "binfiles": [
                 {
-                    "name": "esp8266/esp01s-app.bin",
+                    "name": "esp8266/esp8266_esp01s-app.bin",
                     "offset": "0x0"
                 }
             ],
@@ -52,7 +52,7 @@
             "name": "Wemos D1 Mini",
             "description": "Generic Wemos D1 Mini for DIY builds",
             "chip": "esp8266",
-            "appbin": "esp8266/d1_mini-app.bin",
+            "appbin": "esp8266/esp8266_wemos_d1_mini-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -60,7 +60,7 @@
             },
             "binfiles": [
                 {
-                    "name": "esp8266/d1_mini-app.bin",
+                    "name": "esp8266/esp8266_wemos_d1_mini-app.bin",
                     "offset": "0x0"
                 }
             ],
@@ -75,7 +75,7 @@
             "name": "D1 Mini PRO",
             "description": "Generic D1 Mini PRO for DIY builds",
             "chip": "esp8266",
-            "appbin": "esp8266/d1_mini_pro-app.bin",
+            "appbin": "esp8266/esp8266_wemos_d1_mini_pro-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -83,30 +83,7 @@
             },
             "binfiles": [
                 {
-                    "name": "esp8266/d1_mini_pro-app.bin",
-                    "offset": "0x0"
-                }
-            ],
-            "filesystem": {
-                "page": "256",
-                "block": "8192",
-                "size": "2072576",
-                "offset": "0x200000"
-            }
-        },
-        {
-            "name": "D1 Mini LoLin SD",
-            "description": "Generic D1 Mini PRO for DIY builds",
-            "chip": "esp8266",
-            "appbin": "esp8266/d1_mini_lolinsd-app.bin",
-            "esptool": {
-                "baudrate": "460800",
-                "options": "--before default_reset --after hard_reset",
-                "flashcmd": "write_flash"
-            },
-            "binfiles": [
-                {
-                    "name": "esp8266/d1_mini_lolinsd-app.bin",
+                    "name": "esp8266/esp8266_wemos_d1_mini_pro-app.bin",
                     "offset": "0x0"
                 }
             ],
@@ -121,7 +98,7 @@
             "name": "D1 Mini Mhetesp32minikit",
             "description": "D1 Mini Mhetesp32minikit module with PSRAM support for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/d1_mini_mhetesp32minikit-app.bin",
+            "appbin": "esp32/esp32_d1_mini_mhetesp32minikit-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -129,11 +106,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/d1_mini_mhetesp32minikit-bootloader.bin",
+                    "name": "esp32/esp32_d1_mini_mhetesp32minikit-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/d1_mini_mhetesp32minikit-partitions.bin",
+                    "name": "esp32/esp32_d1_mini_mhetesp32minikit-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -141,7 +118,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/d1_mini_mhetesp32minikit-app.bin",
+                    "name": "esp32/esp32_d1_mini_mhetesp32minikit-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -156,7 +133,7 @@
             "name": "D1 Mini32 ETH",
             "description": "D1 ESP32 module with PSRAM support for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/d1_mini32_eth-app.bin",
+            "appbin": "esp32/esp32_wemos_d1_mini32_eth-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -164,11 +141,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/d1_mini32_eth-bootloader.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32_eth-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/d1_mini32_eth-partitions.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32_eth-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -176,7 +153,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/d1_mini32_eth-app.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32_eth-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -191,7 +168,7 @@
             "name": "D1 Mini32",
             "description": "D1 ESP32 module with PSRAM support for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/d1_mini32-app.bin",
+            "appbin": "esp32/esp32_wemos_d1_mini32-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -199,11 +176,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/d1_mini32-bootloader.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/d1_mini32-partitions.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -211,7 +188,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/d1_mini32-app.bin",
+                    "name": "esp32/esp32_wemos_d1_mini32-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -226,7 +203,7 @@
             "name": "D32 PRO ETH",
             "description": "D32 PRO ESP32 module with PSRAM support for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/d32_pro_eth-app.bin",
+            "appbin": "esp32/esp32_lolin_d1_pro_eth-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -234,11 +211,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/d32_pro_eth-bootloader.bin",
+                    "name": "esp32/esp32_lolin_d1_pro_eth-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/d32_pro_eth-partitions.bin",
+                    "name": "esp32/esp32_lolin_d1_pro_eth-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -246,7 +223,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/d32_pro_eth-app.bin",
+                    "name": "esp32/esp32_lolin_d1_pro_eth-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -261,7 +238,7 @@
             "name": "D32 PRO",
             "description": "D32 PRO ESP32 module with PSRAM support for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/d32_pro-app.bin",
+            "appbin": "esp32/esp32_lolin_d1_pro-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -269,11 +246,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/d32_pro-bootloader.bin",
+                    "name": "esp32/esp32_lolin_d1_pro-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/d32_pro-partitions.bin",
+                    "name": "esp32/esp32_lolin_d1_pro-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -281,7 +258,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/d32_pro-app.bin",
+                    "name": "esp32/esp32_lolin_d1_pro-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -506,7 +483,7 @@
             "name": "D1 Mini32 Twilight Lord",
             "description": "D1 ESP32 Twilight Lord module with NO PSRAM support for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/d1_mini_twilightlord-app.bin",
+            "appbin": "esp32/esp32_d1_mini_twilightlord-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -514,11 +491,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/d1_mini_twilightlord-bootloader.bin",
+                    "name": "esp32/esp32_d1_mini_twilightlord-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/d1_mini_twilightlord-partitions.bin",
+                    "name": "esp32/esp32_d1_mini_twilightlord-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -526,7 +503,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/d1_mini_twilightlord-app.bin",
+                    "name": "esp32/esp32_d1_mini_twilightlord-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -541,7 +518,7 @@
             "name": "D1 Mini32 Twilight Lord ETH",
             "description": "D32 Mini Twilight Lord ESP32 module with NO PSRAM support for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/d1_mini_twilightlord_eth-app.bin",
+            "appbin": "esp32/esp32_d1_mini_twilightlord_eth-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -549,11 +526,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/d1_mini_twilightlord_eth-bootloader.bin",
+                    "name": "esp32/esp32_d1_mini_twilightlord_eth-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/d1_mini_twilightlord_eth-partitions.bin",
+                    "name": "esp32/esp32_d1_mini_twilightlord_eth-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -561,7 +538,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/d1_mini_twilightlord_eth-app.bin",
+                    "name": "esp32/esp32_d1_mini_twilightlord_eth-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -996,7 +973,7 @@
             "name": "m5stack atom",
             "description": "ESP32 module with NO PSRAM",
             "chip": "esp32",
-            "appbin": "esp32/m5stack_atom-app.bin",
+            "appbin": "esp32/esp32_m5stack_atom-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -1004,11 +981,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/m5stack_atom-bootloader.bin",
+                    "name": "esp32/esp32_m5stack_atom-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/m5stack_atom-partitions.bin",
+                    "name": "esp32/esp32_m5stack_atom-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -1016,7 +993,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/m5stack_atom-app.bin",
+                    "name": "esp32/esp32_m5stack_atom-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -1031,7 +1008,7 @@
             "name": "Generic ESP32 4MB",
             "description": "Generic ESP32 with 4MB flash layout for DIY builds",
             "chip": "esp32",
-            "appbin": "esp32/d1_mini32-app.bin",
+            "appbin": "esp32/esp32_d1_mini32-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -1039,11 +1016,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/d1_mini32-bootloader.bin",
+                    "name": "esp32/esp32_d1_mini32-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/d1_mini32-partitions.bin",
+                    "name": "esp32/esp32_d1_mini32-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -1051,7 +1028,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/d1_mini32-app.bin",
+                    "name": "esp32/esp32_d1_mini32-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -1101,7 +1078,7 @@
             "name": "ESP3DEUXQUAD_DMX",
             "description": "Canada Pixels Coro ESP32 module NO PSRAM support",
             "chip": "esp32",
-            "appbin": "esp32/esp3deuxquatro_dmx-app.bin",
+            "appbin": "esp32/esp32_deuxquatro_dmx-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -1109,11 +1086,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/esp3deuxquatro_dmx-bootloader.bin",
+                    "name": "esp32/esp32_deuxquatro_dmx-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/esp3deuxquatro_dmx-partitions.bin",
+                    "name": "esp32/esp32_deuxquatro_dmx-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -1121,7 +1098,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/esp3deuxquatro_dmx-app.bin",
+                    "name": "esp32/esp32_deuxquatro_dmx-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -1136,7 +1113,7 @@
             "name": "Olimex ESP32 Gateway",
             "description": "Olimex board with ESP32, Ethernet, SD slot, and GPIO headers",
             "chip": "esp32",
-            "appbin": "esp32/olimex_esp32_gw-app.bin",
+            "appbin": "esp32/esp32_olimex_gw-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "--before default_reset --after hard_reset",
@@ -1144,11 +1121,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/olimex_esp32_gw-bootloader.bin",
+                    "name": "esp32/esp32_olimex_gw-bootloader.bin",
                     "offset": "0x1000"
                 },
                 {
-                    "name": "esp32/olimex_esp32_gw-partitions.bin",
+                    "name": "esp32/esp32_olimex_gw-partitions.bin",
                     "offset": "0x8000"
                 },
                 {
@@ -1156,7 +1133,7 @@
                     "offset": "0xe000"
                 },
                 {
-                    "name": "esp32/olimex_esp32_gw-app.bin",
+                    "name": "esp32/esp32_olimex_gw-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -1413,10 +1390,10 @@
             }
         },
         {
-            "name": "ESP32S",
-            "description": "ESP32S based controller",
-            "chip": "esp32",
-            "appbin": "esp32/esp32_s3-app.bin",
+            "name": "ESP32S3 DevkitC",
+            "description": "ESP32S3 based controller",
+            "chip": "esp32s3",
+            "appbin": "esp32s3/esp32s3_devkitc-app.bin",
             "esptool": {
                 "baudrate": "460800",
                 "options": "",
@@ -1424,11 +1401,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32/esp32_s3-bootloader.bin",
+                    "name": "esp32s3/esp32s3_devkitc-bootloader.bin",
                     "offset": "0x01000"
                 },
                 {
-                    "name": "esp32/esp32_s3-partitions.bin",
+                    "name": "esp32s3/esp32s3_devkitc-partitions.bin",
                     "offset": "0x08000"
                 },
                 {
@@ -1436,7 +1413,42 @@
                     "offset": "0x0e000"
                 },
                 {
-                    "name": "esp32/esp32_s3-app.bin",
+                    "name": "esp32s3/esp32s3_devkitc-app.bin",
+                    "offset": "0x10000"
+                }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0x50000",
+                "offset": "0x3B0000"
+            }
+        },
+        {
+            "name": "ESP32S3 DevkitC Internal SD",
+            "description": "ESP32S3 based controller",
+            "chip": "esp32s3",
+            "appbin": "esp32s3/esp32s3_devkitc_Internal_SD-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                {
+                    "name": "esp32s3/esp32s3_devkitc_Internal_SD-bootloader.bin",
+                    "offset": "0x01000"
+                },
+                {
+                    "name": "esp32s3/esp32s3_devkitc_Internal_SD-partitions.bin",
+                    "offset": "0x08000"
+                },
+                {
+                    "name": "esp32s3/boot_app0.bin",
+                    "offset": "0x0e000"
+                },
+                {
+                    "name": "esp32s3/esp32s3_devkitc_Internal_SD-app.bin",
                     "offset": "0x10000"
                 }
             ],
@@ -1451,7 +1463,7 @@
             "name": "Seeed Studio XIAO ESP32-S3",
             "description": "ESP32-S3 mini Controller",
             "chip": "esp32s3",
-            "appbin": "esp32s3/seeed_xiao_esp32s3-app.bin",
+            "appbin": "esp32s3/esp32s3_seeed_xiao-app.bin",
             "esptool": {
                 "baudrate": "115200",
                 "options": "--before default_reset --after hard_reset",
@@ -1459,11 +1471,11 @@
             },
             "binfiles": [
                 {
-                    "name": "esp32s3/seeed_xiao_esp32s3-bootloader.bin",
+                    "name": "esp32s3/esp32s3_seeed_xiao-bootloader.bin",
                     "offset": "0x00000"
                 },
                 {
-                    "name": "esp32s3/seeed_xiao_esp32s3-partitions.bin",
+                    "name": "esp32s3/esp32s3_seeed_xiao-partitions.bin",
                     "offset": "0x08000"
                 },
                 {
@@ -1471,7 +1483,42 @@
                     "offset": "0x0e000"
                 },
                 {
-                    "name": "esp32s3/seeed_xiao_esp32s3-app.bin",
+                    "name": "esp32s3/esp32s3_seeed_xiao-app.bin",
+                    "offset": "0x10000"
+                }
+            ],
+            "filesystem": {
+                "page": "256",
+                "block": "4096",
+                "size": "0x50000",
+                "offset": "0x3B0000"
+            }
+        },
+        {
+            "name": "ESP32 DevkitV ETH",
+            "description": "ESP32 based controller",
+            "chip": "esp32",
+            "appbin": "esp32/esp32_devkitv_eth-app.bin",
+            "esptool": {
+                "baudrate": "460800",
+                "options": "",
+                "flashcmd": "write_flash -z"
+            },
+            "binfiles": [
+                {
+                    "name": "esp32/esp32_devkitv_eth-bootloader.bin",
+                    "offset": "0x01000"
+                },
+                {
+                    "name": "esp32/esp32_devkitv_eth-partitions.bin",
+                    "offset": "0x08000"
+                },
+                {
+                    "name": "esp32/boot_app0.bin",
+                    "offset": "0x0e000"
+                },
+                {
+                    "name": "esp32/esp32_devkitv_eth-app.bin",
                     "offset": "0x10000"
                 }
             ],

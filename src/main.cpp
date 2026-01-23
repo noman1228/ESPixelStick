@@ -103,6 +103,7 @@ bool     ResetWiFi = false;
 bool     IsBooting = true;  // Configuration initialization flag
 time_t   ConfigLoadNeeded = NO_CONFIG_NEEDED;
 bool     ConfigSaveNeeded = false;
+bool     BackupFlashToolConfig = false;
 
 uint32_t DiscardedRxData = 0;
 
@@ -138,6 +139,18 @@ void TestHeap(uint32_t Id)
     }
     LOG_PORT.println(String(" Heap After: ") + ESP.getFreeHeap());
 }
+
+#ifdef CREATE_APP_MAIN
+extern "C" void app_main()
+{
+    initArduino();
+    setup();
+    while (true)
+    {
+        loop();
+    }
+}
+#endif // def CREATE_APP_MAIN
 
 #ifdef ARDUINO_ARCH_ESP32
 void esp_alloc_failed_hook_callback(size_t requested_size, uint32_t caps, const char *function_name)
@@ -346,6 +359,7 @@ bool deserializeCore (JsonObject & json)
         {
             // trigger a save operation
             ConfigSaveNeeded = true;
+            BackupFlashToolConfig = true;
             logcon(String(F("Processing Flash Tool config")));
             DeviceConfig = json;
         }
@@ -442,9 +456,27 @@ void LoadConfig()
 
     ConfigLoadNeeded = NO_CONFIG_NEEDED;
 
-    String temp;
     // DEBUG_V ("");
-    ConfigSaveNeeded |= !FileMgr.LoadFlashFile (ConstConfig.ConfigFileName, &deserializeCoreHandler);
+    if(FileMgr.FlashFileExists(ConstConfig.ConfigFileName))
+    {
+        // DEBUG_V("Loading system config");
+        ConfigSaveNeeded |= !FileMgr.LoadFlashFile (ConstConfig.ConfigFileName, &deserializeCoreHandler);
+        if(BackupFlashToolConfig)
+        {
+            // the processed file is from the flash tool.
+            // Save it for later
+            // DEBUG_V("Saving Flash Tool Config file.");
+            String FlashToolConfigFileName = String(F("/flashTool.SysCfg"));
+            FileMgr.RenameFlashFile(String(ConstConfig.ConfigFileName), FlashToolConfigFileName);
+        }
+    }
+    else
+    {
+        // DEBUG_V("Try to load Flash Tool Config file.");
+        String FlashToolConfigFileName = String(F("/flashTool.SysCfg"));
+        FileMgr.LoadFlashFile (FlashToolConfigFileName, &deserializeCoreHandler);
+        ConfigSaveNeeded = true;
+    }
     ConfigSaveNeeded |= !validateConfig ();
 
     // DEBUG_END;

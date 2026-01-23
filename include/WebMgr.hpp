@@ -67,6 +67,7 @@ private:
     void GetOptions                 ();
 
     void ProcessXJRequest           (AsyncWebServerRequest * client);
+    void ProcessHeapRequest         (AsyncWebServerRequest * client);
     void ProcessSetTimeRequest      (time_t DateTime);
 
     void GetDeviceOptions           ();

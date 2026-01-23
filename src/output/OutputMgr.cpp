@@ -211,7 +211,8 @@ c_OutputMgr::c_OutputMgr ()
     ConfigFileName = String ("/") + String (CN_output_config) + CN_Dotjson;
 
     // clear the input data buffer
-    memset ((char*)&OutputBuffer[0], 0, sizeof (OutputBuffer));
+    pOutputBuffer = (uint8_t*)malloc(GetBufferSize() + 1);
+    memset (pOutputBuffer, 0, GetBufferSize());
     for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
     {
         memset (CurrentOutput.OutputDriver, 0, sizeof (CurrentOutput.OutputDriver));
@@ -284,7 +285,7 @@ void c_OutputMgr::Begin ()
         // CreateNewConfig();
 
         // Preset the output memory
-        memset((void*)&OutputBuffer[0], 0x00, sizeof(OutputBuffer));
+        memset(pOutputBuffer, 0x00, GetBufferSize());
 
     } while (false);
 
@@ -391,7 +392,7 @@ void c_OutputMgr::CreateNewConfig ()
     // DEBUG_V ();
 
     JsonWrite(JsonConfig, CN_cfgver,      ConstConfig.CurrentConfigVersion);
-    JsonWrite(JsonConfig, CN_MaxChannels, sizeof(OutputBuffer));
+    JsonWrite(JsonConfig, CN_MaxChannels, GetBufferSize());
 
     // DEBUG_V("Collect the all ports disabled config first");
     CreateJsonConfig (JsonConfig);
@@ -1451,12 +1452,12 @@ void c_OutputMgr::UpdateDisplayBufferReferences (void)
 
         CurrentOutput.OutputBufferStartingOffset = OutputBufferOffset;
         CurrentOutput.OutputChannelStartingOffset = OutputChannelOffset;
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->SetOutputBufferAddress(&OutputBuffer[OutputBufferOffset]);
+        ((c_OutputCommon*)CurrentOutput.OutputDriver)->SetOutputBufferAddress(pOutputBuffer + OutputBufferOffset);
 
         uint32_t OutputBufferDataBytesNeeded        = ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetNumOutputBufferBytesNeeded ();
         uint32_t VirtualOutputBufferDataBytesNeeded = ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetNumOutputBufferChannelsServiced ();
 
-        uint32_t AvailableChannels = sizeof(OutputBuffer) - OutputBufferOffset;
+        uint32_t AvailableChannels = GetBufferSize() - OutputBufferOffset;
 
         if (AvailableChannels < OutputBufferDataBytesNeeded)
         {

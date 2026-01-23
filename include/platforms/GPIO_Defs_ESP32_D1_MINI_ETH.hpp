@@ -23,24 +23,24 @@
 //Output Manager
 #define DEFAULT_RMT_0_GPIO      gpio_num_t::GPIO_NUM_2
 #define DEFAULT_RMT_1_GPIO      gpio_num_t::GPIO_NUM_4
-#define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_12
-#define DEFAULT_RMT_3_GPIO      gpio_num_t::GPIO_NUM_14
-#define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_16
+#define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_39
+#define DEFAULT_RMT_3_GPIO      gpio_num_t::GPIO_NUM_35
+#define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_33
 
-#define DEFAULT_I2C_SDA          gpio_num_t::GPIO_NUM_21
-#define DEFAULT_I2C_SCL          gpio_num_t::GPIO_NUM_22
+#define DEFAULT_I2C_SDA          gpio_num_t::GPIO_NUM_34
+#define DEFAULT_I2C_SCL          gpio_num_t::GPIO_NUM_9
 
 // File Manager
-// #define SUPPORT_SD
+#define SUPPORT_SD
 #define SD_CARD_MISO_PIN         gpio_num_t::GPIO_NUM_12
 #define SD_CARD_MOSI_PIN         gpio_num_t::GPIO_NUM_13
 #define SD_CARD_CLK_PIN          gpio_num_t::GPIO_NUM_14
-#define SD_CARD_CS_PIN           gpio_num_t::GPIO_NUM_15
+#define SD_CARD_CS_PIN           gpio_num_t::GPIO_NUM_5
 
 // SPI Output
 #define SUPPORT_SPI_OUTPUT
-#define DEFAULT_SPI_DATA_GPIO    gpio_num_t::GPIO_NUM_15
-#define DEFAULT_SPI_CLOCK_GPIO   gpio_num_t::GPIO_NUM_25
+#define DEFAULT_SPI_DATA_GPIO    gpio_num_t::GPIO_NUM_32
+#define DEFAULT_SPI_CLOCK_GPIO   gpio_num_t::GPIO_NUM_17
 #define DEFAULT_SPI_DEVICE       VSPI_HOST
 
 #include <ETH.h>

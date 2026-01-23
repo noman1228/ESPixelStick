@@ -137,13 +137,13 @@ void c_WebMgr::init ()
 {
     if(!HasBeenInitialized)
     {
-#ifdef ARDUINO_ARCH_ESP8266
+        #ifdef ARDUINO_ARCH_ESP8266
         {
             AsyncServer * async = new AsyncServer(HTTP_PORT);
             async->SetMaxNumOpenTcpSessions(2);
             delete async;
         }
-#endif // def ARDUINO_ARCH_ESP8266
+        #endif // def ARDUINO_ARCH_ESP8266
         // DEBUG_START;
         // Add header for SVG plot support?
     	DefaultHeaders::Instance ().addHeader (F ("Access-Control-Allow-Origin"),  "*");
@@ -157,9 +157,9 @@ void c_WebMgr::init ()
    	 	webServer.serveStatic ("/UpdRecipe/", LittleFS, "/UpdRecipe.json");
 
         // Heap status handler
-    	webServer.on ("/heap", HTTP_GET | HTTP_OPTIONS, [](AsyncWebServerRequest* request)
+    	webServer.on ("/heap", HTTP_GET | HTTP_OPTIONS, [this](AsyncWebServerRequest* request)
         {
-            request->send (200, CN_textSLASHplain, String (ESP.getFreeHeap ()).c_str());
+            ProcessHeapRequest (request);
         });
 
     	webServer.on ("/XJ", HTTP_POST | HTTP_GET | HTTP_OPTIONS, [this](AsyncWebServerRequest* request)
@@ -826,6 +826,48 @@ void c_WebMgr::ProcessXJRequest (AsyncWebServerRequest* client)
 } // ProcessXJRequest
 
 //-----------------------------------------------------------------------------
+void c_WebMgr::ProcessHeapRequest (AsyncWebServerRequest* client)
+{
+    // DEBUG_START;
+
+    // WebJsonDoc.clear ();
+    JsonDocument WebJsonDoc;
+    WebJsonDoc.to<JsonObject>();
+    JsonObject status = WebJsonDoc[(char*)CN_Heap_colon].to<JsonObject> ();
+    // DEBUG_V();
+
+    JsonWrite(status, F ("freeheap"), ESP.getFreeHeap ());
+    // DEBUG_V();
+#ifdef ARDUINO_ARCH_ESP32
+    JsonWrite(status, F ("n804_Free_Max"),  heap_caps_get_largest_free_block(0x804));
+    // DEBUG_V();
+    JsonWrite(status, F ("n804_Free_Tot"),  heap_caps_get_free_size(0x804));
+    // DEBUG_V();
+    JsonWrite(status, F ("n80C_Free_Max"),  heap_caps_get_largest_free_block(0x80C));
+    // DEBUG_V();
+    JsonWrite(status, F ("n80C_Free_Tot"),  heap_caps_get_free_size(0x80C));
+    // DEBUG_V();
+    JsonWrite(status, F ("n1800_Free_Max"), heap_caps_get_largest_free_block(0x1800));
+    // DEBUG_V();
+    JsonWrite(status, F ("n1800_Free_Tot"), heap_caps_get_free_size(0x1800));
+#else
+    JsonWrite(status, F ("n804_Free_Max"),  ESP.getMaxFreeBlockSize());
+    JsonWrite(status, F ("n804_Free_Tot"),  ESP.getFreeHeap());
+#endif // def ARDUINO_ARCH_ESP32
+
+    // DEBUG_V("Send ProcessHeapRequest response");
+    String XjResult;
+    serializeJson(WebJsonDoc, XjResult);
+    // DEBUG_V(XjResult);
+
+    client->send (200, CN_applicationSLASHjson, XjResult);
+
+    // WebJsonDoc.clear();
+    // DEBUG_END;
+
+} // ProcessXJRequest
+
+//-----------------------------------------------------------------------------
 void c_WebMgr::ProcessSetTimeRequest (time_t EpochTime)
 {
     // DEBUG_START;
@@ -909,15 +951,16 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
                 break;
             }
 
-#ifdef ARDUINO_ARCH_ESP8266
+            #ifdef ARDUINO_ARCH_ESP8266
             WiFiUDP::stopAll ();
-#else
+            #else
             // this is not supported for ESP32
-#endif
+            #endif
             logcon (String(F ("Upload Started: ")) + filename);
             // stop all input and output processing of intensity data.
-            // InputMgr.SetOperationalState(false);
-            // OutputMgr.PauseOutputs(true);
+            OutputMgr.PauseOutputs(true);
+            InputMgr.SetOperationalState(false);
+            OutputMgr.ClearBuffer();
 
             // start the update
             efupdate.begin ();
@@ -928,6 +971,7 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
                 String ErrorMsg;
                 WebMgr.efupdate.getError (ErrorMsg);
                 request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
+                RequestReboot(ErrorMsg, 100000);
                 break;
             }
         }
@@ -944,6 +988,7 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
             String ErrorMsg;
             WebMgr.efupdate.getError (ErrorMsg);
             request->send (500, CN_applicationSLASHjson, String(F("{\"status\":\"Update Error: ")) + ErrorMsg + F("\"}"));
+            RequestReboot(ErrorMsg, 100000);
             break;
         }
         // DEBUG_V ("No EFUpdate Error");
@@ -951,8 +996,8 @@ void c_WebMgr::FirmwareUpload (AsyncWebServerRequest* request,
         if (final)
         {
             request->send (200, CN_applicationSLASHjson, F("{\"status\":\"Update Finished\""));
-            String Reason = (F ("EFU Upload Finished. Rebooting"));
             efupdate.end ();
+            String Reason = (F ("EFU Upload Finished. Rebooting"));
             RequestReboot(Reason, 100000);
         }
 
