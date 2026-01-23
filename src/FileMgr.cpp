@@ -754,10 +754,7 @@ bool c_FileMgr::LoadFlashFile (const String& FileName, DeserializationHandler Ha
         // DEBUG_V();
         if (!file)
         {
-            if (!IsBooting)
-            {
-                logcon (String (CN_stars) + CfgFileMessagePrefix + String (F (" Could not open file for reading ")) + CN_stars);
-            }
+            logcon (String (CN_stars) + CfgFileMessagePrefix + String (F (" Could not open file for reading ")) + CN_stars);
             break;
         }
 
