@@ -144,5 +144,5 @@ def after_build(source, target, env):
                 shutil.copyfile(SRC_BL_DIR, DST_BOOT)
     # merge_bin()
 
-env.AddPostAction("$BUILD_DIR/${PROGNAME}.elf", after_build)
+# env.AddPostAction("$BUILD_DIR/${PROGNAME}.elf", after_build)
 # print("Done processing the python file")
