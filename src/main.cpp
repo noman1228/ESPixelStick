@@ -344,6 +344,7 @@ bool deserializeCore (JsonObject & json)
     JsonObject InitConfig = json[(char*)CN_init];
     JsonObject NetworkConfig = json[(char*)CN_network];
     JsonObject DeviceConfig;
+    // PrettyPrint (json, "Top level Device Config");
 
     do // once
     {
@@ -395,7 +396,11 @@ bool deserializeCore (JsonObject & json)
         // is this a config from the web flash tool?
         // DEBUG_V("Forcing a save config due to missing GPIO settings");
         ConfigSaveNeeded = DeviceConfig["requiresConfigSave"].is<bool>();
-
+        if(ConfigSaveNeeded)
+        {
+            logcon(String(F("Detected Web Flash config")));
+            BackupFlashToolConfig = true;
+        }
         dsDevice(DeviceConfig);
         // DEBUG_V("");
         FileMgr.SetConfig(DeviceConfig);
