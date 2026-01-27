@@ -29,7 +29,7 @@ GNU General Public License for more details.
 */
 #include "ESPixelStick.h"
 
-#ifdef SUPPORT_OutputType_Relay
+#ifdef SUPPORT_OutputProtocol_Relay
 
 #include "OutputCommon.hpp"
 
@@ -54,10 +54,8 @@ public:
     };
 
     // These functions are inherited from c_OutputCommon
-    c_OutputRelay (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                   gpio_num_t outputGpio,
-                   uart_port_t uart,
-                   c_OutputMgr::e_OutputType outputType);
+    c_OutputRelay (OM_OutputPortDefinition_t & OutputPortDefinition,
+                   c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputRelay ();
 
     // functions to be provided by the derived class
@@ -94,4 +92,4 @@ private:
 
 }; // c_OutputRelay
 
-#endif // def SUPPORT_OutputType_Relay
+#endif // def SUPPORT_OutputProtocol_Relay

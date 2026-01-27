@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_TLS3001) && defined (ARDUINO_ARCH_ESP32)
+#if defined(SUPPORT_OutputProtocol_TLS3001) && defined (ARDUINO_ARCH_ESP32)
 
 #include "OutputTLS3001.hpp"
 #include "OutputRmt.hpp"
@@ -43,7 +43,7 @@ class c_OutputTLS3001Rmt : public c_OutputTLS3001
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputTLS3001Rmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
+    c_OutputTLS3001Rmt (OM_PortId_t OutputPortId,
         gpio_num_t outputGpio,
         uart_port_t uart,
         c_OutputMgr::e_OutputType outputType);
@@ -112,4 +112,4 @@ private:
 
 }; // fsm_RMT_state_SendData
 
-#endif // defined(SUPPORT_OutputType_TLS3001) && defined (ARDUINO_ARCH_ESP32)
+#endif // defined(SUPPORT_OutputProtocol_TLS3001) && defined (ARDUINO_ARCH_ESP32)

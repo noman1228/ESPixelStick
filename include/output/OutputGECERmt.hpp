@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_GECE) && defined(ARDUINO_ARCH_ESP32)
+#if defined(SUPPORT_OutputProtocol_GECE) && defined(ARDUINO_ARCH_ESP32)
 
 #include "OutputGECE.hpp"
 #include "OutputRmt.hpp"
@@ -31,10 +31,8 @@ class c_OutputGECERmt : public c_OutputGECE
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputGECERmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                     gpio_num_t outputGpio,
-                     uart_port_t uart,
-                     c_OutputMgr::e_OutputType outputType);
+    c_OutputGECERmt (OM_OutputPortDefinition_t & OutputPortDefinition,
+                     c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputGECERmt ();
 
     // functions to be provided by the derived class
@@ -54,4 +52,4 @@ private:
 
 }; // c_OutputGECERmt
 
-#endif // defined(SUPPORT_OutputType_GECE) && defined(ARDUINO_ARCH_ESP32)
+#endif // defined(SUPPORT_OutputProtocol_GECE) && defined(ARDUINO_ARCH_ESP32)

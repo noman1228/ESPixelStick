@@ -360,11 +360,13 @@ void c_InputDDP::ProcessReceivedQuery ()
             JsonWrite(JsonConfig, F("hardwareType"),  FPP_VARIANT_NAME);
             JsonWrite(JsonConfig, CN_type,            FPP_TYPE_ID);
             JsonWrite(JsonConfig, CN_num_chan,        InputDataBufferSize);
+/*
             uint16_t PixelPortCount;
             uint16_t SerialPortCount;
             OutputMgr.GetPortCounts (PixelPortCount, SerialPortCount);
             JsonWrite(JsonConfig, F("NumPixelPort"),  PixelPortCount);
             JsonWrite(JsonConfig, F("NumSerialPort"), SerialPortCount);
+*/
             break;
         }
 

@@ -19,59 +19,19 @@
 */
 
 #include "ESPixelStick.h"
+#include "output/OutputMgrPortDefs.hpp"
 
 #ifdef ARDUINO_ARCH_ESP32
-#   include <driver/gpio.h>
-#   include <hal/uart_types.h>
+    #include <driver/gpio.h>
+    #include <hal/uart_types.h>
+    #ifdef CONFIG_IDF_TARGET_ESP32
+        #define DEFAULT_SPI_DEVICE      VSPI_HOST
+    #elif  CONFIG_IDF_TARGET_ESP32S2
+        #define DEFAULT_SPI_DEVICE      HSPI_HOST
+    #else
+        #define DEFAULT_SPI_DEVICE      spi_host_device_t::SPI3_HOST
+    #endif
 #endif
-
-#ifdef ARDUINO_ARCH_ESP8266
-typedef enum
-{
-    GPIO_NUM_0 = 0,
-    GPIO_NUM_1,
-    GPIO_NUM_2,
-    GPIO_NUM_3,
-    GPIO_NUM_4,
-    GPIO_NUM_5,
-    GPIO_NUM_6,
-    GPIO_NUM_7,
-    GPIO_NUM_8,
-    GPIO_NUM_9,
-    GPIO_NUM_10,
-    GPIO_NUM_11,
-    GPIO_NUM_12,
-    GPIO_NUM_13,
-    GPIO_NUM_14,
-    GPIO_NUM_15,
-    GPIO_NUM_16,
-    GPIO_NUM_17,
-    GPIO_NUM_18,
-    GPIO_NUM_19,
-    GPIO_NUM_20,
-    GPIO_NUM_21,
-    GPIO_NUM_22,
-    GPIO_NUM_23,
-    GPIO_NUM_24,
-    GPIO_NUM_25,
-    GPIO_NUM_26,
-    GPIO_NUM_27,
-    GPIO_NUM_28,
-    GPIO_NUM_29,
-    GPIO_NUM_30,
-    GPIO_NUM_31,
-    GPIO_NUM_32,
-    GPIO_NUM_33,
-    GPIO_NUM_34,
-} gpio_num_t;
-
-typedef enum
-{
-    UART_NUM_0 = 0,
-    UART_NUM_1,
-    UART_NUM_2
-} uart_port_t;
-#endif // def ARDUINO_ARCH_ESP8266
 
 // Platform specific GPIO definitions
 #if   defined (BOARD_ESP32_CAM)

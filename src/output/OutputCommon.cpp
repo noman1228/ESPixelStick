@@ -25,22 +25,18 @@
 
 //-------------------------------------------------------------------------------
 ///< Start up the driver and put it into a safe mode
-c_OutputCommon::c_OutputCommon (c_OutputMgr::e_OutputChannelIds _OutputChannelId,
-	                            gpio_num_t outputGpio,
-	                            uart_port_t uart,
-                                c_OutputMgr::e_OutputType outputType)
+c_OutputCommon::c_OutputCommon (OM_OutputPortDefinition_t & _OutputPortDefinition,
+                                c_OutputMgr::e_OutputProtocolType outputProtocol)
 {
 	// remember what channel we are
 	HasBeenInitialized       = false;
-	OutputChannelId          = _OutputChannelId;
-	DataPin                  = outputGpio;
-	UartId                   = uart;
-    OutputType               = outputType;
+	OutputPortDefinition     = _OutputPortDefinition;
+    OutputType               = outputProtocol;
     pOutputBuffer            = OutputMgr.GetBufferAddress ();
     FrameStartTimeInMicroSec = 0;
 
 	// logcon (String ("UartId:          '") + UartId + "'");
-    // logcon (String ("OutputChannelId: '") + OutputChannelId + "'");
+    // logcon (String ("OutputPortId: '") + OutputPortId + "'");
     // logcon (String ("OutputType:      '") + OutputType + "'");
 
 } // c_OutputCommon
@@ -59,7 +55,7 @@ void c_OutputCommon::BaseGetStatus (JsonObject & jsonStatus)
 {
     // DEBUG_START;
 
-    JsonWrite(jsonStatus, CN_id,                 OutputChannelId);
+    JsonWrite(jsonStatus, CN_id,                 OutputPortDefinition.gpios.data);
     JsonWrite(jsonStatus, F("framerefreshrate"), int(MicroSecondsInASecond / FrameDurationInMicroSec));
     JsonWrite(jsonStatus, F("FrameCount"),       FrameCount);
 
@@ -82,11 +78,11 @@ void c_OutputCommon::ReportNewFrame ()
 bool c_OutputCommon::SetConfig (JsonObject & jsonConfig)
 {
     // DEBUG_START;
-    uint8_t tempDataPin = uint8_t (DataPin);
+    uint8_t tempDataPin = uint8_t (OutputPortDefinition.gpios.data);
 
     bool response = setFromJSON (tempDataPin, jsonConfig, CN_data_pin);
 
-    DataPin = gpio_num_t (tempDataPin);
+    OutputPortDefinition.gpios.data = gpio_num_t (tempDataPin);
     // DEBUG_V(String(" DataPin: ") + String(DataPin));
 
     // DEBUG_END;
@@ -101,7 +97,7 @@ void c_OutputCommon::GetConfig (JsonObject & jsonConfig)
     // DEBUG_START;
 
     // enums need to be converted to uints for json
-    JsonWrite(jsonConfig, CN_data_pin, uint8_t (DataPin));
+    JsonWrite(jsonConfig, CN_data_pin, uint8_t (OutputPortDefinition.gpios.data));
 
     // DEBUG_V(String(" DataPin: ") + String(DataPin));
 
@@ -148,7 +144,7 @@ bool c_OutputCommon::ValidateGpio (gpio_num_t ConsoleTxGpio, gpio_num_t ConsoleR
 {
     // DEBUG_START;
 
-    bool response = ((ConsoleTxGpio == DataPin) || (ConsoleRxGpio == DataPin));
+    bool response = ((ConsoleTxGpio == OutputPortDefinition.gpios.data) || (ConsoleRxGpio == OutputPortDefinition.gpios.data));
 
     // DEBUG_END;
     return response;

@@ -18,7 +18,7 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_WS2811)
+#if defined(SUPPORT_OutputProtocol_WS2811)
 
 #include "output/OutputWS2811Uart.hpp"
 
@@ -39,11 +39,9 @@ static const c_OutputUart::ConvertIntensityToUartDataStreamEntry_t ConvertIntens
 };
 
 //----------------------------------------------------------------------------
-c_OutputWS2811Uart::c_OutputWS2811Uart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputWS2811 (OutputChannelId, outputGpio, uart, outputType)
+c_OutputWS2811Uart::c_OutputWS2811Uart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                        c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputWS2811 (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -71,9 +69,9 @@ void c_OutputWS2811Uart::Begin ()
     SetIntensityBitTimeInUS(float(WS2811_PIXEL_NS_BIT_TOTAL) / float(NanoSecondsInAMicroSecond));
 
     c_OutputUart::OutputUartConfig_t OutputUartConfig;
-    OutputUartConfig.ChannelId              = OutputChannelId;
-    OutputUartConfig.UartId                 = UartId;
-    OutputUartConfig.DataPin                = DataPin;
+    OutputUartConfig.OutputPortId           = OutputPortDefinition.PortId;
+    OutputUartConfig.UartId                 = uart_port_t(OutputPortDefinition.DeviceId);
+    OutputUartConfig.DataPin                = OutputPortDefinition.gpios.data;
     OutputUartConfig.IntensityDataWidth     = WS2811_PIXEL_BITS_PER_INTENSITY;
     OutputUartConfig.UartDataSize           = c_OutputUart::UartDatauint32_t::OUTPUT_UART_6N1;
     OutputUartConfig.TranslateIntensityData = c_OutputUart::TranslateIntensityData_t::TwoToOne;
@@ -140,7 +138,7 @@ uint32_t c_OutputWS2811Uart::Poll ()
 
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             FrameLen = 0;
             break;
@@ -181,4 +179,4 @@ void c_OutputWS2811Uart::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_WS2811)
+#endif // defined(SUPPORT_OutputProtocol_WS2811)

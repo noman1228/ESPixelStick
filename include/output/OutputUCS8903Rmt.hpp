@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#ifdef SUPPORT_OutputType_UCS8903
+#ifdef SUPPORT_OutputProtocol_UCS8903
 #ifdef ARDUINO_ARCH_ESP32
 
 #include "OutputUCS8903.hpp"
@@ -32,10 +32,8 @@ class c_OutputUCS8903Rmt : public c_OutputUCS8903
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputUCS8903Rmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-        gpio_num_t outputGpio,
-        uart_port_t uart,
-        c_OutputMgr::e_OutputType outputType);
+    c_OutputUCS8903Rmt (OM_OutputPortDefinition_t & OutputPortDefinition,
+                        c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputUCS8903Rmt ();
 
     // functions to be provided by the derived class
@@ -54,4 +52,4 @@ private:
 }; // c_OutputUCS8903Rmt
 
 #endif // def ARDUINO_ARCH_ESP32
-#endif // def SUPPORT_OutputType_UCS8903
+#endif // def SUPPORT_OutputProtocol_UCS8903

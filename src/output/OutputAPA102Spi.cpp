@@ -18,16 +18,14 @@
 */
 
 #include "ESPixelStick.h"
-#if defined (SUPPORT_OutputType_APA102) && defined (SUPPORT_SPI_OUTPUT)
+#if defined (SUPPORT_OutputProtocol_APA102)
 
 #include "output/OutputAPA102Spi.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputAPA102Spi::c_OutputAPA102Spi (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputAPA102 (OutputChannelId, outputGpio, uart, outputType)
+c_OutputAPA102Spi::c_OutputAPA102Spi (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                      c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputAPA102 (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -53,7 +51,7 @@ c_OutputAPA102Spi::~c_OutputAPA102Spi ()
 void c_OutputAPA102Spi::Begin ()
 {
     // DEBUG_START;
-    Spi.Begin (this);
+    Spi.Begin (OutputPortDefinition, this);
 
     SetFramePrependInformation ( (uint8_t*)&FrameStartData, sizeof (FrameStartData));
     SetFrameAppendInformation  ( (uint8_t*)&FrameEndData,   sizeof (FrameEndData));
@@ -112,4 +110,4 @@ uint32_t c_OutputAPA102Spi::Poll ()
 
 } // render
 
-#endif // defined(SUPPORT_OutputType_APA102) && defined(SUPPORT_SPI_OUTPUT)
+#endif // defined(SUPPORT_OutputProtocol_APA102)

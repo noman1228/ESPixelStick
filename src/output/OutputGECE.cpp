@@ -19,16 +19,14 @@
 
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_GECE)
+#if defined(SUPPORT_OutputProtocol_GECE)
 
 #include "output/OutputGECE.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputGECE::c_OutputGECE (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                            gpio_num_t outputGpio,
-                            uart_port_t uart,
-                            c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel(OutputChannelId, outputGpio, uart, outputType)
+c_OutputGECE::c_OutputGECE (OM_OutputPortDefinition_t & OutputPortDefinition,
+                            c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputPixel(OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -159,4 +157,4 @@ uint32_t c_OutputGECE::Poll()
     return 0;
 } // render
 
-#endif // defined(SUPPORT_OutputType_GECE)
+#endif // defined(SUPPORT_OutputProtocol_GECE)

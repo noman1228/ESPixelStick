@@ -18,16 +18,14 @@
 */
 
 #include "ESPixelStick.h"
-#ifdef SUPPORT_OutputType_TM1814
+#ifdef SUPPORT_OutputProtocol_TM1814
 
 #include "output/OutputTM1814.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputTM1814::c_OutputTM1814 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel (OutputChannelId, outputGpio, uart, outputType)
+c_OutputTM1814::c_OutputTM1814 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputPixel (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -113,4 +111,4 @@ bool c_OutputTM1814::SetConfig (ArduinoJson::JsonObject& jsonConfig)
     return response;
 
 } // SetConfig
-#endif // def SUPPORT_OutputType_TM1814
+#endif // def SUPPORT_OutputProtocol_TM1814

@@ -23,7 +23,7 @@
 */
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_GS8208) && defined(ARDUINO_ARCH_ESP32)
+#if defined(SUPPORT_OutputProtocol_GS8208) && defined(ARDUINO_ARCH_ESP32)
 
 #include "OutputGS8208.hpp"
 #include "OutputRmt.hpp"
@@ -32,10 +32,8 @@ class c_OutputGS8208Rmt : public c_OutputGS8208
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputGS8208Rmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-        gpio_num_t outputGpio,
-        uart_port_t uart,
-        c_OutputMgr::e_OutputType outputType);
+    c_OutputGS8208Rmt (OM_OutputPortDefinition_t & OutputPortDefinition,
+                       c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputGS8208Rmt ();
 
     // functions to be provided by the derived class
@@ -55,4 +53,4 @@ private:
 
 }; // c_OutputGS8208Rmt
 
-#endif // defined(SUPPORT_OutputType_GS8208) && defined(ARDUINO_ARCH_ESP32)
+#endif // defined(SUPPORT_OutputProtocol_GS8208) && defined(ARDUINO_ARCH_ESP32)

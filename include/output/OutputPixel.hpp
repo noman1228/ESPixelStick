@@ -105,9 +105,9 @@ private:
     uint32_t IRAM_ATTR FramePrependData();
     uint32_t IRAM_ATTR PixelPrependNulls();
     uint32_t IRAM_ATTR PixelSendPrependIntensity();
-#ifdef SUPPORT_OutputType_GECE
+#ifdef SUPPORT_OutputProtocol_GECE
     uint32_t IRAM_ATTR PixelSendGECEIntensity();
-#endif // def SUPPORT_OutputType_GECE
+#endif // def SUPPORT_OutputProtocol_GECE
     uint32_t IRAM_ATTR PixelSendIntensity();
     uint32_t IRAM_ATTR PixelAppendNulls();
     uint32_t IRAM_ATTR FrameAppendData();
@@ -148,10 +148,8 @@ private:
     uint32_t IRAM_ATTR GetIntensityData();
 
 public:
-    c_OutputPixel (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                   gpio_num_t outputGpio,
-                   uart_port_t uart,
-                   c_OutputMgr::e_OutputType outputType);
+    c_OutputPixel (OM_OutputPortDefinition_t & OutputPortDefinition,
+                   c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputPixel ();
 
     // functions to be provided by the derived class

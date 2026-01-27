@@ -23,7 +23,7 @@ GNU General Public License for more details.
 */
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
 
 #include "OutputSerial.hpp"
 #include "OutputUart.hpp"
@@ -32,10 +32,8 @@ class c_OutputSerialUart : public c_OutputSerial
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputSerialUart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                        gpio_num_t outputGpio,
-                        uart_port_t uart,
-                        c_OutputMgr::e_OutputType outputType);
+    c_OutputSerialUart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                        c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputSerialUart ();
 
     // functions to be provided by the derived class
@@ -54,4 +52,4 @@ private:
 
 }; // c_OutputSerialUart
 
-#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)

@@ -17,7 +17,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_TLS3001) && defined (ARDUINO_ARCH_ESP32)
+#if defined(SUPPORT_OutputProtocol_TLS3001) && defined (ARDUINO_ARCH_ESP32)
 
 #include "output/OutputTLS3001Rmt.hpp"
 
@@ -40,11 +40,11 @@ static const c_OutputRmt::ConvertIntensityToRmtDataStreamEntry_t ConvertIntensit
 }; // ConvertIntensityToRmtDataStream
 
 //----------------------------------------------------------------------------
-c_OutputTLS3001Rmt::c_OutputTLS3001Rmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
+c_OutputTLS3001Rmt::c_OutputTLS3001Rmt (OM_PortId_t OutputPortId,
     gpio_num_t outputGpio,
     uart_port_t uart,
     c_OutputMgr::e_OutputType outputType) :
-    c_OutputTLS3001 (OutputChannelId, outputGpio, uart, outputType)
+    c_OutputTLS3001 (OutputPortId, outputGpio, uart, outputType)
 {
     // DEBUG_START;
 
@@ -77,10 +77,10 @@ void c_OutputTLS3001Rmt::Begin ()
     Rmt.SetNumStartBits (15);
     Rmt.SetNumStopBits  (0);
     Rmt.SetNumIdleBits  (0);
-    Rmt.Begin (rmt_channel_t (OutputChannelId), gpio_num_t (DataPin), this, rmt_idle_level_t::RMT_IDLE_LEVEL_LOW);
+    Rmt.Begin (rmt_channel_t (OutputPortId), gpio_num_t (DataPin), this, rmt_idle_level_t::RMT_IDLE_LEVEL_LOW);
 
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
-    OutputRmtConfig.RmtChannelId     = rmt_channel_t(OutputChannelId);
+    OutputRmtConfig.RmtChannelId     = rmt_channel_t(OutputPortId);
     OutputRmtConfig.DataPin          = gpio_num_t(DataPin);
     OutputRmtConfig.idle_level       = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
     OutputRmtConfig.pPixelDataSource = this;
@@ -229,4 +229,4 @@ void fsm_RMT_state_SendData::Poll (c_OutputTLS3001Rmt* Parent)
 
 } // fsm_RMT_state_SendData
 
-#endif // defined(SUPPORT_OutputType_TLS3001) && defined (ARDUINO_ARCH_ESP32)
+#endif // defined(SUPPORT_OutputProtocol_TLS3001) && defined (ARDUINO_ARCH_ESP32)

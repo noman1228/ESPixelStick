@@ -19,14 +19,12 @@
 
 #include "ESPixelStick.h"
 #include "output/OutputUCS8903.hpp"
-#ifdef SUPPORT_OutputType_UCS8903
+#ifdef SUPPORT_OutputProtocol_UCS8903
 
 //----------------------------------------------------------------------------
-c_OutputUCS8903::c_OutputUCS8903 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel (OutputChannelId, outputGpio, uart, outputType)
+c_OutputUCS8903::c_OutputUCS8903 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                  c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputPixel (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -104,4 +102,4 @@ bool c_OutputUCS8903::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
 } // SetConfig
 
-#endif // def SUPPORT_OutputType_UCS8903
+#endif // def SUPPORT_OutputProtocol_UCS8903

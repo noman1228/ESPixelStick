@@ -18,16 +18,14 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_APA102)
+#if defined(SUPPORT_OutputProtocol_APA102)
 
 #include "output/OutputAPA102.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputAPA102::c_OutputAPA102 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel (OutputChannelId, outputGpio, uart, outputType)
+c_OutputAPA102::c_OutputAPA102 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputPixel (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -91,4 +89,4 @@ bool c_OutputAPA102::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
 } // SetConfig
 
-#endif // defined(SUPPORT_OutputType_APA102)
+#endif // defined(SUPPORT_OutputProtocol_APA102)

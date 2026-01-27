@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if defined (SUPPORT_OutputType_GRINCH) && defined (SUPPORT_SPI_OUTPUT)
+#if defined (SUPPORT_OutputProtocol_GRINCH)
 
 #include "OutputGrinch.hpp"
 #include "OutputSpi.hpp"
@@ -31,10 +31,8 @@ class c_OutputGrinchSpi : public c_OutputGrinch
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputGrinchSpi (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputGrinchSpi (OM_OutputPortDefinition_t & OutputPortDefinition,
+                       c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputGrinchSpi ();
 
     // functions to be provided by the derived class
@@ -52,4 +50,4 @@ private:
 
 }; // c_OutputGrinchSpi
 
-#endif // defined (SUPPORT_OutputType_GRINCH) && defined (SUPPORT_SPI_OUTPUT)
+#endif // defined (SUPPORT_OutputProtocol_GRINCH)
