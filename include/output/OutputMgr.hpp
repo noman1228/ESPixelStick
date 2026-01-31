@@ -3,7 +3,7 @@
 * OutputMgr.hpp - Output Management class
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2021, 2025 Shelby Merrick
+* Copyright (c) 2021, 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -142,9 +142,8 @@ public:
         #endif // def SUPPORT_OutputProtocol_FireGod
 
         // Add new types here
-        OutputType_End, // must be last
-        OutputType_Start = OutputProtocol_Disabled,
     };
+    uint32_t OutputType_End = uint32_t(-1);
 
     // must be 16 byte aligned. Determined by upshifting the max size of all drivers
     #define OutputDriverMemorySize 1200
