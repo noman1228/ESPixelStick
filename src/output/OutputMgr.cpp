@@ -73,76 +73,80 @@
 //-----------------------------------------------------------------------------
 // Local Data definitions
 //-----------------------------------------------------------------------------
-struct OutputTypeXlateMap_t
+struct SupportedOutputProtocol_t
 {
     c_OutputMgr::e_OutputProtocolType ProtocolId;
     String ProtocolName;
     OM_PortType_t RequiredPortType;
 };
 
-static const OutputTypeXlateMap_t OutputTypeXlateMap[c_OutputMgr::e_OutputProtocolType::OutputType_End] =
+static const SupportedOutputProtocol_t SupportedOutputProtocolList[] =
 {
-#ifdef SUPPORT_OutputProtocol_APA102
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_APA102, "APA102", OM_PortType_t::OM_SPI},
-#endif // def SUPPORT_OutputProtocol_APA102
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Disabled, "Disabled", OM_PortType_t::OM_ANY},
 
-#ifdef SUPPORT_OutputProtocol_DMX
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX, "DMX", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_DMX
+    #ifdef SUPPORT_OutputProtocol_WS2811
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_WS2811, "WS2811", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_WS2811
 
-#ifdef SUPPORT_OutputProtocol_GECE
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_GECE, "GECE", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_GECE
+    #ifdef SUPPORT_OutputProtocol_GECE
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_GECE, "GECE", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_GECE
 
-#ifdef SUPPORT_OutputProtocol_GRINCH
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_GRINCH, "Grinch", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_GRINCH
+    #ifdef SUPPORT_OutputProtocol_DMX
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX, "DMX", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_DMX
 
-#ifdef SUPPORT_OutputProtocol_GS8208
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_GS8208, "GS8208", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_GS8208
+    #ifdef SUPPORT_OutputProtocol_Renard
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Renard, "Renard", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_Renard
 
-#ifdef SUPPORT_OutputProtocol_Renard
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Renard, "Renard", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_Renard
+    #ifdef SUPPORT_OutputProtocol_Serial
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Serial, "Serial", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_Serial
 
-#ifdef SUPPORT_OutputProtocol_Serial
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Serial, "Serial", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_Serial
+    #ifdef SUPPORT_OutputProtocol_Relay
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Relay, "Relay", OM_PortType_t::OM_RELAY},
+    #endif // def SUPPORT_OutputProtocol_Relay
 
-#ifdef SUPPORT_OutputProtocol_FireGod
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod, "FireGod", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_FireGod
+    #ifdef SUPPORT_OutputProtocol_Servo_PCA9685
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Servo_PCA9685, "Servo_PCA9685", OM_PortType_t::OM_I2C},
+    #endif // def SUPPORT_OutputProtocol_Servo_PCA9685
 
-#ifdef SUPPORT_OutputProtocol_TM1814
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_TM1814, "TM1814", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_TM1814
+    #ifdef SUPPORT_OutputProtocol_UCS1903
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_UCS1903, "UCS1903", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_UCS1903
 
-#ifdef SUPPORT_OutputProtocol_UCS1903
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_UCS1903, "UCS1903", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_UCS1903
+    #ifdef SUPPORT_OutputProtocol_TM1814
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_TM1814, "TM1814", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_TM1814
 
-#ifdef SUPPORT_OutputProtocol_UCS8903
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_UCS8903, "UCS8903", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_UCS8903
+    #ifdef SUPPORT_OutputProtocol_WS2801
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_WS2801, "WS2801", OM_PortType_t::OM_SPI},
+    #endif // def SUPPORT_OutputProtocol_WS2801
 
-#ifdef SUPPORT_OutputProtocol_WS2801
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_WS2801, "WS2801", OM_PortType_t::OM_SPI},
-#endif // def SUPPORT_OutputProtocol_WS2801
+    #ifdef SUPPORT_OutputProtocol_APA102
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_APA102, "APA102", OM_PortType_t::OM_SPI},
+    #endif // def SUPPORT_OutputProtocol_APA102
 
-#ifdef SUPPORT_OutputProtocol_WS2811
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_WS2811, "WS2811", OM_PortType_t::OM_SERIAL},
-#endif // def SUPPORT_OutputProtocol_WS2811
+    #ifdef SUPPORT_OutputProtocol_GS8208
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_GS8208, "GS8208", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_GS8208
 
-#ifdef SUPPORT_OutputProtocol_Relay
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Relay, "Relay", OM_PortType_t::OM_RELAY},
-#endif // def SUPPORT_OutputProtocol_Relay
+    #ifdef SUPPORT_OutputProtocol_UCS8903
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_UCS8903, "UCS8903", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_UCS8903
 
-#ifdef SUPPORT_OutputProtocol_Servo_PCA9685
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Servo_PCA9685, "Servo_PCA9685", OM_PortType_t::OM_I2C},
-#endif // def SUPPORT_OutputProtocol_Servo_PCA9685
+    #ifdef SUPPORT_OutputProtocol_TLS3001
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_TLS3001, "TLS3001", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_TLS3001
 
-        {c_OutputMgr::e_OutputProtocolType::OutputProtocol_Disabled, "Disabled", OM_PortType_t::OM_ANY},
+    #ifdef SUPPORT_OutputProtocol_GRINCH
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_GRINCH, "Grinch", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_GRINCH
+
+    #ifdef SUPPORT_OutputProtocol_FireGod
+    {c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod, "FireGod", OM_PortType_t::OM_SERIAL},
+    #endif // def SUPPORT_OutputProtocol_FireGod
 };
 
 //-----------------------------------------------------------------------------
@@ -156,6 +160,9 @@ c_OutputMgr::c_OutputMgr ()
     // clear the input data buffer
     pOutputBuffer = (uint8_t*)malloc(GetBufferSize() + 1);
     memset (pOutputBuffer, 0, GetBufferSize());
+
+    uint32_t SizeOfProtocolEntry = uint32_t(&SupportedOutputProtocolList[1]) - uint32_t(&SupportedOutputProtocolList[0]);
+    OutputType_End = uint32_t(sizeof(SupportedOutputProtocolList)) / SizeOfProtocolEntry;
 
     // Clear the driver memory
     for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
@@ -225,14 +232,32 @@ void c_OutputMgr::Begin ()
             // DEBUG_V(String("init index: ") + String(index) + " Done");
         }
 
+        // DEBUG_V("Dump SupportedOutputProtocolList");
+        // DEBUG_V(String("OutputType_End: ") + String(OutputType_End));
+        // for (auto x : SupportedOutputProtocolList)
+        {
+            // DEBUG_V(String("------------"));
+            // DEBUG_V(String("      Name: ") + String(x.ProtocolName));
+            // DEBUG_V(String("ProtocolId: ") + String(x.ProtocolId));
+            // DEBUG_V(String("  PortType: ") + String(x.RequiredPortType));
+        }
+
+        // DEBUG_V("Dump OM_OutputPortDefinitions");
+        // for(auto & x : OM_OutputPortDefinitions)
+        {
+            // DEBUG_V(String("------------"));
+            // DEBUG_V(String("    PortId: ") + String(x.PortId));
+            // DEBUG_V(String("  PortType: ") + String(x.PortType));
+            // DEBUG_V(String("  DeviceId: ") + String(x.DeviceId));
+        }
+
         // DEBUG_V("load up the configuration from the saved file. This also starts the drivers");
         LoadConfig();
 
         // CreateNewConfig();
 
         // Preset the output memory
-        memset(pOutputBuffer, 0x00, GetBufferSize());
-
+        ClearBuffer();
     } while (false);
 
     // DEBUG_END;
@@ -345,18 +370,35 @@ void c_OutputMgr::CreateNewConfig ()
 
     for(auto & CurrentOutputPortDefinition : OM_OutputPortDefinitions)
     {
+        // DEBUG_V(String("----------"));
+        // DEBUG_V(String("  PortId: ") + String(CurrentOutputPortDefinition.PortId));
+        // DEBUG_V(String("PortType: ") + String(CurrentOutputPortDefinition.PortType));
+        // DEBUG_V(String("DeviceId: ") + String(CurrentOutputPortDefinition.DeviceId));
+
         DriverInfo_t & CurrentOutput = OutputChannelDrivers[CurrentOutputPortDefinition.PortId];
         // set the default GPIOs etc
         CurrentOutput.PortDefinition = CurrentOutputPortDefinition;
 
         // look at each possible output protocol
-        for(auto & CurrentOutputProtocol : OutputTypeXlateMap)
+        for(auto & CurrentOutputProtocol : SupportedOutputProtocolList)
         {
+            // DEBUG_V (String ("------------------------ "));
             // DEBUG_V (String ("instantiate output type: ") + String (CurrentOutputProtocol.ProtocolName));
             // DEBUG_V (String("              ProtocolId: ") + String(CurrentOutputProtocol.ProtocolId));
             // DEBUG_V (String("        RequiredPortType: ") + String(CurrentOutputProtocol.RequiredPortType));
             // DEBUG_V (String("                DriverId: ") + String(CurrentOutput.DriverId));
-            InstantiateNewOutputChannel(CurrentOutput, CurrentOutputProtocol.ProtocolId, false);
+
+            if((CurrentOutputProtocol.RequiredPortType == CurrentOutputPortDefinition.PortType) ||
+               (CurrentOutputProtocol.RequiredPortType == OM_PortType_t::OM_ANY))
+            {
+                // DEBUG_V("Port supports this protocol");
+                InstantiateNewOutputChannel(CurrentOutput, CurrentOutputProtocol.ProtocolId, false);
+            }
+            else
+            {
+                // DEBUG_V("Port does NOT support this protocol");
+                continue;
+            }
 
             // DEBUG_V ("collect the config data for this output type");
             CreateJsonConfig (JsonConfig);
@@ -529,7 +571,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
 
         if(!SetPortDefnitionDefaults(CurrentOutput, NewOutputChannelType))
         {
-            logcon(String(CN_stars) + F("No valid port definition for port ") + String(CurrentOutput.DriverId + 1) + F(" of protocol type ") + String(NewOutputChannelType))
+            logcon(String(CN_stars) + F(" No valid port definition for port ") + String(CurrentOutput.DriverId + 1) + F(" of protocol type ") + String(NewOutputChannelType))
             AllocatePort(c_OutputDisabled, CurrentOutput, OutputProtocol_Disabled);
             break;
         }
@@ -538,7 +580,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
         {
             case e_OutputProtocolType::OutputProtocol_Disabled:
             {
-                // logcon (CN_stars + String (CN_Disabled) + MN_06 + CurrentOutput.DriverId + "'. " + CN_stars);
+                // DEBUG_V (String (F (" Starting Disabled for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                 AllocatePort(c_OutputDisabled, CurrentOutput, OutputProtocol_Disabled);
                 // DEBUG_V ();
                 break;
@@ -549,7 +591,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_SERIAL)
                 {
-                    // logcon (CN_stars + String (CN_DMX) + MN_06 + CurrentOutput.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting DMX for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputSerial), CurrentOutput, e_OutputProtocolType::OutputProtocol_DMX);
                     // DEBUG_V ();
                     break;
@@ -570,7 +612,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_SERIAL)
                 {
-                    // logcon (CN_stars + String (CN_GECE) + MN_06 + CurrentOutput.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting GECE for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputGECE), CurrentOutput, OutputProtocol_GECE);
                     // DEBUG_V ();
                     break;
@@ -593,7 +635,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_SERIAL)
                 {
-                    // logcon (CN_stars + String (F (" Starting Generic Serial for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting Generic Serial for port '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputSerial), CurrentOutput, OutputProtocol_Serial);
                     // DEBUG_V ();
                     break;
@@ -602,7 +644,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
 
                 if (!BuildingNewConfig)
                 {
-                    logcon(CN_stars + String(F(" Cannot Start Generic Serial for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    logcon(CN_stars + String(F(" Cannot Start Generic Serial for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                 }
                 AllocatePort(c_OutputDisabled, CurrentOutput, OutputProtocol_Disabled);
                 // DEBUG_V ();
@@ -616,7 +658,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_SERIAL)
                 {
-                    // logcon (CN_stars + String (F (" Starting Renard for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting Renard for port '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputSerial), CurrentOutput, OutputProtocol_Renard);
                     // DEBUG_V ();
                     break;
@@ -625,7 +667,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
 
                 if (!BuildingNewConfig)
                 {
-                    logcon(CN_stars + String(F(" Cannot Start Renard for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    logcon(CN_stars + String(F(" Cannot Start Renard for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                 }
                 AllocatePort(c_OutputDisabled, CurrentOutput, OutputProtocol_Disabled);
                 // DEBUG_V ();
@@ -639,7 +681,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_SERIAL)
                 {
-                    // logcon (CN_stars + String (F (" Starting FireGod Serial for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting FireGod for port '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputSerial), CurrentOutput, OutputProtocol_FireGod);
                     // DEBUG_V ();
                     break;
@@ -648,7 +690,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
 
                 if (!BuildingNewConfig)
                 {
-                    logcon(CN_stars + String(F(" Cannot Start FireGod Serial for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    logcon(CN_stars + String(F(" Cannot Start FireGod Serial for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                 }
                 AllocatePort(c_OutputDisabled, CurrentOutput, OutputProtocol_Disabled);
                 // DEBUG_V ();
@@ -662,7 +704,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_RELAY)
                 {
-                    logcon (CN_stars + String (F (" Starting RELAY for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting RELAY for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NO_NAME(c_OutputRelay), CurrentOutput, OutputProtocol_Relay);
                     // DEBUG_V ();
                     break;
@@ -671,7 +713,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
 
                 if (!BuildingNewConfig)
                 {
-                    logcon(CN_stars + String(F(" Cannot Start RELAY for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    logcon(CN_stars + String(F(" Cannot Start RELAY for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                 }
                 AllocatePort(c_OutputDisabled, CurrentOutput, OutputProtocol_Disabled);
                 // DEBUG_V ();
@@ -685,7 +727,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_I2C)
                 {
-                    // logcon (CN_stars + String (F (" Starting Servo PCA9685 for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting Servo PCA9685 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NO_NAME(c_OutputServoPCA9685), CurrentOutput, OutputProtocol_Servo_PCA9685);
                     // DEBUG_V ();
                     break;
@@ -694,7 +736,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
 
                 if (!BuildingNewConfig)
                 {
-                    logcon(CN_stars + String(F(" Cannot Start Servo PCA9685 for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    logcon(CN_stars + String(F(" Cannot Start Servo PCA9685 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                 }
                 AllocatePort(c_OutputDisabled, CurrentOutput, OutputProtocol_Disabled);
                 // DEBUG_V ();
@@ -709,7 +751,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_SERIAL)
                 {
                     // DEBUG_V ("UART");
-                    // logcon (CN_stars + String (F (" Starting WS2811 UART for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting WS2811 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputWS2811), CurrentOutput, OutputProtocol_WS2811);
                     // DEBUG_V ();
                     break;
@@ -717,7 +759,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
 
                 if (!BuildingNewConfig)
                 {
-                    logcon(CN_stars + String(F(" Cannot Start WS2811 for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    logcon(CN_stars + String(F(" Cannot Start WS2811 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                 }
                 AllocatePort(c_OutputDisabled, CurrentOutput, OutputProtocol_Disabled);
                 // DEBUG_V ();
@@ -732,7 +774,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
                 // DEBUG_V ();
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_SERIAL)
                 {
-                    // logcon (CN_stars + String (F (" Starting UCS1903 UART for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String (F (" Starting UCS1903 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputUCS1903), CurrentOutput, OutputProtocol_UCS1903);
                     // DEBUG_V ();
                     break;
@@ -754,7 +796,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
                 // DEBUG_V ();
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_SERIAL)
                 {
-                    // logcon (CN_stars + String ((" Starting TM1814 UART for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String ((" Starting TM1814 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputTM1814), CurrentOutput, OutputProtocol_TM1814);
                     // DEBUG_V ();
                     break;
@@ -775,7 +817,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_SPI)
                 {
-                    // logcon (CN_stars + String ((" Starting GRINCH SPI for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String ((" Starting GRINCH for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(c_OutputGrinchSpi, CurrentOutput, OutputProtocol_GRINCH);
                     // DEBUG_V ();
                     break;
@@ -797,7 +839,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_SPI)
                 {
-                    // logcon (CN_stars + String ((" Starting WS2811 RMT for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String ((" Starting WS2801 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(c_OutputWS2801Spi, CurrentOutput, OutputProtocol_WS2801);
                     // DEBUG_V ();
                     break;
@@ -819,7 +861,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
             {
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_SPI)
                 {
-                    // logcon (CN_stars + String ((" Starting WS2811 RMT for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String ((" Starting APA102 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(c_OutputAPA102Spi, CurrentOutput, OutputProtocol_APA102);
                     // DEBUG_V ();
                     break;
@@ -842,7 +884,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
                 // DEBUG_V ();
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_SERIAL)
                 {
-                    // logcon (CN_stars + String ((" Starting GS8208 UART for channel '")) + CurrentOutputChannel.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String ((" Starting GS8208 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputGS8208), CurrentOutput, OutputProtocol_GS8208);
                     // DEBUG_V ();
                     break;
@@ -864,7 +906,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
                 // DEBUG_V ();
                 if (CurrentOutput.PortDefinition.PortType == OM_PortType_t::OM_SERIAL)
                 {
-                    // DEBUG_V (CN_stars + String((" Starting UCS8903 UART for channel '")) + CurrentOutput.DriverId + "'. " + CN_stars);
+                    // DEBUG_V (String((" Starting UCS8903 for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                     AllocatePort(CLASS_TYPE_NAME(c_OutputUCS8903), CurrentOutput, OutputProtocol_UCS8903);
                     // DEBUG_V ();
                     break;
@@ -882,6 +924,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
 
             default:
             {
+                // DEBUG_V (String((" Starting Disabled as default output for port '")) + CurrentOutput.DriverId + "'. " + CN_stars);
                 if (!IsBooting)
                 {
                     logcon(CN_stars + String(MN_09) + String(NewOutputChannelType) + MN_10 + CurrentOutput.DriverId + MN_11 + CN_stars);
@@ -930,7 +973,7 @@ bool c_OutputMgr::SetPortDefnitionDefaults(DriverInfo_t & CurrentOutput, e_Outpu
         OM_PortType_t TargetPortType = OM_PortType_t(-1);
 
         // DEBUG_V("search the Protocol definitions to find the needed 'port capabilities'");
-        for(auto & CurrentOutputTypeXlateMapEntry : OutputTypeXlateMap)
+        for(auto & CurrentOutputTypeXlateMapEntry : SupportedOutputProtocolList)
         {
             // DEBUG_V(String(" XlateProtocolType: ") + CurrentOutputTypeXlateMapEntry.ProtocolName);
             // DEBUG_V(String(" XlateProtocolType: ") + String(CurrentOutputTypeXlateMapEntry.ProtocolId));
@@ -1103,7 +1146,7 @@ bool c_OutputMgr::FindJsonChannelConfig (JsonDocument& jsonConfig,
         // PrettyPrint(ChanConfig, "ProcessJson Channel Config");
 
         // do we need to go deeper into the config?
-        if(e_OutputProtocolType::OutputType_End == Type)
+        if(OutputType_End == Type)
         {
             // DEBUG_V("only looking for the overall channel config");
             Response = true;
@@ -1156,33 +1199,33 @@ bool c_OutputMgr::ProcessJsonConfig (JsonDocument& jsonConfig)
         for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
         {
             JsonObject OutputChannelConfig;
-            if(!FindJsonChannelConfig (jsonConfig, CurrentOutput.DriverId, e_OutputProtocolType::OutputType_End, OutputChannelConfig))
+            if(!FindJsonChannelConfig (jsonConfig, CurrentOutput.DriverId, e_OutputProtocolType(OutputType_End), OutputChannelConfig))
             {
-                // DEBUG_V(String("cant find config for channel: ") + String(CurrentOutput.DriverId));
+                // DEBUG_V(String("cant find config for port: ") + String(CurrentOutput.DriverId));
                 continue;
             }
             // DEBUG_V ();
 
-            // PrettyPrint(OutputChannelConfig, "ProcessJson Channel Config");
+            // PrettyPrint(OutputChannelConfig, "ProcessJson port Config");
 
             // set a default value for channel type
-            uint32_t ChannelType = uint32_t (OutputType_End);
-            setFromJSON (ChannelType, OutputChannelConfig, CN_type);
+            uint32_t OutputPortType = OutputType_End;
+            setFromJSON (OutputPortType, OutputChannelConfig, CN_type);
             // DEBUG_V ();
 
             // is it a valid / supported channel type
-            if (ChannelType >= uint32_t (OutputType_End))
+            if (OutputPortType >= OutputType_End)
             {
                 // DEBUG_V (String("OutputType_End: ") + String(OutputType_End));
                 // if not, flag an error and move on to the next channel
-                logcon(String(MN_19) + ChannelType + MN_20 + CurrentOutput.DriverId + MN_03);
+                logcon(String(MN_19) + OutputPortType + MN_20 + CurrentOutput.DriverId + MN_03);
                 InstantiateNewOutputChannel(CurrentOutput, e_OutputProtocolType::OutputProtocol_Disabled);
                 continue;
             }
             // DEBUG_V ();
 
             // do we have a configuration for the channel type?
-            JsonObject OutputChannelDriverConfig = OutputChannelConfig[String (ChannelType)];
+            JsonObject OutputChannelDriverConfig = OutputChannelConfig[String (OutputPortType)];
             if (!OutputChannelDriverConfig)
             {
                 // if not, flag an error and stop processing
@@ -1195,7 +1238,7 @@ bool c_OutputMgr::ProcessJsonConfig (JsonDocument& jsonConfig)
             // DEBUG_V ();
 
             // make sure the proper output type is running
-            InstantiateNewOutputChannel(CurrentOutput, e_OutputProtocolType(ChannelType));
+            InstantiateNewOutputChannel(CurrentOutput, e_OutputProtocolType(OutputPortType));
 
             // DEBUG_V ();
             // PrettyPrint(OutputChannelDriverConfig, "ProcessJson Channel Driver Config");
