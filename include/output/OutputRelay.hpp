@@ -2,7 +2,7 @@
 /******************************************************************
 *
 *       Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel (And Serial!) driver
-*       Orginal ESPixelStickproject by 2015 Shelby Merrick
+*       Orginal ESPixelStickproject by copyright 2015 - 2026 Shelby Merrick
 *
 *       Brought to you by:
 *              Bill Porter
@@ -74,7 +74,8 @@ public:
     void        RelayUpdate  (uint8_t RelayId, String & NewValue, String & Response);
 
 private:
-#   define OM_RELAY_CHANNEL_LIMIT           8
+// #   define OM_RELAY_CHANNEL_LIMIT           8
+#   define OM_RELAY_CHANNEL_LIMIT           1
 #   define OM_RELAY_UPDATE_INTERVAL_NAME    CN_updateinterval
 #   define OM_RELAY_CHANNEL_ENABLED_NAME    CN_en
 #   define OM_RELAY_CHANNEL_INVERT_NAME     CN_inv

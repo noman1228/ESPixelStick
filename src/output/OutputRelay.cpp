@@ -1,7 +1,7 @@
 /******************************************************************
 *
 *       Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel (And Serial!) driver
-*       Orginal ESPixelStickproject by 2015 Shelby Merrick
+*       Orginal ESPixelStickproject by copyright 2015 - 2026 Shelby Merrick
 *
 *       Brought to you by:
 *              Bill Porter
@@ -52,13 +52,14 @@ GNU General Public License for more details.
 static const c_OutputRelay::RelayChannel_t RelayChannelDefaultSettings[] =
 {
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 0},
-    {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 1},
+/*    {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 1},
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 2},
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 3},
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 4},
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 5},
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 6},
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 7},
+*/
 };
 
 //----------------------------------------------------------------------------
@@ -67,7 +68,9 @@ c_OutputRelay::c_OutputRelay (OM_OutputPortDefinition_t & OutputPortDefinition,
     c_OutputCommon(OutputPortDefinition, outputType)
 {
     // DEBUG_START;
+
     memcpy((char*)OutputList, (char*)RelayChannelDefaultSettings, sizeof(OutputList));
+    OutputList[0].GpioId = OutputPortDefinition.gpios.data;
 
     // DEBUG_END;
 } // c_OutputRelay
