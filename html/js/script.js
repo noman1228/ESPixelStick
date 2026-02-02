@@ -786,7 +786,7 @@ function RequestConfigFile(FileName)
 {
     // console.debug("RequestConfigFile FileName: " + FileName);
     var url = "conf/" + FileName;
-    console.info("RequestConfigFile: 'GET' URL: '" + url + "'");
+    // console.info("RequestConfigFile: 'GET' URL: '" + url + "'");
 
     $.ajaxQueue(
     {
@@ -1211,7 +1211,7 @@ function MarqueeGroupAddRow(CurrentConfig) {
 
         let CurrentGroupColor = "#" + ((CurrentConfig.color.r * 256 * 256) + (CurrentConfig.color.g * 256) + CurrentConfig.color.b).toString(16);
 
-        while (-1 !== CurrentRowId.indexOf("-")) 
+        while (-1 !== CurrentRowId.indexOf("-"))
         {
             CurrentRowId = CurrentRowId.replace("-", "_");
         }
@@ -1225,18 +1225,18 @@ function MarqueeGroupAddRow(CurrentConfig) {
         let MarqueeGroupColorPattern        = '<td><input  type="color"  class="form-control"          id="MarqueeGroupColor_'        + CurrentRowId + '" value=#999999></input></td>';
         let MarqueeGroupDeletePattern       = '<td><button type="Button" class="btn btn-primary"       id="MarqueeGroupDelete_'       + CurrentRowId + '" RowId="' + CurrentRowId + '">Delete</button></td>';
 
-//      var rowPattern = '<tr>' + StartPattern + EndPattern + StartValuePattern + EndValuePattern + OutputPattern + '</tr>';
+        // var rowPattern = '<tr>' + StartPattern + EndPattern + StartValuePattern + EndValuePattern + OutputPattern + '</tr>';
         let rowPattern = '<tr id="MarqueeGroupRow_' + (CurrentRowId) + '" RowId="' + CurrentRowId + '">' + 
-                          MarqueeGroupIdPattern + 
-                          MarqueeGroupIntensityPattern + 
-                          MarqueeGroupIntensityEndPattern + 
-                          MarqueeGroupCountPattern + 
-                          MarqueeGroupColorPattern + 
-                          MarqueeGroupDeletePattern + 
+                          MarqueeGroupIdPattern +
+                          MarqueeGroupIntensityPattern +
+                          MarqueeGroupIntensityEndPattern +
+                          MarqueeGroupCountPattern +
+                          MarqueeGroupColorPattern +
+                          MarqueeGroupDeletePattern +
                           '</tr> ';
         $('#MarqueeGroupTable tbody tr:last').after(rowPattern);
         $('#MarqueeGroupDelete_' + CurrentRowId).on("click", function () { MarqueeGroupDeleteRow($(this)); });
-        
+
         $('#MarqueeGroupIntensity_' + (CurrentRowId)).val(CurrentConfig.brightness);
         $('#MarqueeGroupIntensityEnd_' + (CurrentRowId)).val(CurrentConfig.brightnessEnd);
         $('#MarqueeGroupCount_' + (CurrentRowId)).val(CurrentConfig.pixel_count);
@@ -1279,29 +1279,29 @@ function RenumberMarqueeGroupTable() {
 
 } // RenumberMarqueeGroupTable
 
-function ProcessModeConfigurationDataRelay(RelayConfig) {
-    // console.log("relaychannelconfigurationtable.rows.length = " + $('#relaychannelconfigurationtable tr').length);
-
+function ProcessModeConfigurationDataRelay(modeControlName, RelayConfig) {
+    console.debug("modeControlName: " + modeControlName);
+    console.log("relaychannelconfigurationtable.rows.length = " + $(modeControlName + ' #relaychannelconfigurationtable tr').length);
     let ChannelConfigs = RelayConfig.channels;
 
     let HasPwmFrequency = false;
     if ({}.hasOwnProperty.call(ChannelConfigs[0], "Frequency")) {
         HasPwmFrequency = true;
-        $("#Frequency_hr").removeClass("hidden");
+        $(modeControlName + " #Frequency_hr").removeClass("hidden");
     }
     else {
-        $("#Frequency_hr").addClass("hidden");
+        $(modeControlName + "#Frequency_hr").addClass("hidden");
     }
 
     // clear the existing entries
-    $('#relaychannelconfigurationtable tbody').empty();
+    $(modeControlName + ' #relaychannelconfigurationtable tbody').empty();
 
     // add as many rows as we need
     for (let CurrentRowId = 0; CurrentRowId < ChannelConfigs.length; CurrentRowId++) {
         // console.log("CurrentRowId = " + CurrentRowId);
 
-        let ChanIdPattern = '<td id="chanId_' + (CurrentRowId) + '">a</td>';
-        let EnabledPattern = '<td><input type="checkbox" id="Enabled_' + (CurrentRowId) + '"></td>';
+        // let ChanIdPattern = '<td id="chanId_' + (CurrentRowId) + '">a</td>';
+        // let EnabledPattern = '<td><input type="checkbox" id="Enabled_' + (CurrentRowId) + '"></td>';
         let EnabledHttpPattern = '<td><input type="checkbox" id="EnabledHttp_' + (CurrentRowId) + '"></td>';
         let InvertedPattern = '<td><input type="checkbox" id="Inverted_' + (CurrentRowId) + '"></td>';
         let PwmPattern = '<td><input type="checkbox" id="Pwm_' + (CurrentRowId) + '"></td>';
@@ -1312,18 +1312,18 @@ function ProcessModeConfigurationDataRelay(RelayConfig) {
             PwmFreqPattern = '<td><input type="number"   id="Frequency_' + (CurrentRowId) + '"step="1" min="100" max="19000" value="19000" class="form-control is-valid"></td>';
         }
 
-        let rowPattern = '<tr>' + ChanIdPattern + EnabledPattern + EnabledHttpPattern + InvertedPattern + PwmPattern + gpioPattern + threshholdPattern + PwmFreqPattern + '</tr>';
-        $('#relaychannelconfigurationtable tr:last').after(rowPattern);
+        let rowPattern = '<tr>' /*+ ChanIdPattern + EnabledPattern*/ + EnabledHttpPattern + InvertedPattern + PwmPattern + gpioPattern + threshholdPattern + PwmFreqPattern + '</tr>';
+        $(modeControlName + ' #relaychannelconfigurationtable tr:last').after(rowPattern);
 
-        $('#chanId_'      + CurrentRowId).attr('style', $('#chanId_hr').attr('style'));
-        $('#Enabled_'     + CurrentRowId).attr('style', $('#Enabled_hr').attr('style'));
-        $('#EnabledHttp_' + CurrentRowId).attr('style', $('#EnabledHttp_hr').attr('style'));
-        $('#Inverted_'    + CurrentRowId).attr('style', $('#Inverted_hr').attr('style'));
-        $('#Pwm_'         + CurrentRowId).attr('style', $('#Pwm_hr').attr('style'));
-        $('#gpioId_'      + CurrentRowId).attr('style', $('#gpioId_hr').attr('style'));
-        $('#threshhold_'  + CurrentRowId).attr('style', $('#threshhold_hr').attr('style'));
+        // $('#chanId_'      + CurrentRowId).attr('style', $('#chanId_hr').attr('style'));
+        // $('#Enabled_'     + CurrentRowId).attr('style', $('#Enabled_hr').attr('style'));
+        $(modeControlName + ' #EnabledHttp_' + CurrentRowId).attr('style', $(modeControlName + ' #EnabledHttp_hr').attr('style'));
+        $(modeControlName + ' #Inverted_'    + CurrentRowId).attr('style', $(modeControlName + ' #Inverted_hr').attr('style'));
+        $(modeControlName + ' #Pwm_'         + CurrentRowId).attr('style', $(modeControlName + ' #Pwm_hr').attr('style'));
+        $(modeControlName + ' #gpioId_'      + CurrentRowId).attr('style', $(modeControlName + ' #gpioId_hr').attr('style'));
+        $(modeControlName + ' #threshhold_'  + CurrentRowId).attr('style', $(modeControlName + ' #threshhold_hr').attr('style'));
         if (true === HasPwmFrequency) {
-            $('#Frequency_' + CurrentRowId).attr('style', $('#Frequency_hr').attr('style'));
+            $(modeControlName + ' #Frequency_' + CurrentRowId).attr('style', $(modeControlName + ' #Frequency_hr').attr('style'));
         }
     }
 
@@ -1332,15 +1332,16 @@ function ProcessModeConfigurationDataRelay(RelayConfig) {
         let currentChannelRowId = CurrentChannelConfig.id;
         // console.log("Populate Config Current Channel Id = " + CurrentChannelConfig.id);
         // console.log("Populate Config Current gid = " + CurrentChannelConfig.gid);
-        $('#chanId_'      + (currentChannelRowId)).html(currentChannelRowId + 1);
-        $('#Enabled_'     + (currentChannelRowId)).prop("checked", CurrentChannelConfig.en);
-        $('#EnabledHttp_' + (currentChannelRowId)).prop("checked", CurrentChannelConfig.enhttp);
-        $('#Inverted_'    + (currentChannelRowId)).prop("checked", CurrentChannelConfig.inv);
-        $('#Pwm_'         + (currentChannelRowId)).prop("checked", CurrentChannelConfig.pwm);
-        $('#gpioId_'      + (currentChannelRowId)).val(CurrentChannelConfig.gid);
-        $('#threshhold_'  + (currentChannelRowId)).val(CurrentChannelConfig.trig);
-        if (true === HasPwmFrequency) {
-            $('#Frequency_' + (currentChannelRowId)).val(CurrentChannelConfig.Frequency);
+        // $(modeControlName + ' #chanId_'      + (currentChannelRowId)).html(currentChannelRowId + 1);
+        // $(modeControlName + '#Enabled_'     + (currentChannelRowId)).prop("checked", CurrentChannelConfig.en);
+        $(modeControlName + ' #EnabledHttp_' + (currentChannelRowId)).prop("checked", CurrentChannelConfig.enhttp);
+        $(modeControlName + ' #Inverted_'    + (currentChannelRowId)).prop("checked", CurrentChannelConfig.inv);
+        $(modeControlName + ' #Pwm_'         + (currentChannelRowId)).prop("checked", CurrentChannelConfig.pwm);
+        $(modeControlName + ' #gpioId_'      + (currentChannelRowId)).val(CurrentChannelConfig.gid);
+        $(modeControlName + ' #threshhold_'  + (currentChannelRowId)).val(CurrentChannelConfig.trig);
+        if (true === HasPwmFrequency)
+        {
+            $(modeControlName + '#Frequency_' + (currentChannelRowId)).val(CurrentChannelConfig.Frequency);
         }
     });
 
@@ -1470,6 +1471,7 @@ function ProcessModeConfigurationData(channelId, ChannelType, JsonConfig) {
 
     elementids.forEach(function (elementid) {
         let SelectedElement = modeControlName + ' #' + elementid;
+        // console.debug("SelectedElement: " + SelectedElement);
         if ($(SelectedElement).is(':checkbox')) {
             $(SelectedElement).prop('checked', channelConfig[elementid]);
         }
@@ -1503,7 +1505,7 @@ function ProcessModeConfigurationData(channelId, ChannelType, JsonConfig) {
 
     else if ("relay" === ChannelTypeName) {
         // console.debug("ProcessModeConfigurationData: relay");
-        ProcessModeConfigurationDataRelay(channelConfig);
+        ProcessModeConfigurationDataRelay(modeControlName, channelConfig);
     }
 
     else if ("servo_pca9685" === ChannelTypeName) {
@@ -1857,163 +1859,168 @@ function ExtractChannelConfigFromHtmlPage(JsonConfig, SectionName) {
     // for each option channel:
     jQuery.each(JsonConfig, function (DisplayedChannelId, CurrentChannelConfigurationData) {
         let elementids = [];
-        let modeControlName = '#' + SectionName + 'mode' + DisplayedChannelId;
+        let modeControlName = '#' + SectionName + 'mode' + DisplayedChannelId + ' ';
         elementids = $(modeControlName + ' *[id]').filter(":input").map(function ()
         {
             return $(this).attr('id');
         }).get();
 
-        // console.debug("modeControlName: " + modeControlName);
+        // console.debug("modeControlName: '" + modeControlName + "'");
 
         let ChannelType = parseInt($("#" + SectionName + DisplayedChannelId + " option:selected").val(), 10);
         let ChannelConfig = CurrentChannelConfigurationData[ChannelType];
 
         // tell the ESP what type of channel it should be using
         CurrentChannelConfigurationData.type = ChannelType;
-
-        if ((ChannelConfig.type === "Relay") && ($("#relaychannelconfigurationtable").length)) {
-            ChannelConfig.updateinterval = parseInt($('#updateinterval').val(), 10);
-            $.each(ChannelConfig.channels, function (i, CurrentChannelConfig) {
-                // console.debug("Current Channel Id = " + CurrentChannelConfig.id);
-                let currentChannelRowId     = CurrentChannelConfig.id;
-                CurrentChannelConfig.en     = $('#Enabled_' + (currentChannelRowId)).prop("checked");
-                CurrentChannelConfig.enhttp = $('#EnabledHttp_' + (currentChannelRowId)).prop("checked");
-                CurrentChannelConfig.inv    = $('#Inverted_' + (currentChannelRowId)).prop("checked");
-                CurrentChannelConfig.pwm    = $('#Pwm_' + (currentChannelRowId)).prop("checked");
-                CurrentChannelConfig.gid    = parseInt($('#gpioId_' + (currentChannelRowId)).val(), 10);
-                CurrentChannelConfig.trig   = parseInt($('#threshhold_' + (currentChannelRowId)).val(), 10);
-
-                if ({}.hasOwnProperty.call(ChannelConfig, "Frequency")) {
-                    CurrentChannelConfig.Frequency = parseInt($('#Frequency_' + (currentChannelRowId)).val(), 10);
-                }
-            });
-        }
-        else if ((ChannelConfig.type === "Servo PCA9685") && ($("#servo_pca9685channelconfigurationtable").length)) {
-            ChannelConfig.updateinterval = parseInt($('#updateinterval').val(), 10);
-            $.each(ChannelConfig.channels, function (i, CurrentChannelConfig)
+        if('output' === SectionName)
+        {
+            if ((ChannelConfig.type === "Relay") && ($(modeControlName + "#relaychannelconfigurationtable").length))
             {
-                // console.debug("Current Channel Id = " + CurrentChannelConfig.id);
-                let currentChannelRowId = CurrentChannelConfig.id + 1;
-                CurrentChannelConfig.en = $('#ServoEnabled_' + (currentChannelRowId)).prop("checked");
-                CurrentChannelConfig.Min = parseInt($('#ServoMinLevel_' + (currentChannelRowId)).val(), 10);
-                CurrentChannelConfig.Max = parseInt($('#ServoMaxLevel_' + (currentChannelRowId)).val(), 10);
-                CurrentChannelConfig.hv = parseInt($('#ServoHomeValue_' + (currentChannelRowId)).val(), 10);
-                let ServoDataType = parseInt($('#ServoDataType_' + (currentChannelRowId)).val(), 10);
+                ChannelConfig.updateinterval = parseInt($(modeControlName + '#updateinterval').val(), 10);
+                $.each(ChannelConfig.channels, function (i, CurrentChannelConfig)
+                {
+                    // console.debug("Current Channel Id = " + CurrentChannelConfig.id);
+                    let currentChannelRowId     = CurrentChannelConfig.id;
+                    // CurrentChannelConfig.en     = $('#Enabled_' + (currentChannelRowId)).prop("checked");
+                    CurrentChannelConfig.enhttp = $(modeControlName + '#EnabledHttp_' + (currentChannelRowId)).prop("checked");
+                    CurrentChannelConfig.inv    = $(modeControlName + '#Inverted_' + (currentChannelRowId)).prop("checked");
+                    CurrentChannelConfig.pwm    = $(modeControlName + '#Pwm_' + (currentChannelRowId)).prop("checked");
+                    CurrentChannelConfig.gid    = parseInt($(modeControlName + '#gpioId_' + (currentChannelRowId)).val(), 10);
+                    CurrentChannelConfig.trig   = parseInt($(modeControlName + '#threshhold_' + (currentChannelRowId)).val(), 10);
 
-                CurrentChannelConfig.rev = (ServoDataType & 0x01) ? true : false;
-                CurrentChannelConfig.sca = (ServoDataType & 0x02) ? true : false;
-                CurrentChannelConfig.b16 = (ServoDataType & 0x04) ? true : false;
-                // console.debug("CurrentChannelConfig.id: " + CurrentChannelConfig.id);
-                // console.debug("CurrentChannelConfig.rev: " + CurrentChannelConfig.rev);
-                // console.debug("CurrentChannelConfig.sca: " + CurrentChannelConfig.sca);
-                // console.debug("CurrentChannelConfig.b16: " + CurrentChannelConfig.b16);
-            });
-        }
-        else if (ChannelConfig.type === "Effects") {
-            // transitions need extra processing
-            ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
+                    if ({}.hasOwnProperty.call(ChannelConfig, "Frequency"))
+                    {
+                        CurrentChannelConfig.Frequency = parseInt($(modeControlName + '#Frequency_' + (currentChannelRowId)).val(), 10);
+                    }
+                });
+            }
+            else if ((ChannelConfig.type === "Servo PCA9685") && ($("#servo_pca9685channelconfigurationtable").length)) {
+                ChannelConfig.updateinterval = parseInt($('#updateinterval').val(), 10);
+                $.each(ChannelConfig.channels, function (i, CurrentChannelConfig)
+                {
+                    // console.debug("Current Channel Id = " + CurrentChannelConfig.id);
+                    let currentChannelRowId = CurrentChannelConfig.id + 1;
+                    CurrentChannelConfig.en = $('#ServoEnabled_' + (currentChannelRowId)).prop("checked");
+                    CurrentChannelConfig.Min = parseInt($('#ServoMinLevel_' + (currentChannelRowId)).val(), 10);
+                    CurrentChannelConfig.Max = parseInt($('#ServoMaxLevel_' + (currentChannelRowId)).val(), 10);
+                    CurrentChannelConfig.hv = parseInt($('#ServoHomeValue_' + (currentChannelRowId)).val(), 10);
+                    let ServoDataType = parseInt($('#ServoDataType_' + (currentChannelRowId)).val(), 10);
 
-            // the auto export adds the add color button to the structure. Remove it.
-            delete ChannelConfig["AddTransitionBtn"];
-            delete ChannelConfig["AddMarqueeGroupBtn"];
+                    CurrentChannelConfig.rev = (ServoDataType & 0x01) ? true : false;
+                    CurrentChannelConfig.sca = (ServoDataType & 0x02) ? true : false;
+                    CurrentChannelConfig.b16 = (ServoDataType & 0x04) ? true : false;
+                    // console.debug("CurrentChannelConfig.id: " + CurrentChannelConfig.id);
+                    // console.debug("CurrentChannelConfig.rev: " + CurrentChannelConfig.rev);
+                    // console.debug("CurrentChannelConfig.sca: " + CurrentChannelConfig.sca);
+                    // console.debug("CurrentChannelConfig.b16: " + CurrentChannelConfig.b16);
+                });
+            }
+            else if (ChannelConfig.type === "Effects") {
+                // transitions need extra processing
+                ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
 
-            // build a new transitions array
-            const transitions = [];
-            transitions.length = $('#TransitionColorTable tbody tr').length - 1;
-            let elementId = 0; // row counter into the json array
+                // the auto export adds the add color button to the structure. Remove it.
+                delete ChannelConfig["AddTransitionBtn"];
+                delete ChannelConfig["AddMarqueeGroupBtn"];
 
-            $('#TransitionColorTable tbody tr').each(function () {
-                let CurRow = $(this)[0];
-                let RowId = $(CurRow).attr("RowId");
+                // build a new transitions array
+                const transitions = [];
+                transitions.length = $('#TransitionColorTable tbody tr').length - 1;
+                let elementId = 0; // row counter into the json array
 
-                if (undefined !== RowId) {
-                    // console.debug("RowId = " + RowId);
+                $('#TransitionColorTable tbody tr').each(function () {
+                    let CurRow = $(this)[0];
+                    let RowId = $(CurRow).attr("RowId");
 
-                    let DeleteButtonName = 'transitionDelete_' + RowId;
-                    let elementName = 'transitionColor_' + RowId;
-                    // console.debug("DeleteButtonName = " + DeleteButtonName);
-                    // console.debug("elementName = " + elementName);
+                    if (undefined !== RowId) {
+                        // console.debug("RowId = " + RowId);
 
-                    // the auto export adds the delete and raw color data to the structure. Remove it.
-                    delete ChannelConfig[DeleteButtonName];
-                    delete ChannelConfig[elementName];
+                        let DeleteButtonName = 'transitionDelete_' + RowId;
+                        let elementName = 'transitionColor_' + RowId;
+                        // console.debug("DeleteButtonName = " + DeleteButtonName);
+                        // console.debug("elementName = " + elementName);
 
-                    let HexValue = $('#' + elementName).val();
+                        // the auto export adds the delete and raw color data to the structure. Remove it.
+                        delete ChannelConfig[DeleteButtonName];
+                        delete ChannelConfig[elementName];
 
-                    // console.debug("HexValue = " + HexValue);
-                    // console.debug("r = " + hexToRgb(HexValue).r);
-                    // console.debug("g = " + hexToRgb(HexValue).g);
-                    // console.debug("b = " + hexToRgb(HexValue).b);
-                    transitions[elementId] = {};
-                    let transition = transitions[elementId];
-                    transition.r = hexToRgb(HexValue).r;
-                    transition.g = hexToRgb(HexValue).g;
-                    transition.b = hexToRgb(HexValue).b;
-                    elementId++;
-                }
-            });
+                        let HexValue = $('#' + elementName).val();
 
-            ChannelConfig.transitions = transitions;
+                        // console.debug("HexValue = " + HexValue);
+                        // console.debug("r = " + hexToRgb(HexValue).r);
+                        // console.debug("g = " + hexToRgb(HexValue).g);
+                        // console.debug("b = " + hexToRgb(HexValue).b);
+                        transitions[elementId] = {};
+                        let transition = transitions[elementId];
+                        transition.r = hexToRgb(HexValue).r;
+                        transition.g = hexToRgb(HexValue).g;
+                        transition.b = hexToRgb(HexValue).b;
+                        elementId++;
+                    }
+                });
 
-            // build a new MarqueeGroup array
-            const MarqueeGroups = [];
-            MarqueeGroups.length = $('#MarqueeGroupTable tbody tr').length - 1;
-            elementId = 0; // row counter into the json array
+                ChannelConfig.transitions = transitions;
 
-            delete ChannelConfig["MarqueeGroups"];
+                // build a new MarqueeGroup array
+                const MarqueeGroups = [];
+                MarqueeGroups.length = $('#MarqueeGroupTable tbody tr').length - 1;
+                elementId = 0; // row counter into the json array
 
-            $('#MarqueeGroupTable tbody tr').each(function () {
-                let CurRow = $(this)[0];
-                let RowId = $(CurRow).attr("RowId");
+                delete ChannelConfig["MarqueeGroups"];
 
-                if (undefined !== RowId) {
-                    // console.debug("RowId = " + RowId);
-                    let DeleteButtonName = 'MarqueeGroupDelete_' + RowId;
-                    let ColorElementName = 'MarqueeGroupColor_' + RowId;
-                    // console.debug("DeleteButtonName = " + DeleteButtonName);
-                    // console.debug("elementName = " + elementName);
+                $('#MarqueeGroupTable tbody tr').each(function () {
+                    let CurRow = $(this)[0];
+                    let RowId = $(CurRow).attr("RowId");
 
-                    // the auto export adds the delete and table data to the structure. Remove it.
-                    delete ChannelConfig[DeleteButtonName];
-                    delete ChannelConfig['MarqueeGroupIntensity_' + (RowId)];
-                    delete ChannelConfig['MarqueeGroupIntensityEnd_' + (RowId)];
-                    delete ChannelConfig['MarqueeGroupCount_' + (RowId)];
-                    delete ChannelConfig['MarqueeGroupColor_' + (RowId)];
+                    if (undefined !== RowId) {
+                        // console.debug("RowId = " + RowId);
+                        let DeleteButtonName = 'MarqueeGroupDelete_' + RowId;
+                        let ColorElementName = 'MarqueeGroupColor_' + RowId;
+                        // console.debug("DeleteButtonName = " + DeleteButtonName);
+                        // console.debug("elementName = " + elementName);
 
-                    let HexValue = $('#' + ColorElementName).val();
+                        // the auto export adds the delete and table data to the structure. Remove it.
+                        delete ChannelConfig[DeleteButtonName];
+                        delete ChannelConfig['MarqueeGroupIntensity_' + (RowId)];
+                        delete ChannelConfig['MarqueeGroupIntensityEnd_' + (RowId)];
+                        delete ChannelConfig['MarqueeGroupCount_' + (RowId)];
+                        delete ChannelConfig['MarqueeGroupColor_' + (RowId)];
 
-                    // console.debug("HexValue = " + HexValue);
-                    // console.debug("r = " + hexToRgb(HexValue).r);
-                    // console.debug("g = " + hexToRgb(HexValue).g);
-                    // console.debug("b = " + hexToRgb(HexValue).b);
+                        let HexValue = $('#' + ColorElementName).val();
 
-                    MarqueeGroups[elementId] = {};
-                    let MarqueeGroup = MarqueeGroups[elementId];
+                        // console.debug("HexValue = " + HexValue);
+                        // console.debug("r = " + hexToRgb(HexValue).r);
+                        // console.debug("g = " + hexToRgb(HexValue).g);
+                        // console.debug("b = " + hexToRgb(HexValue).b);
 
-                    MarqueeGroup.brightness = parseFloat($('#MarqueeGroupIntensity_' + (RowId)).val());
-                    MarqueeGroup.brightnessEnd = parseFloat($('#MarqueeGroupIntensityEnd_' + (RowId)).val());
-                    MarqueeGroup.pixel_count = parseInt($('#MarqueeGroupCount_' + (RowId)).val());
+                        MarqueeGroups[elementId] = {};
+                        let MarqueeGroup = MarqueeGroups[elementId];
 
-                    MarqueeGroup.color = {};
-                    MarqueeGroup.color.r = hexToRgb(HexValue).r;
-                    MarqueeGroup.color.g = hexToRgb(HexValue).g;
-                    MarqueeGroup.color.b = hexToRgb(HexValue).b;
-                    elementId++;
-                }
-            });
+                        MarqueeGroup.brightness = parseFloat($('#MarqueeGroupIntensity_' + (RowId)).val());
+                        MarqueeGroup.brightnessEnd = parseFloat($('#MarqueeGroupIntensityEnd_' + (RowId)).val());
+                        MarqueeGroup.pixel_count = parseInt($('#MarqueeGroupCount_' + (RowId)).val());
 
-            ChannelConfig.MarqueeGroups = MarqueeGroups;
-        }
-        else if(ChannelConfig.type === "Grinch")
-        {
-            ChannelConfig.count             = parseInt($('#grinch #controller_count' ).val(), 10);
-            ChannelConfig.dataspi.cs_pin    = parseInt($('#grinch #cs_pin' ).val(), 10);
-            ChannelConfig.dataspi.clock_pin = parseInt($('#grinch #clock_pin' ).val(), 10);
-            ChannelConfig.dataspi.data_pin  = parseInt($('#grinch #data_pin' ).val(), 10);
-        }
-        else
-        {
-            ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
+                        MarqueeGroup.color = {};
+                        MarqueeGroup.color.r = hexToRgb(HexValue).r;
+                        MarqueeGroup.color.g = hexToRgb(HexValue).g;
+                        MarqueeGroup.color.b = hexToRgb(HexValue).b;
+                        elementId++;
+                    }
+                });
+
+                ChannelConfig.MarqueeGroups = MarqueeGroups;
+            }
+            else if(ChannelConfig.type === "Grinch")
+            {
+                ChannelConfig.count             = parseInt($('#grinch #controller_count' ).val(), 10);
+                ChannelConfig.dataspi.cs_pin    = parseInt($('#grinch #cs_pin' ).val(), 10);
+                ChannelConfig.dataspi.clock_pin = parseInt($('#grinch #clock_pin' ).val(), 10);
+                ChannelConfig.dataspi.data_pin  = parseInt($('#grinch #data_pin' ).val(), 10);
+            }
+            else
+            {
+                ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
+            }
         }
     });
 } // ExtractChannelConfigFromHtmlPage
