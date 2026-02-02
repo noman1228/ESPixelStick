@@ -1,6 +1,6 @@
 #pragma once
 /*
- * GPIO_Defs_ESP32_QUINLED_QUAD.hpp - Output Management class
+ * GPIO_Defs_ESP32_QUINLED_Dig_Octa.hpp - Output Management class
  *
  * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
  * Copyright (c) 2021 - 2026 Shelby Merrick
@@ -20,7 +20,6 @@
 
 //Output Manager
 // MAX 8 Serial ports on ESP32
-#define OM_NUM_PORTS 9
 const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
 {
     {OM_PortId_t(0), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_0}},
@@ -77,7 +76,7 @@ const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
 
 // Output Types
 // Not Finished - #define SUPPORT_OutputProtocol_TLS3001
-// #define SUPPORT_OutputProtocol_APA102           // OM_SPI
+#define SUPPORT_OutputProtocol_APA102           // OM_SPI
 // #define SUPPORT_OutputProtocol_DMX              // OM_SERIAL
 #define SUPPORT_OutputProtocol_GECE             // OM_SERIAL
 #define SUPPORT_OutputProtocol_GS8208           // OM_SERIAL
@@ -86,7 +85,7 @@ const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
 #define SUPPORT_OutputProtocol_TM1814           // OM_SERIAL
 #define SUPPORT_OutputProtocol_UCS1903          // OM_SERIAL
 #define SUPPORT_OutputProtocol_UCS8903          // OM_SERIAL
-// #define SUPPORT_OutputProtocol_WS2801           // OM_SPI
+#define SUPPORT_OutputProtocol_WS2801           // OM_SPI
 #define SUPPORT_OutputProtocol_WS2811           // OM_SERIAL
 #define SUPPORT_OutputProtocol_Relay            // OM_RELAY
 #define SUPPORT_OutputProtocol_Servo_PCA9685    // OM_I2C

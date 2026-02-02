@@ -19,7 +19,6 @@
 */
 
 // MAX 1 Serial ports on ESP8266
-#define OM_NUM_PORTS 1
 const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
 {
     {OM_PortId_t(0), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_2}},
