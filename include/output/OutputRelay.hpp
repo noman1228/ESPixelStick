@@ -38,7 +38,7 @@ class c_OutputRelay : public c_OutputCommon
 public:
     struct RelayChannel_t
     {
-        bool        Enabled;
+        // bool        Enabled;
         bool        httpEnabled;
         bool        InvertOutput;
         bool        Pwm;
@@ -77,7 +77,7 @@ private:
 // #   define OM_RELAY_CHANNEL_LIMIT           8
 #   define OM_RELAY_CHANNEL_LIMIT           1
 #   define OM_RELAY_UPDATE_INTERVAL_NAME    CN_updateinterval
-#   define OM_RELAY_CHANNEL_ENABLED_NAME    CN_en
+// #   define OM_RELAY_CHANNEL_ENABLED_NAME    CN_en
 #   define OM_RELAY_CHANNEL_INVERT_NAME     CN_inv
 #   define OM_RELAY_CHANNEL_PWM_NAME        CN_pwm
 

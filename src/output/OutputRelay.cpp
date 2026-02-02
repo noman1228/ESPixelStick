@@ -51,7 +51,7 @@ GNU General Public License for more details.
 
 static const c_OutputRelay::RelayChannel_t RelayChannelDefaultSettings[] =
 {
-    {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 0},
+    {Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 0},
 /*    {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 1},
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 2},
     {Relay_OUTPUT_DISABLED, Relay_OUTPUT_DISABLED, Relay_OUTPUT_INVERTED, Relay_OUTPUT_NOT_PWM, Relay_DEFAULT_TRIGGER_LEVEL, Relay_DEFAULT_GPIO_ID, LOW, HIGH, HIGH RelayPwmFrequency, 3},
@@ -86,12 +86,12 @@ c_OutputRelay::~c_OutputRelay ()
         {
             if (gpio_num_t(-1) != currentRelay.GpioId)
             {
-                if (currentRelay.Enabled)
+                // if (currentRelay.Enabled)
                 {
                     ResetGpio(currentRelay.GpioId);
                     pinMode(currentRelay.GpioId, INPUT);
                 }
-                currentRelay.Enabled = Relay_OUTPUT_DISABLED;
+                // currentRelay.Enabled = Relay_OUTPUT_DISABLED;
                 currentRelay.GpioId = Relay_DEFAULT_GPIO_ID;
                 currentRelay.httpEnabled = Relay_OUTPUT_DISABLED;
             }
@@ -146,7 +146,7 @@ bool c_OutputRelay::validate ()
         for (int ChannelIndex = OM_RELAY_CHANNEL_LIMIT - 1; ChannelIndex > Num_Channels; ChannelIndex--)
         {
             logcon (String (CN_stars + String(MN_03) + String(ChannelIndex + 1) + "' " + CN_stars));
-            OutputList[ChannelIndex].Enabled = Relay_OUTPUT_DISABLED;
+            // OutputList[ChannelIndex].Enabled = Relay_OUTPUT_DISABLED;
             OutputList[ChannelIndex].httpEnabled = Relay_OUTPUT_DISABLED;
         }
 
@@ -156,7 +156,8 @@ bool c_OutputRelay::validate ()
     SetOutputBufferSize (Num_Channels);
     for (RelayChannel_t & currentRelay : OutputList)
     {
-        if (currentRelay.Enabled && (gpio_num_t(-1) != currentRelay.GpioId))
+        // if (currentRelay.Enabled && (gpio_num_t(-1) != currentRelay.GpioId))
+        if (gpio_num_t(-1) != currentRelay.GpioId)
         {
             // DEBUG_V("Init GPIO as a generic output");
             ResetGpio(currentRelay.GpioId);
@@ -251,7 +252,7 @@ bool c_OutputRelay::SetConfig (ArduinoJson::JsonObject & jsonConfig)
 
             RelayChannel_t * CurrentOutputChannel = & OutputList[ChannelId];
 
-            setFromJSON (CurrentOutputChannel->Enabled,           JsonChannelData, OM_RELAY_CHANNEL_ENABLED_NAME);
+            // setFromJSON (CurrentOutputChannel->Enabled,           JsonChannelData, OM_RELAY_CHANNEL_ENABLED_NAME);
             setFromJSON (CurrentOutputChannel->InvertOutput,      JsonChannelData, OM_RELAY_CHANNEL_INVERT_NAME);
             setFromJSON (CurrentOutputChannel->Pwm,               JsonChannelData, OM_RELAY_CHANNEL_PWM_NAME);
             setFromJSON (CurrentOutputChannel->OnOffTriggerLevel, JsonChannelData, CN_trig);
@@ -315,7 +316,7 @@ void c_OutputRelay::GetConfig (ArduinoJson::JsonObject & jsonConfig)
         JsonObject JsonChannelData = JsonChannelList.add<JsonObject> ();
 
         JsonWrite(JsonChannelData, CN_id,                         ChannelId);
-        JsonWrite(JsonChannelData, OM_RELAY_CHANNEL_ENABLED_NAME, currentRelay.Enabled);
+        // JsonWrite(JsonChannelData, OM_RELAY_CHANNEL_ENABLED_NAME, currentRelay.Enabled);
         JsonWrite(JsonChannelData, OM_RELAY_CHANNEL_INVERT_NAME,  currentRelay.InvertOutput);
         JsonWrite(JsonChannelData, OM_RELAY_CHANNEL_PWM_NAME,     currentRelay.Pwm);
         JsonWrite(JsonChannelData, CN_trig,                       currentRelay.OnOffTriggerLevel);
@@ -385,7 +386,7 @@ uint32_t c_OutputRelay::Poll ()
     {
         // DEBUG_V (String("OutputDataIndex: ") + String(OutputDataIndex));
         // DEBUG_V (String("        Enabled: ") + String(currentRelay.Enabled));
-        if ((currentRelay.Enabled) &&
+        if (/* (currentRelay.Enabled) && */
             (Relay_DEFAULT_GPIO_ID != currentRelay.GpioId) &&
             (!currentRelay.httpEnabled))
         {
@@ -457,7 +458,7 @@ bool c_OutputRelay::ValidateGpio (gpio_num_t ConsoleTxGpio, gpio_num_t ConsoleRx
 
     for (RelayChannel_t & currentRelay : OutputList)
     {
-        if (currentRelay.Enabled)
+        // if (currentRelay.Enabled)
         {
             response |= ((currentRelay.GpioId == ConsoleTxGpio) || (currentRelay.GpioId == ConsoleRxGpio));
         }
@@ -512,13 +513,13 @@ void c_OutputRelay::RelayUpdate (uint8_t RelayId, String & NewValue, String & Re
         }
 
         // DEBUG_V(String("OutputIntensityValue: ") + String(OutputIntensityValue));
-
+/*
         if(!OutputList[RelayId].Enabled)
         {
             Response = F("Relay Port is not enabled");
             break;
         }
-
+*/
         if(!OutputList[RelayId].httpEnabled)
         {
             Response = F("HTTP Relay Port support is not enabled");
