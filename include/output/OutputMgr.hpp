@@ -71,6 +71,7 @@ public:
     void      TaskPoll          ();
     void      RelayUpdate       (uint8_t RelayId, String & NewValue, String & Response);
     void      ClearStatistics   (void);
+    uint8_t   GetNumPorts       () {return NumOutputPorts;}
 
     // do NOT insert into the middle of this list. Always add new types to the end of the list
     enum e_OutputProtocolType
@@ -149,9 +150,9 @@ public:
     #define OutputDriverMemorySize 1200
     uint32_t GetDriverSize() {return OutputDriverMemorySize;}
 private:
-    struct DriverInfo_t
+    struct alignas(16) DriverInfo_t
     {
-        alignas(16) byte    OutputDriver[OutputDriverMemorySize];
+        byte                OutputDriver[OutputDriverMemorySize];
         uint32_t            OutputBufferStartingOffset  = 0;
         uint32_t            OutputBufferDataSize        = 0;
         uint32_t            OutputBufferEndOffset       = 0;
@@ -166,7 +167,9 @@ private:
     };
 
     // pointer(s) to the current active output drivers
-    DriverInfo_t OutputChannelDrivers[OM_NUM_PORTS];
+    DriverInfo_t   *pOutputChannelDrivers = nullptr;
+    uint8_t         NumOutputPorts = 0;
+    uint32_t        SizeOfTable = 0;
 
     // configuration parameter names for the channel manager within the config file
     #define NO_CONFIG_NEEDED time_t(-1)

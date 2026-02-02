@@ -55,7 +55,7 @@ extern "C"
 // forward declaration for the isr handler
 static void IRAM_ATTR uart_intr_handler (void* param);
 #ifdef ARDUINO_ARCH_ESP8266
-static c_OutputUart *OutputTimerArray[OM_NUM_PORTS];
+static c_OutputUart **pOutputTimerArray = nullptr;
 #endif // def ARDUINO_ARCH_ESP8266
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -97,8 +97,9 @@ static bool AreTimersRunning()
 {
     // clean up the timer ISR
     bool foundActiveChannel = false;
-    for (auto currentChannel : OutputTimerArray)
+    for (uint8_t index = 0; index < OutputMgr.GetNumPorts(); index++)
     {
+        c_OutputUart * currentChannel = pOutputTimerArray[index];
         // DEBUG_V (String ("currentChannel: ") + String (uint(currentChannel), HEX));
         if (nullptr != currentChannel)
         {
@@ -115,8 +116,9 @@ static bool AreTimersRunning()
  */
 static void IRAM_ATTR timer_intr_handler()
 {
-    for (auto currentChannel : OutputTimerArray)
+    for (uint8_t index = 0; index < OutputMgr.GetNumPorts(); index++)
     {
+        c_OutputUart * currentChannel = pOutputTimerArray[index];
         if (nullptr != currentChannel)
         {
             // U0F = '.';
@@ -134,6 +136,17 @@ c_OutputUart::c_OutputUart()
 
     memset((void *)&Intensity2Uart[0],   0x00, sizeof(Intensity2Uart));
 
+    #ifdef ARDUINO_ARCH_ESP8266
+    // c_OutputUart* is an aligned structure
+    size_t alignment = alignof(c_OutputUart*);
+    size_t SizeOfTable = sizeof(c_OutputUart*) * OutputMgr.GetNumPorts();
+    // Ensure total_size is a multiple of alignment (which it should be if sizeof(AlignedObject) is used)
+    byte * raw_mem = (((byte*)malloc(SizeOfTable + (2*alignment))) + alignment);
+    pOutputTimerArray = static_cast<c_OutputUart**>((void*)raw_mem);
+    memset(pOutputTimerArray, 0x00, SizeOfTable);
+#endif // def ARDUINO_ARCH_ESP8266
+
+
     // DEBUG_END;
 } // c_OutputUart
 
@@ -146,7 +159,7 @@ c_OutputUart::~c_OutputUart ()
 
 #ifdef ARDUINO_ARCH_ESP8266
 
-    OutputTimerArray[OutputUartConfig.OutputPortId] = nullptr;
+    pOutputTimerArray[OutputUartConfig.OutputPortId] = nullptr;
 
     // have all of the timer channels been killed?
     if (!AreTimersRunning())
@@ -1136,7 +1149,7 @@ void c_OutputUart::StartUart()
         // DEBUG_V("start processing the timer interrupts");
         if (IsUartTimerInUse())
         {
-            OutputTimerArray[OutputUartConfig.OutputPortId] = this;
+            pOutputTimerArray[OutputUartConfig.OutputPortId] = this;
         }
 #endif // def ARDUINO_ARCH_ESP8266
 

@@ -164,10 +164,34 @@ c_OutputMgr::c_OutputMgr ()
     uint32_t SizeOfProtocolEntry = uint32_t(&SupportedOutputProtocolList[1]) - uint32_t(&SupportedOutputProtocolList[0]);
     OutputType_End = uint32_t(sizeof(SupportedOutputProtocolList)) / SizeOfProtocolEntry;
 
-    // Clear the driver memory
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    // find the highest numbered output
+    for(auto & CurrentOutputPortDefinition : OM_OutputPortDefinitions)
     {
-        memset (CurrentOutput.OutputDriver, 0x0, sizeof (CurrentOutput.OutputDriver));
+        if(CurrentOutputPortDefinition.PortId > NumOutputPorts)
+        {
+            // update the highest numbered port ID
+            NumOutputPorts = CurrentOutputPortDefinition.PortId;
+        }
+    }
+    // convert the zero based port ID into a port count
+    NumOutputPorts++;
+
+    // allocate a port driver control space
+    pOutputChannelDrivers = nullptr;
+    // DriverInfo_t is an aligned structure
+    size_t alignment = alignof(DriverInfo_t);
+    SizeOfTable = sizeof(DriverInfo_t) * NumOutputPorts;
+    // Ensure total_size is a multiple of alignment (which it should be if sizeof(AlignedObject) is used)
+    byte * raw_mem = (((byte*)malloc(SizeOfTable + (2*alignment))) + alignment);
+    pOutputChannelDrivers = static_cast<DriverInfo_t*>((void*)raw_mem);
+    memset((void*)pOutputChannelDrivers, 0x00, SizeOfTable);
+
+    // Init the driver memory
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
+    {
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
+        CurrentOutput.DriverId = index;
+        CurrentOutput.OutputDriverInUse = false;
     }
 
 } // c_OutputMgr
@@ -179,10 +203,11 @@ c_OutputMgr::~c_OutputMgr()
     // DEBUG_START;
 
     // delete pOutputInstances;
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
     {
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
         // the drivers will put the hardware in a safe state
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->~c_OutputCommon();
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).~c_OutputCommon();
     }
     // DEBUG_END;
 
@@ -197,6 +222,10 @@ void c_OutputMgr::Begin ()
 
     // IsBooting = false;
     // FileMgr.DeleteConfigFile(ConfigFileName);
+    // DEBUG_V(String("NumOutputPorts: ") + String(NumOutputPorts));
+    // DEBUG_V(String("   SizeOfEntry: ") + String(sizeof(DriverInfo_t)));
+    // DEBUG_V(String("   SizeOfTable: ") + String(SizeOfTable));
+    // DEBUG_V(String("AddressOfTable: 0x") + String(uint32_t(pOutputChannelDrivers), HEX));
 
     do // once
     {
@@ -206,7 +235,7 @@ void c_OutputMgr::Begin ()
             break;
         }
 
-        if (0 == OM_NUM_PORTS)
+        if (0 == NumOutputPorts)
         {
             String Reason = F("ERROR: No compiled output Ports defined. Rebooting");
             RequestReboot(Reason, 100000);
@@ -222,11 +251,9 @@ void c_OutputMgr::Begin ()
         #endif // def LED_FLASH_GPIO
 
         // make sure the pointers are set up properly
-        uint8_t index = 0;
-        for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+        for (uint8_t index = 0; index < NumOutputPorts; ++index)
         {
-            // DEBUG_V(String("init index: ") + String(index) + " Start");
-            CurrentOutput.DriverId = index++;
+            DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
             // DEBUG_V(String("DriverId: ") + String(CurrentOutput.DriverId));
             InstantiateNewOutputChannel(CurrentOutput, e_OutputProtocolType::OutputProtocol_Disabled);
             // DEBUG_V(String("init index: ") + String(index) + " Done");
@@ -284,11 +311,12 @@ void c_OutputMgr::CreateJsonConfig (JsonObject& jsonConfig)
 
     // add the channel configurations
     // DEBUG_V ("For Each Output Channel");
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
     {
-        // DEBUG_V (String("Create Section in Config file for the output channel: '") + ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputPortId() + "'");
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
+        // DEBUG_V (String("Create Section in Config file for the output channel: '") + ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputPortId() + "'");
         // create a record for this channel
-        String sChannelId = String(((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputPortId());
+        String sChannelId = String(((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputPortId());
         JsonObject ChannelConfigData = OutputMgrChannelsData[sChannelId];
         if (!ChannelConfigData)
         {
@@ -297,9 +325,9 @@ void c_OutputMgr::CreateJsonConfig (JsonObject& jsonConfig)
         }
 
         // save the name as the selected channel type
-        JsonWrite(ChannelConfigData, CN_type, int(((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputType()));
+        JsonWrite(ChannelConfigData, CN_type, int(((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputType()));
 
-        String DriverTypeId = String(int(((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputType()));
+        String DriverTypeId = String(int(((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputType()));
         JsonObject ChannelConfigByTypeData = ChannelConfigData[String (DriverTypeId)];
         if (!ChannelConfigByTypeData)
         {
@@ -315,7 +343,7 @@ void c_OutputMgr::CreateJsonConfig (JsonObject& jsonConfig)
 
         // Populate the driver name
         String DriverName = "";
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetDriverName(DriverName);
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetDriverName(DriverName);
         // DEBUG_V (String ("DriverName: ") + DriverName);
 
         JsonWrite(ChannelConfigByTypeData, CN_type, DriverName);
@@ -324,7 +352,7 @@ void c_OutputMgr::CreateJsonConfig (JsonObject& jsonConfig)
         // PrettyPrint (ChannelConfigByTypeData, String ("jsonConfig"));
         // DEBUG_V ();
 
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetConfig(ChannelConfigByTypeData);
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetConfig(ChannelConfigByTypeData);
 
         // DEBUG_V ();
         // PrettyPrint (ChannelConfigByTypeData, String ("jsonConfig"));
@@ -375,7 +403,7 @@ void c_OutputMgr::CreateNewConfig ()
         // DEBUG_V(String("PortType: ") + String(CurrentOutputPortDefinition.PortType));
         // DEBUG_V(String("DeviceId: ") + String(CurrentOutputPortDefinition.DeviceId));
 
-        DriverInfo_t & CurrentOutput = OutputChannelDrivers[CurrentOutputPortDefinition.PortId];
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[CurrentOutputPortDefinition.PortId];
         // set the default GPIOs etc
         CurrentOutput.PortDefinition = CurrentOutputPortDefinition;
 
@@ -421,8 +449,9 @@ void c_OutputMgr::CreateNewConfig ()
     } // for each defined output
 
     // DEBUG_V ("leave the outputs disabled");
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
     {
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
         InstantiateNewOutputChannel(CurrentOutput, e_OutputProtocolType::OutputProtocol_Disabled);
     }// end for each interface
 
@@ -478,11 +507,12 @@ void c_OutputMgr::GetStatus (JsonObject & jsonStatus)
 #endif // defined(ARDUINO_ARCH_ESP32)
 
     JsonArray OutputStatus = jsonStatus[(char*)CN_output].to<JsonArray> ();
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
     {
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
         // DEBUG_V ();
         JsonObject channelStatus = OutputStatus.add<JsonObject> ();
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetStatus(channelStatus);
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetStatus(channelStatus);
         // DEBUG_V ();
     }
 
@@ -498,10 +528,11 @@ void c_OutputMgr::ClearStatistics ()
     // PollCount = 0;
 #endif // defined(ARDUINO_ARCH_ESP32)
 
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
     {
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
         // DEBUG_V ();
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->ClearStatistics();
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).ClearStatistics();
         // DEBUG_V ();
     }
 
@@ -528,27 +559,29 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
     // IsBooting = false;
     do // once
     {
+        // DEBUG_V(String("CurrentOutput: 0x") + String(uint32_t(&CurrentOutput), HEX));
+        // DEBUG_V(String("OutputDriverInUse: ") + String(CurrentOutput.OutputDriverInUse));
         // is there an existing driver?
         if(CurrentOutput.OutputDriverInUse)
         {
-            // DEBUG_V (String("OutputChannelDrivers[uint(CurrentOutputChannel.DriverId)]->GetOutputType () '") + String(OutputChannelDrivers[uint(CurrentOutput.DriverId)].pOutputChannelDriver->GetOutputType()) + String("'"));
+            // DEBUG_V (String("GetOutputType () '") + String(((c_OutputCommon&)CurrentOutput.OutputDriver).GetOutputType()) + String("'"));
             // DEBUG_V (String ("NewOutputChannelType '") + int(NewOutputChannelType) + "'");
 
             // DEBUG_V ("does the driver need to change?");
-            if (((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputType() == NewOutputChannelType)
+            if (((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputType() == NewOutputChannelType)
             {
                 // DEBUG_V ("nothing to change");
                 break;
             }
 
             String DriverName;
-            ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetDriverName(DriverName);
+            ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetDriverName(DriverName);
             if (!IsBooting)
             {
                 logcon(String(MN_12) + DriverName + MN_13 + String(CurrentOutput.DriverId));
             }
 
-            ((c_OutputCommon*)CurrentOutput.OutputDriver)->~c_OutputCommon();
+            ((c_OutputCommon&)(CurrentOutput.OutputDriver)).~c_OutputCommon();
             memset(CurrentOutput.OutputDriver, 0x0, sizeof(CurrentOutput.OutputDriver));
             CurrentOutput.OutputDriverInUse = false;
             // DEBUG_V ();
@@ -940,7 +973,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
         // DEBUG_V (String("heap: 0x") + String(uint32_t(ESP.getMaxFreeBlockSize()),HEX));
 
         String sDriverName;
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetDriverName(sDriverName);
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetDriverName(sDriverName);
         // DEBUG_V (String("Driver Name: ") + sDriverName);
         if (!IsBooting)
         {
@@ -949,7 +982,7 @@ void c_OutputMgr::InstantiateNewOutputChannel(DriverInfo_t & CurrentOutput, e_Ou
         if (StartDriver)
         {
             // DEBUG_V ("Starting Driver");
-            ((c_OutputCommon*)CurrentOutput.OutputDriver)->Begin();
+            ((c_OutputCommon&)(CurrentOutput.OutputDriver)).Begin();
         }
 
     } while (false);
@@ -1196,8 +1229,9 @@ bool c_OutputMgr::ProcessJsonConfig (JsonDocument& jsonConfig)
         PauseOutputs(true);
 
         // for each output channel
-        for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+        for (uint8_t index = 0; index < NumOutputPorts; ++index)
         {
+            DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
             JsonObject OutputChannelConfig;
             if(!FindJsonChannelConfig (jsonConfig, CurrentOutput.DriverId, e_OutputProtocolType(OutputType_End), OutputChannelConfig))
             {
@@ -1245,7 +1279,7 @@ bool c_OutputMgr::ProcessJsonConfig (JsonDocument& jsonConfig)
             // DEBUG_V ();
 
             // send the config to the driver. At this level we have no idea what is in it
-            ((c_OutputCommon*)CurrentOutput.OutputDriver)->SetConfig(OutputChannelDriverConfig);
+            ((c_OutputCommon&)(CurrentOutput.OutputDriver)).SetConfig(OutputChannelDriverConfig);
             // DEBUG_V ();
 
         } // end for each channel
@@ -1343,14 +1377,15 @@ void c_OutputMgr::SetSerialUart()
     // DEBUG_V(String("ConsoleTxGpio: ") + String(ConsoleTxGpio));
     // DEBUG_V(String("ConsoleRxGpio: ") + String(ConsoleRxGpio));
 
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
     {
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
         // DEBUG_V();
-        if(e_OutputProtocolType::OutputProtocol_Disabled != ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputType())
+        if(e_OutputProtocolType::OutputProtocol_Disabled != ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputType())
         {
-            // DEBUG_V (String("Output GPIO: ") + String(((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputGpio()));
+            // DEBUG_V (String("Output GPIO: ") + String(((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputGpio()));
 
-            NeedToTurnOffConsole |= ((c_OutputCommon*)CurrentOutput.OutputDriver)->ValidateGpio(ConsoleTxGpio, ConsoleRxGpio);
+            NeedToTurnOffConsole |= ((c_OutputCommon&)(CurrentOutput.OutputDriver)).ValidateGpio(ConsoleTxGpio, ConsoleRxGpio);
         }
     } // end for each channel
 
@@ -1401,10 +1436,11 @@ void c_OutputMgr::Poll()
     if ((false == OutputIsPaused) && (false == ConfigInProgress) && (false == RebootInProgress()) )
     {
         // //DEBUG_V();
-        for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+        for (uint8_t index = 0; index < NumOutputPorts; ++index)
         {
+            DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
             // //DEBUG_V("Poll a channel");
-            ((c_OutputCommon*)CurrentOutput.OutputDriver)->Poll ();
+            ((c_OutputCommon&)(CurrentOutput.OutputDriver)).Poll ();
         }
     }
 
@@ -1431,8 +1467,9 @@ void c_OutputMgr::UpdateDisplayBufferReferences (void)
     // DEBUG_V (String ("        BufferSize: ") + String (sizeof(OutputBuffer)));
     // DEBUG_V (String ("OutputBufferOffset: ") + String (OutputBufferOffset));
 
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
     {
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
         // String DriverName;
         // OutputChannel.pOutputChannelDriver->GetDriverName(DriverName);
         // DEBUG_V(String("Name: ") + DriverName);
@@ -1440,10 +1477,10 @@ void c_OutputMgr::UpdateDisplayBufferReferences (void)
 
         CurrentOutput.OutputBufferStartingOffset = OutputBufferOffset;
         CurrentOutput.OutputChannelStartingOffset = OutputChannelOffset;
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->SetOutputBufferAddress(pOutputBuffer + OutputBufferOffset);
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).SetOutputBufferAddress(pOutputBuffer + OutputBufferOffset);
 
-        uint32_t OutputBufferDataBytesNeeded        = ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetNumOutputBufferBytesNeeded ();
-        uint32_t VirtualOutputBufferDataBytesNeeded = ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetNumOutputBufferChannelsServiced ();
+        uint32_t OutputBufferDataBytesNeeded        = ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetNumOutputBufferBytesNeeded ();
+        uint32_t VirtualOutputBufferDataBytesNeeded = ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetNumOutputBufferChannelsServiced ();
 
         uint32_t AvailableChannels = GetBufferSize() - OutputBufferOffset;
 
@@ -1462,7 +1499,7 @@ void c_OutputMgr::UpdateDisplayBufferReferences (void)
         OutputBufferOffset += OutputBufferDataBytesNeeded;
         CurrentOutput.OutputBufferDataSize  = OutputBufferDataBytesNeeded;
         CurrentOutput.OutputBufferEndOffset = OutputBufferOffset - 1;
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->SetOutputBufferSize (OutputBufferDataBytesNeeded);
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).SetOutputBufferSize (OutputBufferDataBytesNeeded);
 
         OutputChannelOffset += VirtualOutputBufferDataBytesNeeded;
         CurrentOutput.OutputChannelSize      = VirtualOutputBufferDataBytesNeeded;
@@ -1492,11 +1529,12 @@ void c_OutputMgr::RelayUpdate (uint8_t RelayId, String & NewValue, String & Resp
         // DEBUG_V(String("e_OutputType::OutputType_Relay: ") + String(e_OutputType::OutputType_Relay));
         Response = F("Relay Output Not configured");
 #ifdef SUPPORT_OutputProtocol_Relay
-        for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+        for (uint8_t index = 0; index < NumOutputPorts; ++index)
         {
+            DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
             // DEBUG_V(String("DriverId: ") + String(CurrentOutput.DriverId));
-            // DEBUG_V(String("PortType: ") + String(((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputType()));
-            if(e_OutputProtocolType::OutputProtocol_Relay == ((c_OutputCommon*)CurrentOutput.OutputDriver)->GetOutputType())
+            // DEBUG_V(String("PortType: ") + String(((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputType()));
+            if(e_OutputProtocolType::OutputProtocol_Relay == ((c_OutputCommon&)(CurrentOutput.OutputDriver)).GetOutputType())
             {
                 ((c_OutputRelay*)(CurrentOutput.OutputDriver))->RelayUpdate(RelayId, NewValue, Response);
                 break;
@@ -1517,9 +1555,10 @@ void c_OutputMgr::PauseOutputs(bool PauseTheOutput)
 
     OutputIsPaused = PauseTheOutput;
 
-    for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+    for (uint8_t index = 0; index < NumOutputPorts; ++index)
     {
-        ((c_OutputCommon*)CurrentOutput.OutputDriver)->PauseOutput(PauseTheOutput);
+        DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
+        ((c_OutputCommon&)(CurrentOutput.OutputDriver)).PauseOutput(PauseTheOutput);
     }
 
     // DEBUG_END;
@@ -1549,8 +1588,9 @@ void c_OutputMgr::WriteChannelData(uint32_t StartChannelId, uint32_t ChannelCoun
         // DEBUG_V (String("&OutputBuffer[StartChannelId]: 0x") + String(uint(&OutputBuffer[StartChannelId]), HEX));
         uint32_t EndChannelId = StartChannelId + ChannelCount;
         // Serial.print('1');
-        for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+        for (uint8_t index = 0; index < NumOutputPorts; ++index)
         {
+            DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
             // Serial.print('2');
             // does this output handle this block of data?
             if (StartChannelId < CurrentOutput.OutputChannelStartingOffset)
@@ -1577,7 +1617,7 @@ void c_OutputMgr::WriteChannelData(uint32_t StartChannelId, uint32_t ChannelCoun
             // DEBUG_V (String("                ChannelsToSet: 0x") + String(ChannelsToSet, HEX));
             if (ChannelsToSet)
             {
-                ((c_OutputCommon*)CurrentOutput.OutputDriver)->WriteChannelData(RelativeStartChannelId, ChannelsToSet, pSourceData);
+                ((c_OutputCommon&)(CurrentOutput.OutputDriver)).WriteChannelData(RelativeStartChannelId, ChannelsToSet, pSourceData);
             }
             StartChannelId += ChannelsToSet;
             pSourceData += ChannelsToSet;
@@ -1612,8 +1652,9 @@ void c_OutputMgr::ReadChannelData(uint32_t StartChannelId, uint32_t ChannelCount
         // DEBUG_V (String("&OutputBuffer[StartChannelId]: 0x") + String(uint(&OutputBuffer[StartChannelId]), HEX));
         uint32_t EndChannelId = StartChannelId + ChannelCount;
         // Serial.print('1');
-        for (DriverInfo_t & CurrentOutput : OutputChannelDrivers)
+        for (uint8_t index = 0; index < NumOutputPorts; ++index)
         {
+            DriverInfo_t & CurrentOutput = pOutputChannelDrivers[index];
             // Serial.print('2');
             // does this output handle this block of data?
             if (StartChannelId < CurrentOutput.OutputChannelStartingOffset)
@@ -1638,7 +1679,7 @@ void c_OutputMgr::ReadChannelData(uint32_t StartChannelId, uint32_t ChannelCount
             // DEBUG_V (String("                 EndChannelId: 0x") + String(EndChannelId, HEX));
             // DEBUG_V (String("             lastChannelToSet: 0x") + String(lastChannelToSet, HEX));
             // DEBUG_V (String("                ChannelsToSet: 0x") + String(ChannelsToSet, HEX));
-            ((c_OutputCommon*)CurrentOutput.OutputDriver)->ReadChannelData(RelativeStartChannelId, ChannelsToSet, pTargetData);
+            ((c_OutputCommon&)(CurrentOutput.OutputDriver)).ReadChannelData(RelativeStartChannelId, ChannelsToSet, pTargetData);
             StartChannelId += ChannelsToSet;
             pTargetData += ChannelsToSet;
             // memcpy(&OutputBuffer[StartChannelId], pTargetData, ChannelCount);
