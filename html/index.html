@@ -1370,20 +1370,6 @@
         </div>
     </div>
 
-    <!-- File Deletion Modal -->
-    <div id="fileDeleteModal" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Deleting Files</h4>
-                </div>
-                <div class="modal-body">
-                    <p id="fileDeleteMsg">Deleting files on the device. Waiting for device to respond...</p>
-                    <div class="bar"></div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -1394,35 +1380,6 @@
 
     <script type="text/javascript" src="js/loader.js"></script>
 
-    <script>
-        // File Select toggle: selects or deselects all file checkboxes and updates button label
-        document.addEventListener('DOMContentLoaded', function () {
-            const btn = document.getElementById('FileSelectAllButton');
-            if (!btn) return;
-
-            function updateButtonLabel(allChecked) {
-                btn.textContent = allChecked ? 'Deselect All Files' : 'Select All Files';
-            }
-
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const boxes = Array.from(document.querySelectorAll('#FileManagementTable input[type="checkbox"]'));
-                if (boxes.length === 0) return;
-
-                const allChecked = boxes.every(cb => cb.checked);
-                const newState = !allChecked;
-                boxes.forEach(cb => { cb.checked = newState; cb.dispatchEvent(new Event('change')); });
-                updateButtonLabel(newState);
-            });
-
-            // Initialize label based on current state (if any checkboxes exist)
-            const initialBoxes = Array.from(document.querySelectorAll('#FileManagementTable input[type="checkbox"]'));
-            if (initialBoxes.length) {
-                const allChecked = initialBoxes.every(cb => cb.checked);
-                updateButtonLabel(allChecked);
-            }
-        });
-    </script>
 
     <script>
         // File Select toggle: selects or deselects all file checkboxes and updates button label
