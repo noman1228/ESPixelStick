@@ -1915,101 +1915,6 @@ function ExtractChannelConfigFromHtmlPage(JsonConfig, SectionName) {
                     // console.debug("CurrentChannelConfig.b16: " + CurrentChannelConfig.b16);
                 });
             }
-            else if (ChannelConfig.type === "Effects") {
-                // transitions need extra processing
-                ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
-
-                // the auto export adds the add color button to the structure. Remove it.
-                delete ChannelConfig["AddTransitionBtn"];
-                delete ChannelConfig["AddMarqueeGroupBtn"];
-
-                // build a new transitions array
-                const transitions = [];
-                transitions.length = $('#TransitionColorTable tbody tr').length - 1;
-                let elementId = 0; // row counter into the json array
-
-                $('#TransitionColorTable tbody tr').each(function () {
-                    let CurRow = $(this)[0];
-                    let RowId = $(CurRow).attr("RowId");
-
-                    if (undefined !== RowId) {
-                        // console.debug("RowId = " + RowId);
-
-                        let DeleteButtonName = 'transitionDelete_' + RowId;
-                        let elementName = 'transitionColor_' + RowId;
-                        // console.debug("DeleteButtonName = " + DeleteButtonName);
-                        // console.debug("elementName = " + elementName);
-
-                        // the auto export adds the delete and raw color data to the structure. Remove it.
-                        delete ChannelConfig[DeleteButtonName];
-                        delete ChannelConfig[elementName];
-
-                        let HexValue = $('#' + elementName).val();
-
-                        // console.debug("HexValue = " + HexValue);
-                        // console.debug("r = " + hexToRgb(HexValue).r);
-                        // console.debug("g = " + hexToRgb(HexValue).g);
-                        // console.debug("b = " + hexToRgb(HexValue).b);
-                        transitions[elementId] = {};
-                        let transition = transitions[elementId];
-                        transition.r = hexToRgb(HexValue).r;
-                        transition.g = hexToRgb(HexValue).g;
-                        transition.b = hexToRgb(HexValue).b;
-                        elementId++;
-                    }
-                });
-
-                ChannelConfig.transitions = transitions;
-
-                // build a new MarqueeGroup array
-                const MarqueeGroups = [];
-                MarqueeGroups.length = $('#MarqueeGroupTable tbody tr').length - 1;
-                elementId = 0; // row counter into the json array
-
-                delete ChannelConfig["MarqueeGroups"];
-
-                $('#MarqueeGroupTable tbody tr').each(function () {
-                    let CurRow = $(this)[0];
-                    let RowId = $(CurRow).attr("RowId");
-
-                    if (undefined !== RowId) {
-                        // console.debug("RowId = " + RowId);
-                        let DeleteButtonName = 'MarqueeGroupDelete_' + RowId;
-                        let ColorElementName = 'MarqueeGroupColor_' + RowId;
-                        // console.debug("DeleteButtonName = " + DeleteButtonName);
-                        // console.debug("elementName = " + elementName);
-
-                        // the auto export adds the delete and table data to the structure. Remove it.
-                        delete ChannelConfig[DeleteButtonName];
-                        delete ChannelConfig['MarqueeGroupIntensity_' + (RowId)];
-                        delete ChannelConfig['MarqueeGroupIntensityEnd_' + (RowId)];
-                        delete ChannelConfig['MarqueeGroupCount_' + (RowId)];
-                        delete ChannelConfig['MarqueeGroupColor_' + (RowId)];
-
-                        let HexValue = $('#' + ColorElementName).val();
-
-                        // console.debug("HexValue = " + HexValue);
-                        // console.debug("r = " + hexToRgb(HexValue).r);
-                        // console.debug("g = " + hexToRgb(HexValue).g);
-                        // console.debug("b = " + hexToRgb(HexValue).b);
-
-                        MarqueeGroups[elementId] = {};
-                        let MarqueeGroup = MarqueeGroups[elementId];
-
-                        MarqueeGroup.brightness = parseFloat($('#MarqueeGroupIntensity_' + (RowId)).val());
-                        MarqueeGroup.brightnessEnd = parseFloat($('#MarqueeGroupIntensityEnd_' + (RowId)).val());
-                        MarqueeGroup.pixel_count = parseInt($('#MarqueeGroupCount_' + (RowId)).val());
-
-                        MarqueeGroup.color = {};
-                        MarqueeGroup.color.r = hexToRgb(HexValue).r;
-                        MarqueeGroup.color.g = hexToRgb(HexValue).g;
-                        MarqueeGroup.color.b = hexToRgb(HexValue).b;
-                        elementId++;
-                    }
-                });
-
-                ChannelConfig.MarqueeGroups = MarqueeGroups;
-            }
             else if(ChannelConfig.type === "Grinch")
             {
                 ChannelConfig.count             = parseInt($('#grinch #controller_count' ).val(), 10);
@@ -2022,6 +1927,103 @@ function ExtractChannelConfigFromHtmlPage(JsonConfig, SectionName) {
                 ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
             }
         }
+        else if (ChannelConfig.type === "Effects")
+        {
+            // transitions need extra processing
+            ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
+
+            // the auto export adds the add color button to the structure. Remove it.
+            delete ChannelConfig["AddTransitionBtn"];
+            delete ChannelConfig["AddMarqueeGroupBtn"];
+
+            // build a new transitions array
+            const transitions = [];
+            transitions.length = $('#TransitionColorTable tbody tr').length - 1;
+            let elementId = 0; // row counter into the json array
+
+            $('#TransitionColorTable tbody tr').each(function () {
+                let CurRow = $(this)[0];
+                let RowId = $(CurRow).attr("RowId");
+
+                if (undefined !== RowId) {
+                    // console.debug("RowId = " + RowId);
+
+                    let DeleteButtonName = 'transitionDelete_' + RowId;
+                    let elementName = 'transitionColor_' + RowId;
+                    // console.debug("DeleteButtonName = " + DeleteButtonName);
+                    // console.debug("elementName = " + elementName);
+
+                    // the auto export adds the delete and raw color data to the structure. Remove it.
+                    delete ChannelConfig[DeleteButtonName];
+                    delete ChannelConfig[elementName];
+
+                    let HexValue = $('#' + elementName).val();
+
+                    // console.debug("HexValue = " + HexValue);
+                    // console.debug("r = " + hexToRgb(HexValue).r);
+                    // console.debug("g = " + hexToRgb(HexValue).g);
+                    // console.debug("b = " + hexToRgb(HexValue).b);
+                    transitions[elementId] = {};
+                    let transition = transitions[elementId];
+                    transition.r = hexToRgb(HexValue).r;
+                    transition.g = hexToRgb(HexValue).g;
+                    transition.b = hexToRgb(HexValue).b;
+                    elementId++;
+                }
+            });
+
+            ChannelConfig.transitions = transitions;
+
+            // build a new MarqueeGroup array
+            const MarqueeGroups = [];
+            MarqueeGroups.length = $('#MarqueeGroupTable tbody tr').length - 1;
+            elementId = 0; // row counter into the json array
+
+            delete ChannelConfig["MarqueeGroups"];
+
+            $('#MarqueeGroupTable tbody tr').each(function () {
+                let CurRow = $(this)[0];
+                let RowId = $(CurRow).attr("RowId");
+
+                if (undefined !== RowId) {
+                    // console.debug("RowId = " + RowId);
+                    let DeleteButtonName = 'MarqueeGroupDelete_' + RowId;
+                    let ColorElementName = 'MarqueeGroupColor_' + RowId;
+                    // console.debug("DeleteButtonName = " + DeleteButtonName);
+                    // console.debug("elementName = " + elementName);
+
+                    // the auto export adds the delete and table data to the structure. Remove it.
+                    delete ChannelConfig[DeleteButtonName];
+                    delete ChannelConfig['MarqueeGroupIntensity_' + (RowId)];
+                    delete ChannelConfig['MarqueeGroupIntensityEnd_' + (RowId)];
+                    delete ChannelConfig['MarqueeGroupCount_' + (RowId)];
+                    delete ChannelConfig['MarqueeGroupColor_' + (RowId)];
+
+                    let HexValue = $('#' + ColorElementName).val();
+
+                    // console.debug("HexValue = " + HexValue);
+                    // console.debug("r = " + hexToRgb(HexValue).r);
+                    // console.debug("g = " + hexToRgb(HexValue).g);
+                    // console.debug("b = " + hexToRgb(HexValue).b);
+
+                    MarqueeGroups[elementId] = {};
+                    let MarqueeGroup = MarqueeGroups[elementId];
+
+                    MarqueeGroup.brightness = parseFloat($('#MarqueeGroupIntensity_' + (RowId)).val());
+                    MarqueeGroup.brightnessEnd = parseFloat($('#MarqueeGroupIntensityEnd_' + (RowId)).val());
+                    MarqueeGroup.pixel_count = parseInt($('#MarqueeGroupCount_' + (RowId)).val());
+
+                    MarqueeGroup.color = {};
+                    MarqueeGroup.color.r = hexToRgb(HexValue).r;
+                    MarqueeGroup.color.g = hexToRgb(HexValue).g;
+                    MarqueeGroup.color.b = hexToRgb(HexValue).b;
+                    elementId++;
+                }
+            });
+
+            ChannelConfig.MarqueeGroups = MarqueeGroups;
+        }
+
     });
 } // ExtractChannelConfigFromHtmlPage
 
