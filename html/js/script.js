@@ -1280,8 +1280,8 @@ function RenumberMarqueeGroupTable() {
 } // RenumberMarqueeGroupTable
 
 function ProcessModeConfigurationDataRelay(modeControlName, RelayConfig) {
-    console.debug("modeControlName: " + modeControlName);
-    console.log("relaychannelconfigurationtable.rows.length = " + $(modeControlName + ' #relaychannelconfigurationtable tr').length);
+    // console.debug("modeControlName: " + modeControlName);
+    // console.log("relaychannelconfigurationtable.rows.length = " + $(modeControlName + ' #relaychannelconfigurationtable tr').length);
     let ChannelConfigs = RelayConfig.channels;
 
     let HasPwmFrequency = false;
