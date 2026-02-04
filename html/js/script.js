@@ -2456,21 +2456,6 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
         }
     }
 
-    let OutputStatus = Status.output[1];
-    if(undefined !== OutputStatus)
-    {
-        if ({}.hasOwnProperty.call(OutputStatus, 'Relay')) {
-            $('#RelayStatus').removeClass("hidden")
-
-            OutputStatus.Relay.forEach(function (currentRelay) {
-                $('#RelayValue_' + currentRelay.id).text(currentRelay.activevalue);
-            });
-        }
-        else {
-            $('#RelayStatus').addClass("hidden")
-        }
-    }
-
     // Device Refresh is dynamic
     // #refresh is used in device config tab to reflect what refresh rate should be, not what it currently is
     // $('#refresh').text(Status.output[0].framerefreshrate + " fps");
