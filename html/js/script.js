@@ -2023,7 +2023,10 @@ function ExtractChannelConfigFromHtmlPage(JsonConfig, SectionName) {
 
             ChannelConfig.MarqueeGroups = MarqueeGroups;
         }
-
+        else
+        {
+            ExtractConfigFromHtmlPages(elementids, modeControlName, ChannelConfig);
+        }
     });
 } // ExtractChannelConfigFromHtmlPage
 
