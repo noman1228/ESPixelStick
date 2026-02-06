@@ -200,8 +200,8 @@ bool c_OutputPixel::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
     bool response = validate ();
 
-    AdjustedBrightness = map (brightness, 0, 100, 0, 256);
-    GECEBrightness = GECE_SET_BRIGHTNESS(map(brightness, 0, 100, 0, 255));
+    AdjustedBrightness = map (brightness, 0, 100, 0, 204);
+    GECEBrightness = GECE_SET_BRIGHTNESS(map(brightness, 0, 100, 0, 204));
     // DEBUG_V (String ("brightness: ") + String (brightness));
     // DEBUG_V (String ("AdjustedBrightness: ") + String (AdjustedBrightness));
 
