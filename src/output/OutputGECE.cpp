@@ -67,12 +67,6 @@ bool c_OutputGECE::SetConfig(ArduinoJson::JsonObject & jsonConfig)
     // DEBUG_START;
 
     c_OutputPixel::SetConfig(jsonConfig);
-#ifdef foo
-    uint temp;
-    temp = map(brightness, 0, 255, 0, 100);
-    setFromJSON(temp,  jsonConfig, CN_brightness);
-    brightness = map (temp, 0, 100, 0, 255);
-#endif // def foo
 
     // DEBUG_END;
 
@@ -135,11 +129,6 @@ bool c_OutputGECE::validate ()
     // DEBUG_V (String ("pixel_count: ") + String (pixel_count));
     SetOutputBufferSize(PixelCount * GECE_NUM_INTENSITY_BYTES_PER_PIXEL);
     SetPixelCount(PixelCount);
-#ifdef foo
-
-    OutputFrame.CurrentPixelID = 0;
-    OutputFrame.pCurrentInputData = pOutputBuffer;
-#endif // def foo
 
     // DEBUG_END;
 
