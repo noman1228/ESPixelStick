@@ -988,9 +988,12 @@ async function RequestFileDeletion() {
             let name = $('#FileName_' + CurRowId).val().toString();
             console.log("delete file: " + name);
             SendCommand('file/delete/' + name);
+            $('#snackbar').modal();
+
             setTimeout(function()
             {
                 RequestListOfFiles();
+                $('#snackbar').modal('hide');
             }, 5000);
             // console.debug("delete Response: " + Response);
         }
