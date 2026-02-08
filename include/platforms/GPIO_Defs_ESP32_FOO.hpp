@@ -18,18 +18,19 @@
 *
 */
 
-#define SUPPORT_ETHERNET
-
-//Output Manager
-#define DEFAULT_RMT_0_GPIO  gpio_num_t::GPIO_NUM_5
-#define DEFAULT_RMT_1_GPIO  gpio_num_t::GPIO_NUM_17
-#define DEFAULT_RMT_2_GPIO  gpio_num_t::GPIO_NUM_2
-#define DEFAULT_RMT_3_GPIO  gpio_num_t::GPIO_NUM_4
-
-// #define SUPPORT_SPI_OUTPUT
-// I2C GPIOs must be defined but the values are not use.
-#define DEFAULT_I2C_SDA     gpio_num_t::GPIO_NUM_1
-#define DEFAULT_I2C_SCL     gpio_num_t::GPIO_NUM_1
+// Output Manager
+// MAX 8 Serial port on ESP32
+const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
+{
+    {OM_PortId_t(0), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_5}},
+    {OM_PortId_t(0), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_5}},
+    {OM_PortId_t(1), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_17}},
+    {OM_PortId_t(1), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_17}},
+    {OM_PortId_t(2), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_2}},
+    {OM_PortId_t(2), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_2}},
+    {OM_PortId_t(3), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_4}},
+    {OM_PortId_t(3), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_4}},
+};
 
 // File Manager
 // GPIOs must be defined but the values are not use.
@@ -39,6 +40,7 @@
 #define SD_CARD_CLK_PIN         gpio_num_t::GPIO_NUM_1
 #define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_1
 
+#define SUPPORT_ETHERNET
 #include <ETH.h>
 
 /*
@@ -71,18 +73,19 @@
 #define DEFAULT_ETH_MDIO_PIN           gpio_num_t::GPIO_NUM_18
 
 // Output Types
-// Not Finished - #define SUPPORT_OutputType_TLS3001
-// #define SUPPORT_OutputType_APA102         // SPI
-#define SUPPORT_OutputType_DMX            // UART
-#define SUPPORT_OutputType_GECE           // UART
-#define SUPPORT_OutputType_GS8208         // UART / RMT
-#define SUPPORT_OutputType_Renard         // UART
-#define SUPPORT_OutputType_Serial         // UART
-#define SUPPORT_OutputType_TM1814         // UART / RMT
-#define SUPPORT_OutputType_UCS1903        // UART / RMT
-#define SUPPORT_OutputType_UCS8903        // UART / RMT
-// #define SUPPORT_OutputType_WS2801         // SPI
-#define SUPPORT_OutputType_WS2811         // UART / RMT
-// #define SUPPORT_OutputType_Relay          // GPIO
-// #define SUPPORT_OutputType_Servo_PCA9685  // I2C (default pins)
-#define SUPPORT_OutputType_FireGod        // UART / RMT
+// Not Finished - #define SUPPORT_OutputProtocol_TLS3001
+// #define SUPPORT_OutputProtocol_APA102           // OM_SPI
+#define SUPPORT_OutputProtocol_DMX              // OM_SERIAL
+#define SUPPORT_OutputProtocol_GECE             // OM_SERIAL
+#define SUPPORT_OutputProtocol_GS8208           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Renard           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Serial           // OM_SERIAL
+#define SUPPORT_OutputProtocol_TM1814           // OM_SERIAL
+#define SUPPORT_OutputProtocol_UCS1903          // OM_SERIAL
+#define SUPPORT_OutputProtocol_UCS8903          // OM_SERIAL
+// #define SUPPORT_OutputProtocol_WS2801           // OM_SPI
+#define SUPPORT_OutputProtocol_WS2811           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Relay            // OM_RELAY
+// #define SUPPORT_OutputProtocol_Servo_PCA9685    // OM_I2C
+#define SUPPORT_OutputProtocol_FireGod          // OM_SERIAL
+// #define SUPPORT_OutputProtocol_GRINCH           // OM_SPI

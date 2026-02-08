@@ -17,7 +17,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_GECE) && defined(ARDUINO_ARCH_ESP32)
+#if defined(SUPPORT_OutputProtocol_GECE) && defined(ARDUINO_ARCH_ESP32)
 
 #include "output/OutputGECERmt.hpp"
 
@@ -43,10 +43,9 @@ static const c_OutputRmt::ConvertIntensityToRmtDataStreamEntry_t ConvertIntensit
 }; // RmtBitDefinitions
 
 //----------------------------------------------------------------------------
-c_OutputGECERmt::c_OutputGECERmt(c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                                 gpio_num_t outputGpio,
-                                 uart_port_t uart,
-                                 c_OutputMgr::e_OutputType outputType) : c_OutputGECE(OutputChannelId, outputGpio, uart, outputType)
+c_OutputGECERmt::c_OutputGECERmt(OM_OutputPortDefinition_t & OutputPortDefinition,
+                                 c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputGECE(OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -91,8 +90,8 @@ bool c_OutputGECERmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
     // DEBUG_V (String ("DataPin: ") + String (DataPin));
 
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
-    OutputRmtConfig.RmtChannelId            = rmt_channel_t(OutputChannelId);
-    OutputRmtConfig.DataPin                 = gpio_num_t(DataPin);
+    OutputRmtConfig.RmtChannelId            = rmt_channel_t(OutputPortDefinition.PortId);
+    OutputRmtConfig.DataPin                 = gpio_num_t(OutputPortDefinition.gpios.data);
     OutputRmtConfig.idle_level              = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
     OutputRmtConfig.pPixelDataSource        = this;
     OutputRmtConfig.IntensityDataWidth      = GECE_PACKET_SIZE;
@@ -142,7 +141,7 @@ bool c_OutputGECERmt::RmtPoll ()
     bool Response = false;
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             break;
         }
@@ -176,4 +175,4 @@ void c_OutputGECERmt::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_GECE) && defined(ARDUINO_ARCH_ESP32)
+#endif // defined(SUPPORT_OutputProtocol_GECE) && defined(ARDUINO_ARCH_ESP32)

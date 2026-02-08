@@ -49,6 +49,9 @@ function proxyToEsps(req, res) {
 app.use('/file', (req, res) => { proxyToEsps(req, res); });
 
 app.post("/XP",          (req, res) => {res.redirect(espsIp + "XP")});
+app.post("/X6",          (req, res) => {res.redirect(espsIp + "X6")});
+app.post("/X7",          (req, res) => {res.redirect(espsIp + "X7")});
+app.post("/XJ",          (req, res) => {res.redirect(espsIp + "XJ")});
 app.get("/XJ",           (req, res) => {res.redirect(espsIp + "XJ")});
 app.put("/conf/:file",   (req, res) => {res.redirect(espsIp + "conf/" + req.params.file);});
 app.get("/conf/:file",   (req, res) => {res.redirect(espsIp + "conf/" + req.params.file);});

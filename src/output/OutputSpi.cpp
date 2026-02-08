@@ -17,7 +17,7 @@
 *
 */
 #include "ESPixelStick.h"
-#ifdef SUPPORT_SPI_OUTPUT
+#ifdef ARDUINO_ARCH_ESP32
 
 #include "output/OutputSpi.hpp"
 #include "driver/spi_master.h"
@@ -94,20 +94,21 @@ c_OutputSpi::~c_OutputSpi ()
 
 } // ~c_OutputSpi
 
-#if defined(SUPPORT_OutputType_GRINCH)
-void c_OutputSpi::Begin (c_OutputGrinch* _OutputGrinch)
+#if defined(SUPPORT_OutputProtocol_GRINCH)
+void c_OutputSpi::Begin (OM_OutputPortDefinition_t & OutputPortDefinition, c_OutputGrinch* _OutputGrinch)
 {
     OutputGrinch = _OutputGrinch;
-    Begin ((c_OutputPixel*)nullptr);
+    Begin (OutputPortDefinition, (c_OutputPixel*)nullptr);
 }
-#endif // defined(SUPPORT_OutputType_GRINCH)
+#endif // defined(SUPPORT_OutputProtocol_GRINCH)
 
 //----------------------------------------------------------------------------
-void c_OutputSpi::Begin (c_OutputPixel* _OutputPixel)
+void c_OutputSpi::Begin (OM_OutputPortDefinition_t & _OutputPortDefinition, c_OutputPixel* _OutputPixel)
 {
     // DEBUG_START;
 
     OutputPixel = _OutputPixel;
+    OutputPortDefinition = _OutputPortDefinition;
 
     NextTransactionToFill = 0;
     for (auto & TransactionBufferToSet : TransactionBuffers)
@@ -124,8 +125,8 @@ void c_OutputSpi::Begin (c_OutputPixel* _OutputPixel)
     spi_bus_config_t SpiBusConfiguration;
     memset ( (void*)&SpiBusConfiguration, 0x00, sizeof (SpiBusConfiguration));
     SpiBusConfiguration.miso_io_num = -1;
-    SpiBusConfiguration.mosi_io_num = DataPin;
-    SpiBusConfiguration.sclk_io_num = ClockPin;
+    SpiBusConfiguration.mosi_io_num = OutputPortDefinition.gpios.data;
+    SpiBusConfiguration.sclk_io_num = OutputPortDefinition.gpios.clk;
     SpiBusConfiguration.quadwp_io_num = -1;
     SpiBusConfiguration.quadhd_io_num = -1;
     SpiBusConfiguration.max_transfer_sz = OM_MAX_NUM_CHANNELS;
@@ -164,11 +165,11 @@ bool c_OutputSpi::SetConfig (ArduinoJson::JsonObject & jsonConfig)
 
     bool response = true;
     JsonObject SpiConfig = jsonConfig[F("dataspi")];
-    response |= setFromJSON(CsPin,    SpiConfig, CN_cs_pin);
+    response |= setFromJSON(OutputPortDefinition.gpios.cs, SpiConfig, CN_cs_pin);
 
 /*
-    response |= setFromJSON(DataPin,  SpiConfig, CN_data_pin);
-    response |= setFromJSON(ClockPin, SpiConfig, CN_clock_pin);
+    response |= setFromJSON(OutputPortDefinition.gpios.data,  SpiConfig, CN_data_pin);
+    response |= setFromJSON(OutputPortDefinition.gpios.clk, SpiConfig, CN_clock_pin);
 */
     // DEBUG_END;
 
@@ -181,9 +182,9 @@ void c_OutputSpi::GetConfig (ArduinoJson::JsonObject & jsonConfig)
     // DEBUG_START;
 
     JsonObject SpiConfig = jsonConfig[F("dataspi")].to<JsonObject>();
-    JsonWrite(SpiConfig, CN_cs_pin,    CsPin);
-    JsonWrite(SpiConfig, CN_data_pin,  DataPin);
-    JsonWrite(SpiConfig, CN_clock_pin, ClockPin);
+    JsonWrite(SpiConfig, CN_cs_pin,    OutputPortDefinition.gpios.cs);
+    JsonWrite(SpiConfig, CN_data_pin,  OutputPortDefinition.gpios.data);
+    JsonWrite(SpiConfig, CN_clock_pin, OutputPortDefinition.gpios.clk);
 
     // DEBUG_END;
 } // GetConfig
@@ -196,12 +197,12 @@ bool c_OutputSpi::ISR_MoreDataToSend()
     {
         response = OutputPixel->ISR_MoreDataToSend ();
     }
-#if defined(SUPPORT_OutputType_GRINCH)
+#if defined(SUPPORT_OutputProtocol_GRINCH)
     else if(OutputGrinch)
     {
         response = OutputGrinch->ISR_MoreDataToSend ();
     }
-#endif // defined(SUPPORT_OutputType_GRINCH)
+#endif // defined(SUPPORT_OutputProtocol_GRINCH)
     return response;
 }
 
@@ -214,12 +215,12 @@ bool c_OutputSpi::ISR_GetNextIntensityToSend(uint32_t& Data)
     {
         response = OutputPixel->ISR_GetNextIntensityToSend (Data);
     }
-#if defined(SUPPORT_OutputType_GRINCH)
+#if defined(SUPPORT_OutputProtocol_GRINCH)
     else if(OutputGrinch)
     {
         response = OutputGrinch->ISR_GetNextIntensityToSend (Data);
     }
-#endif // defined(SUPPORT_OutputType_GRINCH)
+#endif // defined(SUPPORT_OutputProtocol_GRINCH)
 
     return response;
 } // ISR_GetNextIntensityToSend
@@ -254,10 +255,10 @@ void c_OutputSpi::SendIntensityData ()
             TransactionToFill.length++;
         }
 
-        if(gpio_num_t(-1) != CsPin)
+        if(gpio_num_t(-1) != OutputPortDefinition.gpios.cs)
         {
             // turn on the output strobe (latch data)
-            digitalWrite(CsPin, LOW);
+            digitalWrite(OutputPortDefinition.gpios.cs, LOW);
         }
 
         ESP_ERROR_CHECK (spi_device_queue_trans (spi_device_handle, &Transactions[NextTransactionToFill], portMAX_DELAY));
@@ -267,7 +268,7 @@ void c_OutputSpi::SendIntensityData ()
             NextTransactionToFill = 0;
         }
 
-        if(gpio_num_t(-1) != CsPin)
+        if(gpio_num_t(-1) != OutputPortDefinition.gpios.cs)
         {
             if (!ISR_MoreDataToSend ())
             {
@@ -275,7 +276,7 @@ void c_OutputSpi::SendIntensityData ()
                 spi_device_get_trans_result(spi_device_handle, &pspi_transaction, 100);
 
                 // turn on the output strobe (latch data)
-                digitalWrite(CsPin, HIGH);
+                digitalWrite(OutputPortDefinition.gpios.cs, HIGH);
             }
         }
     }
@@ -293,12 +294,12 @@ void c_OutputSpi::StartNewFrame()
     {
         OutputPixel->StartNewFrame ();
     }
-#if defined(SUPPORT_OutputType_GRINCH)
+#if defined(SUPPORT_OutputProtocol_GRINCH)
     else if(OutputGrinch)
     {
         OutputGrinch->StartNewFrame ();
     }
-#endif // defined(SUPPORT_OutputType_GRINCH)
+#endif // defined(SUPPORT_OutputProtocol_GRINCH)
 
 } // StartNewFrame
 
@@ -311,11 +312,11 @@ bool c_OutputSpi::Poll ()
 
     StartNewFrame ();
 
-    if(gpio_num_t(-1) != CsPin)
+    if(gpio_num_t(-1) != OutputPortDefinition.gpios.cs)
     {
         // turn on the output strobe (latch data)
-        ResetGpio(CsPin);
-        pinMode(CsPin, OUTPUT);
+        ResetGpio(OutputPortDefinition.gpios.cs);
+        pinMode(OutputPortDefinition.gpios.cs, OUTPUT);
     }
 
     // fill all the available buffers
@@ -336,4 +337,4 @@ bool c_OutputSpi::Poll ()
     return Response;
 } // render
 
-#endif // def SUPPORT_SPI_OUTPUT
+#endif // def ARDUINO_ARCH_ESP32

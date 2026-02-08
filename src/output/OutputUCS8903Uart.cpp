@@ -19,7 +19,7 @@
 
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_UCS8903)
+#if defined(SUPPORT_OutputProtocol_UCS8903)
 
 #include "output/OutputUCS8903Uart.hpp"
 
@@ -39,11 +39,9 @@ static const c_OutputUart::ConvertIntensityToUartDataStreamEntry_t ConvertIntens
 #define UCS8903_PIXEL_UART_BAUDRATE uint32_t(UCS8903_NUM_UART_BITS_PER_INTENSITY_BIT * UCS8903_PIXEL_DATA_RATE)
 
 //----------------------------------------------------------------------------
-c_OutputUCS8903Uart::c_OutputUCS8903Uart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputUCS8903 (OutputChannelId, outputGpio, uart, outputType)
+c_OutputUCS8903Uart::c_OutputUCS8903Uart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                          c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputUCS8903 (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -70,9 +68,9 @@ void c_OutputUCS8903Uart::Begin ()
     SetIntensityBitTimeInUS(float(UCS8903_PIXEL_NS_BIT_TOTAL) / float(NanoSecondsInAMicroSecond));
 
     c_OutputUart::OutputUartConfig_t OutputUartConfig;
-    OutputUartConfig.ChannelId              = OutputChannelId;
-    OutputUartConfig.UartId                 = UartId;
-    OutputUartConfig.DataPin                = DataPin;
+    OutputUartConfig.OutputPortId           = OutputPortDefinition.PortId;
+    OutputUartConfig.UartId                 = uart_port_t(OutputPortDefinition.DeviceId);
+    OutputUartConfig.DataPin                = OutputPortDefinition.gpios.data;
     OutputUartConfig.IntensityDataWidth     = UCS8903_INTENSITY_DATA_WIDTH;
     OutputUartConfig.UartDataSize           = c_OutputUart::UartDatauint32_t::OUTPUT_UART_8N1;
     OutputUartConfig.TranslateIntensityData = c_OutputUart::TranslateIntensityData_t::OneToOne;
@@ -151,7 +149,7 @@ uint32_t c_OutputUCS8903Uart::Poll ()
 
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             FrameLen = 0;
             break;
@@ -193,4 +191,4 @@ void c_OutputUCS8903Uart::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_UCS8903)
+#endif // defined(SUPPORT_OutputProtocol_UCS8903)

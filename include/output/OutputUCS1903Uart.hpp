@@ -23,7 +23,7 @@
 */
 
 #include "OutputCommon.hpp"
-#if defined(SUPPORT_OutputType_UCS1903)
+#if defined(SUPPORT_OutputProtocol_UCS1903)
 
 #include "OutputUCS1903.hpp"
 #include "OutputUart.hpp"
@@ -32,10 +32,8 @@ class c_OutputUCS1903Uart : public c_OutputUCS1903
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputUCS1903Uart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                         gpio_num_t outputGpio,
-                         uart_port_t uart,
-                         c_OutputMgr::e_OutputType outputType);
+    c_OutputUCS1903Uart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                         c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputUCS1903Uart ();
 
     // functions to be provided by the derived class
@@ -57,4 +55,4 @@ private:
 
 }; // c_OutputUCS1903Uart
 
-#endif // defined(SUPPORT_OutputType_UCS1903)
+#endif // defined(SUPPORT_OutputProtocol_UCS1903)

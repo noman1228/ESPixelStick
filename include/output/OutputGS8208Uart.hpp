@@ -24,7 +24,7 @@
 
 #include "OutputCommon.hpp"
 
-#if defined(SUPPORT_OutputType_GS8208)
+#if defined(SUPPORT_OutputProtocol_GS8208)
 
 #include "OutputGS8208.hpp"
 #include "OutputUart.hpp"
@@ -33,10 +33,8 @@ class c_OutputGS8208Uart : public c_OutputGS8208
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputGS8208Uart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                        gpio_num_t outputGpio,
-                        uart_port_t uart,
-                        c_OutputMgr::e_OutputType outputType);
+    c_OutputGS8208Uart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                        c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputGS8208Uart ();
 
     // functions to be provided by the derived class
@@ -57,4 +55,4 @@ private:
 
 }; // c_OutputGS8208Uart
 
-#endif // defined(SUPPORT_OutputType_GS8208)
+#endif // defined(SUPPORT_OutputProtocol_GS8208)

@@ -18,36 +18,34 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
 
 #include "output/OutputSerial.hpp"
 #define ADJUST_INTENSITY_AT_ISR
 
 //----------------------------------------------------------------------------
-c_OutputSerial::c_OutputSerial (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputCommon (OutputChannelId, outputGpio, uart, outputType)
+c_OutputSerial::c_OutputSerial (OM_OutputPortDefinition_t & OutputPortDefinition,
+    c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputCommon (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
     memset(GenericSerialHeader, 0x0, sizeof(GenericSerialHeader));
     memset(GenericSerialFooter, 0x0, sizeof(GenericSerialFooter));
 
-    #if defined(SUPPORT_OutputType_DMX)
-    if (outputType == c_OutputMgr::e_OutputType::OutputType_DMX)
+    #if defined(SUPPORT_OutputProtocol_DMX)
+    if (outputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX)
     {
         CurrentBaudrate = uint32_t(BaudRate::BR_DMX);
     }
-    #endif // defined(SUPPORT_OutputType_DMX)
+    #endif // defined(SUPPORT_OutputProtocol_DMX)
 
-    #if defined(SUPPORT_OutputType_FireGod)
-    if (OutputType == c_OutputMgr::e_OutputType::OutputType_FireGod)
+    #if defined(SUPPORT_OutputProtocol_FireGod)
+    if (OutputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod)
     {
         CurrentBaudrate = uint32_t(BaudRate::BR_FIREGOD);
         Num_Channels = FireGodNumChanPerController;
     }
-    #endif // defined(SUPPORT_OutputType_FireGod)
+    #endif // defined(SUPPORT_OutputProtocol_FireGod)
 
     // DEBUG_END;
 } // c_OutputSerial
@@ -64,19 +62,19 @@ c_OutputSerial::~c_OutputSerial ()
 void c_OutputSerial::Begin()
 {
     // DEBUG_START;
-    #if defined(SUPPORT_OutputType_DMX)
-    if (OutputType == c_OutputMgr::e_OutputType::OutputType_DMX)
+    #if defined(SUPPORT_OutputProtocol_DMX)
+    if (OutputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX)
     {
         CurrentBaudrate = uint32_t(BaudRate::BR_DMX);
     }
-    #endif // defined(SUPPORT_OutputType_DMX)
+    #endif // defined(SUPPORT_OutputProtocol_DMX)
 
-    #if defined(SUPPORT_OutputType_FireGod)
-    if (OutputType == c_OutputMgr::e_OutputType::OutputType_FireGod)
+    #if defined(SUPPORT_OutputProtocol_FireGod)
+    if (OutputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod)
     {
         CurrentBaudrate = uint32_t(BaudRate::BR_FIREGOD);
     }
-    #endif // defined(SUPPORT_OutputType_FireGod)
+    #endif // defined(SUPPORT_OutputProtocol_FireGod)
 
     // DEBUG_END;
 } // Begin
@@ -88,16 +86,16 @@ void c_OutputSerial::GetConfig(ArduinoJson::JsonObject &jsonConfig)
 
     JsonWrite(jsonConfig, CN_num_chan, Num_Channels);
 
-    #if defined(SUPPORT_OutputType_Serial)
-    if (OutputType == c_OutputMgr::e_OutputType::OutputType_Serial)
+    #if defined(SUPPORT_OutputProtocol_Serial)
+    if (OutputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_Serial)
     {
         JsonWrite(jsonConfig, CN_gen_ser_hdr, GenericSerialHeader);
         JsonWrite(jsonConfig, CN_gen_ser_ftr, GenericSerialFooter);
     }
-    #endif // defined(SUPPORT_OutputType_FireGod)
+    #endif // defined(SUPPORT_OutputProtocol_FireGod)
 
-    #if defined(SUPPORT_OutputType_DMX)
-    if (OutputType != c_OutputMgr::e_OutputType::OutputType_DMX)
+    #if defined(SUPPORT_OutputProtocol_DMX)
+    if (OutputType != c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX)
     {
         // not DMX
         JsonWrite(jsonConfig, CN_baudrate, CurrentBaudrate);
@@ -105,7 +103,7 @@ void c_OutputSerial::GetConfig(ArduinoJson::JsonObject &jsonConfig)
     #else
     // DMX is not supported
     JsonWrite(jsonConfig, CN_baudrate, CurrentBaudrate);
-    #endif // defined(SUPPORT_OutputType_DMX)
+    #endif // defined(SUPPORT_OutputProtocol_DMX)
 
     c_OutputCommon::GetConfig (jsonConfig);
 
@@ -144,38 +142,38 @@ void c_OutputSerial::GetDriverName(String &sDriverName)
 {
     switch (OutputType)
     {
-#ifdef SUPPORT_OutputType_Serial
-    case c_OutputMgr::e_OutputType::OutputType_Serial:
+#ifdef SUPPORT_OutputProtocol_Serial
+    case c_OutputMgr::e_OutputProtocolType::OutputProtocol_Serial:
     {
         sDriverName = CN_Serial;
         break;
     }
-#endif // def SUPPORT_OutputType_Serial
+#endif // def SUPPORT_OutputProtocol_Serial
 
-#ifdef SUPPORT_OutputType_DMX
-    case c_OutputMgr::e_OutputType::OutputType_DMX:
+#ifdef SUPPORT_OutputProtocol_DMX
+    case c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX:
     {
         sDriverName = CN_DMX;
         break;
     }
-#endif // def SUPPORT_OutputType_DMX
+#endif // def SUPPORT_OutputProtocol_DMX
 
-#ifdef SUPPORT_OutputType_Renard
-    case c_OutputMgr::e_OutputType::OutputType_Renard:
+#ifdef SUPPORT_OutputProtocol_Renard
+    case c_OutputMgr::e_OutputProtocolType::OutputProtocol_Renard:
     {
         sDriverName = CN_Renard;
         break;
     }
-#endif // def SUPPORT_OutputType_Renard
+#endif // def SUPPORT_OutputProtocol_Renard
 
-#ifdef SUPPORT_OutputType_FireGod
-    case c_OutputMgr::e_OutputType::OutputType_FireGod:
+#ifdef SUPPORT_OutputProtocol_FireGod
+    case c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod:
     {
         // DEBUG_V("Init Firegod driver name");
         sDriverName = CN_FireGod;
         break;
     }
-#endif // def SUPPORT_OutputType_FireGod
+#endif // def SUPPORT_OutputProtocol_FireGod
 
     default:
     {
@@ -221,16 +219,16 @@ bool c_OutputSerial::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
     setFromJSON(Num_Channels, jsonConfig, CN_num_chan);
 
-    #if defined(SUPPORT_OutputType_Serial)
-    if (OutputType == c_OutputMgr::e_OutputType::OutputType_Serial)
+    #if defined(SUPPORT_OutputProtocol_Serial)
+    if (OutputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_Serial)
     {
         setFromJSON(GenericSerialHeader, jsonConfig, CN_gen_ser_hdr);
         setFromJSON(GenericSerialFooter, jsonConfig, CN_gen_ser_ftr);
     }
-    #endif // defined(SUPPORT_OutputType_FireGod)
+    #endif // defined(SUPPORT_OutputProtocol_FireGod)
 
-    #if defined(SUPPORT_OutputType_DMX)
-    if (OutputType != c_OutputMgr::e_OutputType::OutputType_DMX)
+    #if defined(SUPPORT_OutputProtocol_DMX)
+    if (OutputType != c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX)
     {
         // not DMX
         setFromJSON(CurrentBaudrate, jsonConfig, CN_baudrate);
@@ -238,7 +236,7 @@ bool c_OutputSerial::SetConfig (ArduinoJson::JsonObject& jsonConfig)
     #else
     // DMX is not supported
     setFromJSON(CurrentBaudrate, jsonConfig, CN_baudrate);
-    #endif // defined(SUPPORT_OutputType_DMX)
+    #endif // defined(SUPPORT_OutputProtocol_DMX)
 
     c_OutputCommon::SetConfig(jsonConfig);
     bool response = validate();
@@ -276,12 +274,12 @@ bool c_OutputSerial::validate ()
         response = false;
     }
 
-#if defined(SUPPORT_OutputType_DMX)
-    if (OutputType == c_OutputMgr::e_OutputType::OutputType_DMX)
+#if defined(SUPPORT_OutputProtocol_DMX)
+    if (OutputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX)
     {
         CurrentBaudrate = uint32_t(BaudRate::BR_DMX);
     }
-#endif // defined(SUPPORT_OutputType_DMX)
+#endif // defined(SUPPORT_OutputProtocol_DMX)
 
     if (strlen(GenericSerialHeader) > MAX_HDR_SIZE)
     {
@@ -349,36 +347,36 @@ void c_OutputSerial::StartNewFrame ()
     // start the next frame
     switch (OutputType)
     {
-#ifdef SUPPORT_OutputType_DMX
-        case c_OutputMgr::e_OutputType::OutputType_DMX:
+#ifdef SUPPORT_OutputProtocol_DMX
+        case c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX:
         {
             SerialFrameState = SerialFrameState_t::DMXSendFrameStart;
             break;
         }  // DMX512
-#endif // def SUPPORT_OutputType_DMX
+#endif // def SUPPORT_OutputProtocol_DMX
 
-#ifdef SUPPORT_OutputType_Renard
-        case c_OutputMgr::e_OutputType::OutputType_Renard:
+#ifdef SUPPORT_OutputProtocol_Renard
+        case c_OutputMgr::e_OutputProtocolType::OutputProtocol_Renard:
         {
             SerialFrameState = SerialFrameState_t::RenardFrameStart;
             break;
         }  // RENARD
-#endif // def SUPPORT_OutputType_Renard
+#endif // def SUPPORT_OutputProtocol_Renard
 
-#ifdef SUPPORT_OutputType_Serial
-        case c_OutputMgr::e_OutputType::OutputType_Serial:
+#ifdef SUPPORT_OutputProtocol_Serial
+        case c_OutputMgr::e_OutputProtocolType::OutputProtocol_Serial:
         {
             SerialFrameState = (SerialHeaderSize) ? SerialFrameState_t::GenSerSendHeader : SerialFrameState_t::GenSerSendData;
         }  // GENERIC
-#endif // def SUPPORT_OutputType_Serial
+#endif // def SUPPORT_OutputProtocol_Serial
 
-#ifdef SUPPORT_OutputType_FireGod
-        case c_OutputMgr::e_OutputType::OutputType_FireGod:
+#ifdef SUPPORT_OutputProtocol_FireGod
+        case c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod:
         {
             SerialFrameState = SerialFrameState_t::FireGodFrameStart;
             break;
         }  // DMX512
-#endif // def SUPPORT_OutputType_DMX
+#endif // def SUPPORT_OutputProtocol_DMX
 
         default:
         {
@@ -596,4 +594,4 @@ bool IRAM_ATTR c_OutputSerial::ISR_GetNextIntensityToSend (uint32_t &DataToSend)
     return ISR_MoreDataToSend();
 } // NextIntensityToSend
 
-#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)

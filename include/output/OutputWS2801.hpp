@@ -22,16 +22,14 @@
 *
 */
 #include "OutputPixel.hpp"
-#ifdef SUPPORT_OutputType_WS2801
+#ifdef SUPPORT_OutputProtocol_WS2801
 
 class c_OutputWS2801 : public c_OutputPixel
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputWS2801 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputWS2801 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                    c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputWS2801 ();
 
     // functions to be provided by the derived class
@@ -50,4 +48,4 @@ protected:
     float       BlockDelay = 0;
 
 }; // c_OutputWS2801
-#endif // def SUPPORT_OutputType_WS2801
+#endif // def SUPPORT_OutputProtocol_WS2801

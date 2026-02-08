@@ -3,7 +3,7 @@
 * OutputMgr.hpp - Output Management class
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2021, 2025 Shelby Merrick
+* Copyright (c) 2021, 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -23,6 +23,7 @@
 */
 
 #include "ESPixelStick.h"
+#include "OutputMgrPortDefs.hpp"
 #include "memdebug.h"
 #include "FileMgr.hpp"
 #include <TimeLib.h>
@@ -57,7 +58,7 @@ public:
     void      SetConfig         (const char * NewConfig);  ///< Save the current configuration data to nvram
     void      SetConfig         (ArduinoJson::JsonDocument & NewConfig);  ///< Save the current configuration data to nvram
     void      GetStatus         (JsonObject & jsonStatus);
-    void      GetPortCounts     (uint16_t& PixelCount, uint16_t& SerialCount) {PixelCount = uint16_t(OutputChannelId_End); SerialCount = uint16_t(NUM_UARTS); }
+//    void      GetPortCounts     (uint16_t& PixelCount, uint16_t& SerialCount) {PixelCount = uint16_t(OutputPortId_End); SerialCount = uint16_t(NUM_UARTS); }
     uint8_t*  GetBufferAddress  () { return pOutputBuffer; } ///< Get the address of the buffer into which the E1.31 handler will stuff data
     uint32_t  GetBufferUsedSize () { return UsedBufferSize; } ///< Get the size (in intensities) of the buffer into which the E1.31 handler will stuff data
     uint32_t  GetBufferSize     () { return uint32_t(OM_MAX_NUM_CHANNELS); } ///< Get the size (in intensities) of the buffer into which the E1.31 handler will stuff data
@@ -70,156 +71,88 @@ public:
     void      TaskPoll          ();
     void      RelayUpdate       (uint8_t RelayId, String & NewValue, String & Response);
     void      ClearStatistics   (void);
-
-    // handles to determine which output channel we are dealing with
-    enum e_OutputChannelIds
-    {
-        #ifdef DEFAULT_UART_0_GPIO
-        OutputChannelId_UART_0,
-        #endif // def DEFAULT_UART_0_GPIO
-
-        #ifdef DEFAULT_UART_1_GPIO
-        OutputChannelId_UART_1,
-        #endif // def DEFAULT_UART_1_GPIO
-
-        #ifdef DEFAULT_UART_2_GPIO
-        OutputChannelId_UART_2,
-        #endif // def DEFAULT_UART_2_GPIO
-
-        #ifdef DEFAULT_RMT_0_GPIO
-        OutputChannelId_RMT_0,
-        #endif // def DEFAULT_RMT_0_GPIO
-
-        #ifdef DEFAULT_RMT_1_GPIO
-        OutputChannelId_RMT_1,
-        #endif // def DEFAULT_RMT_1_GPIO
-
-        #ifdef DEFAULT_RMT_2_GPIO
-        OutputChannelId_RMT_2,
-        #endif // def DEFAULT_RMT_2_GPIO
-
-        #ifdef DEFAULT_RMT_3_GPIO
-        OutputChannelId_RMT_3,
-        #endif // def DEFAULT_RMT_3_GPIO
-
-        #ifdef DEFAULT_RMT_4_GPIO
-        OutputChannelId_RMT_4,
-        #endif // def DEFAULT_RMT_3_GPIO
-
-        #ifdef DEFAULT_RMT_5_GPIO
-        OutputChannelId_RMT_5,
-        #endif // def DEFAULT_RMT_3_GPIO
-
-        #ifdef DEFAULT_RMT_6_GPIO
-        OutputChannelId_RMT_6,
-        #endif // def DEFAULT_RMT_3_GPIO
-
-        #ifdef DEFAULT_RMT_7_GPIO
-        OutputChannelId_RMT_7,
-        #endif // def DEFAULT_RMT_3_GPIO
-
-        #ifdef SUPPORT_SPI_OUTPUT
-        OutputChannelId_SPI_1,
-        #endif // def SUPPORT_SPI_OUTPUT
-
-        #if defined(SUPPORT_OutputType_Relay) || defined(SUPPORT_OutputType_Servo_PCA9685)
-        OutputChannelId_Relay,
-        #endif // def SUPPORT_RELAY_OUTPUT
-
-        OutputChannelId_End, // must be last in the list
-        OutputChannelId_Start = 0,
-    };
+    uint8_t   GetNumPorts       () {return NumOutputPorts;}
 
     // do NOT insert into the middle of this list. Always add new types to the end of the list
-    enum e_OutputType
+    enum e_OutputProtocolType
     {
-        OutputType_Disabled = 0,
+        OutputProtocol_Disabled = 0,
 
-        #ifdef SUPPORT_OutputType_WS2811
-        OutputType_WS2811 = 1,
-        #endif // def SUPPORT_OutputType_WS2811
+        #ifdef SUPPORT_OutputProtocol_WS2811
+        OutputProtocol_WS2811 = 1,
+        #endif // def SUPPORT_OutputProtocol_WS2811
 
-        #ifdef SUPPORT_OutputType_GECE
-        OutputType_GECE = 2,
-        #endif // def SUPPORT_OutputType_GECE
+        #ifdef SUPPORT_OutputProtocol_GECE
+        OutputProtocol_GECE = 2,
+        #endif // def SUPPORT_OutputProtocol_GECE
 
-        #ifdef SUPPORT_OutputType_DMX
-        OutputType_DMX = 3,
-        #endif // def SUPPORT_OutputType_DMX
+        #ifdef SUPPORT_OutputProtocol_DMX
+        OutputProtocol_DMX = 3,
+        #endif // def SUPPORT_OutputProtocol_DMX
 
-        #ifdef SUPPORT_OutputType_Renard
-        OutputType_Renard = 4,
-        #endif // def SUPPORT_OutputType_Renard
+        #ifdef SUPPORT_OutputProtocol_Renard
+        OutputProtocol_Renard = 4,
+        #endif // def SUPPORT_OutputProtocol_Renard
 
-        #ifdef SUPPORT_OutputType_Serial
-        OutputType_Serial = 5,
-        #endif // def SUPPORT_OutputType_Serial
+        #ifdef SUPPORT_OutputProtocol_Serial
+        OutputProtocol_Serial = 5,
+        #endif // def SUPPORT_OutputProtocol_Serial
 
-        #ifdef SUPPORT_OutputType_Relay
-        OutputType_Relay = 6,
-        #endif // def SUPPORT_OutputType_Relay
+        #ifdef SUPPORT_OutputProtocol_Relay
+        OutputProtocol_Relay = 6,
+        #endif // def SUPPORT_OutputProtocol_Relay
 
-        #ifdef SUPPORT_OutputType_Servo_PCA9685
-        OutputType_Servo_PCA9685 = 7,
-        #endif // def SUPPORT_OutputType_Servo_PCA9685
+        #ifdef SUPPORT_OutputProtocol_Servo_PCA9685
+        OutputProtocol_Servo_PCA9685 = 7,
+        #endif // def SUPPORT_OutputProtocol_Servo_PCA9685
 
-        #ifdef SUPPORT_OutputType_UCS1903
-        OutputType_UCS1903 = 8,
-        #endif // def SUPPORT_OutputType_UCS1903
+        #ifdef SUPPORT_OutputProtocol_UCS1903
+        OutputProtocol_UCS1903 = 8,
+        #endif // def SUPPORT_OutputProtocol_UCS1903
 
-        #ifdef SUPPORT_OutputType_TM1814
-        OutputType_TM1814 = 9,
-        #endif // def SUPPORT_OutputType_TM1814
+        #ifdef SUPPORT_OutputProtocol_TM1814
+        OutputProtocol_TM1814 = 9,
+        #endif // def SUPPORT_OutputProtocol_TM1814
 
-        #ifdef SUPPORT_OutputType_WS2801
-        OutputType_WS2801 = 10,
-        #endif // def SUPPORT_OutputType_WS2801
+        #ifdef SUPPORT_OutputProtocol_WS2801
+        OutputProtocol_WS2801 = 10,
+        #endif // def SUPPORT_OutputProtocol_WS2801
 
-        #ifdef SUPPORT_OutputType_APA102
-        OutputType_APA102 = 11,
-        #endif // def SUPPORT_OutputType_APA102
+        #ifdef SUPPORT_OutputProtocol_APA102
+        OutputProtocol_APA102 = 11,
+        #endif // def SUPPORT_OutputProtocol_APA102
 
-        #ifdef SUPPORT_OutputType_GS8208
-        OutputType_GS8208 = 12,
-        #endif // def SUPPORT_OutputType_GS8208
+        #ifdef SUPPORT_OutputProtocol_GS8208
+        OutputProtocol_GS8208 = 12,
+        #endif // def SUPPORT_OutputProtocol_GS8208
 
-        #ifdef SUPPORT_OutputType_UCS8903
-        OutputType_UCS8903 = 13,
-        #endif // def SUPPORT_OutputType_UCS8903
+        #ifdef SUPPORT_OutputProtocol_UCS8903
+        OutputProtocol_UCS8903 = 13,
+        #endif // def SUPPORT_OutputProtocol_UCS8903
 
-        #ifdef SUPPORT_OutputType_TLS3001
+        #ifdef SUPPORT_OutputProtocol_TLS3001
         OutputType_TLS3001 = 14,
-        #endif // def SUPPORT_OutputType_TLS3001
+        #endif // def SUPPORT_OutputProtocol_TLS3001
 
-        #ifdef SUPPORT_OutputType_GRINCH
-        OutputType_GRINCH = 15,
-        #endif // def SUPPORT_OutputType_GRINCH
+        #ifdef SUPPORT_OutputProtocol_GRINCH
+        OutputProtocol_GRINCH = 15,
+        #endif // def SUPPORT_OutputProtocol_GRINCH
 
-        #ifdef SUPPORT_OutputType_FireGod
-        OutputType_FireGod = 16,
-        #endif // def SUPPORT_OutputType_FireGod
+        #ifdef SUPPORT_OutputProtocol_FireGod
+        OutputProtocol_FireGod = 16,
+        #endif // def SUPPORT_OutputProtocol_FireGod
 
         // Add new types here
-        OutputType_End, // must be last
-        OutputType_Start = OutputType_Disabled,
     };
-
-    enum OM_PortType_t
-    {
-        Uart = 0,
-        Rmt,
-        Spi,
-        Relay,
-        Undefined
-    };
+    uint32_t OutputType_End = uint32_t(-1);
 
     // must be 16 byte aligned. Determined by upshifting the max size of all drivers
     #define OutputDriverMemorySize 1200
     uint32_t GetDriverSize() {return OutputDriverMemorySize;}
 private:
-    struct DriverInfo_t
+    struct alignas(16) DriverInfo_t
     {
-        alignas(16) byte    OutputDriver[OutputDriverMemorySize];
+        byte                OutputDriver[OutputDriverMemorySize];
         uint32_t            OutputBufferStartingOffset  = 0;
         uint32_t            OutputBufferDataSize        = 0;
         uint32_t            OutputBufferEndOffset       = 0;
@@ -228,15 +161,15 @@ private:
         uint32_t            OutputChannelSize           = 0;
         uint32_t            OutputChannelEndOffset      = 0;
 
-        gpio_num_t          GpioPin                     = gpio_num_t(-1);
-        OM_PortType_t       PortType                    = OM_PortType_t::Undefined;
-        uart_port_t         PortId                      = uart_port_t(-1);
-        e_OutputChannelIds  DriverId                    = e_OutputChannelIds(-1);
+        OM_OutputPortDefinition_t PortDefinition;
+        uint8_t             DriverId                    = -1;
         bool                OutputDriverInUse           = false;
     };
 
     // pointer(s) to the current active output drivers
-    DriverInfo_t OutputChannelDrivers[OutputChannelId_End];
+    DriverInfo_t   *pOutputChannelDrivers = nullptr;
+    uint8_t         NumOutputPorts = 0;
+    uint32_t        SizeOfTable = 0;
 
     // configuration parameter names for the channel manager within the config file
     #define NO_CONFIG_NEEDED time_t(-1)
@@ -249,10 +182,11 @@ private:
     bool ProcessJsonConfig (JsonDocument & jsonConfig);
     void CreateJsonConfig  (JsonObject & jsonConfig);
     void UpdateDisplayBufferReferences (void);
-    void InstantiateNewOutputChannel(DriverInfo_t &ChannelIndex, e_OutputType NewChannelType, bool StartDriver = true);
+    void InstantiateNewOutputChannel(DriverInfo_t &ChannelIndex, e_OutputProtocolType NewChannelType, bool StartDriver = true);
     void CreateNewConfig();
     void SetSerialUart();
-    bool FindJsonChannelConfig (JsonDocument& jsonConfig, e_OutputChannelIds ChanId, e_OutputType Type, JsonObject& ChanConfig);
+    bool FindJsonChannelConfig (JsonDocument& jsonConfig, OM_PortId_t PortId, e_OutputProtocolType Type, JsonObject& ChanConfig);
+    bool SetPortDefnitionDefaults(DriverInfo_t & CurrentOutput, e_OutputProtocolType TargetProtocolType);
 
     String ConfigFileName;
 
@@ -271,9 +205,6 @@ private:
     TaskHandle_t myTaskHandle = NULL;
     // uint32_t PollCount = 0;
 #endif // defined(ARDUINO_ARCH_ESP32)
-
-#define OM_IS_UART (CurrentOutput.PortType == OM_PortType_t::Uart)
-#define OM_IS_RMT  (CurrentOutput.PortType == OM_PortType_t::Rmt)
 
 }; // c_OutputMgr
 

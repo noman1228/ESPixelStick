@@ -23,7 +23,7 @@
 */
 
 #include "ESPixelStick.h"
-#ifdef SUPPORT_OutputType_UCS1903
+#ifdef SUPPORT_OutputProtocol_UCS1903
 
 #include "OutputPixel.hpp"
 
@@ -31,10 +31,8 @@ class c_OutputUCS1903 : public c_OutputPixel
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputUCS1903 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputUCS1903 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                     c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputUCS1903 ();
 
     // functions to be provided by the derived class
@@ -63,4 +61,4 @@ protected:
 
 }; // c_OutputUCS1903
 
-#endif // def SUPPORT_OutputType_UCS1903
+#endif // def SUPPORT_OutputProtocol_UCS1903

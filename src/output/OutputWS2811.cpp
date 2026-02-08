@@ -19,14 +19,12 @@
 
 #include "ESPixelStick.h"
 #include "output/OutputWS2811.hpp"
-#if defined(SUPPORT_OutputType_WS2811) 
+#if defined(SUPPORT_OutputProtocol_WS2811)
 
 //----------------------------------------------------------------------------
-c_OutputWS2811::c_OutputWS2811 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel (OutputChannelId, outputGpio, uart, outputType)
+c_OutputWS2811::c_OutputWS2811 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputPixel (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -99,4 +97,4 @@ bool c_OutputWS2811::SetConfig (ArduinoJson::JsonObject& jsonConfig)
     return response;
 
 } // SetConfig
-#endif // defined(SUPPORT_OutputType_WS2811)
+#endif // defined(SUPPORT_OutputProtocol_WS2811)

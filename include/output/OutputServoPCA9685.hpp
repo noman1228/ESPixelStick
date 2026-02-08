@@ -18,7 +18,7 @@ GNU General Public License for more details.
 *
 */
 #include "ESPixelStick.h"
-#ifdef SUPPORT_OutputType_Servo_PCA9685
+#ifdef SUPPORT_OutputProtocol_Servo_PCA9685
 
 #include "OutputCommon.hpp"
 #include <Adafruit_PWMServoDriver.h>
@@ -47,10 +47,8 @@ private:
 public:
 
     // These functions are inherited from c_OutputCommon
-    c_OutputServoPCA9685 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                          gpio_num_t outputGpio,
-                          uart_port_t uart,
-                          c_OutputMgr::e_OutputType outputType);
+    c_OutputServoPCA9685 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                          c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputServoPCA9685 ();
 
     // functions to be provided by the derived class
@@ -92,4 +90,4 @@ private:
 
 }; // c_OutputServoPCA9685
 
-#endif // def SUPPORT_OutputType_Servo_PCA9685
+#endif // def SUPPORT_OutputProtocol_Servo_PCA9685

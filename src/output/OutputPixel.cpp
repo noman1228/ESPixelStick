@@ -22,11 +22,9 @@
 #include "output/OutputGECEFrame.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputPixel::c_OutputPixel (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                              gpio_num_t outputGpio,
-                              uart_port_t uart,
-                              c_OutputMgr::e_OutputType outputType) :
-    c_OutputCommon (OutputChannelId, outputGpio, uart, outputType)
+c_OutputPixel::c_OutputPixel (OM_OutputPortDefinition_t & OutputPortDefinition,
+                              c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputCommon (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -202,8 +200,8 @@ bool c_OutputPixel::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
     bool response = validate ();
 
-    AdjustedBrightness = map (brightness, 0, 100, 0, 256);
-    GECEBrightness = GECE_SET_BRIGHTNESS(map(brightness, 0, 100, 0, 255));
+    AdjustedBrightness = map (brightness, 0, 100, 0, 204);
+    GECEBrightness = GECE_SET_BRIGHTNESS(map(brightness, 0, 100, 0, 204));
     // DEBUG_V (String ("brightness: ") + String (brightness));
     // DEBUG_V (String ("AdjustedBrightness: ") + String (AdjustedBrightness));
 
@@ -375,8 +373,8 @@ void IRAM_ATTR c_OutputPixel::SetStartingSendPixelState()
     }
     else
     {
-#ifdef SUPPORT_OutputType_GECE
-        if (OutputType == OTYPE_t::OutputType_GECE)
+#ifdef SUPPORT_OutputProtocol_GECE
+        if (OutputType == OTYPE_t::OutputProtocol_GECE)
         {
             FrameStateFuncPtr = &c_OutputPixel::PixelSendGECEIntensity;
         }
@@ -386,7 +384,7 @@ void IRAM_ATTR c_OutputPixel::SetStartingSendPixelState()
         }
 #else
         FrameStateFuncPtr = &c_OutputPixel::PixelSendIntensity;
-#endif // def SUPPORT_OutputType_GECE
+#endif // def SUPPORT_OutputProtocol_GECE
     }
 
 } // SetStartingSendPixelState
@@ -532,8 +530,8 @@ uint32_t IRAM_ATTR c_OutputPixel::PixelSendPrependIntensity()
             // reset the prepend index for the next pixel
             PixelPrependDataCurrentIndex = 0;
 
-#ifdef SUPPORT_OutputType_GECE
-            if (OutputType == OTYPE_t::OutputType_GECE)
+#ifdef SUPPORT_OutputProtocol_GECE
+            if (OutputType == OTYPE_t::OutputProtocol_GECE)
             {
 #ifdef USE_PIXEL_DEBUG_COUNTERS
                 LastGECEdataSent = response;
@@ -547,13 +545,13 @@ uint32_t IRAM_ATTR c_OutputPixel::PixelSendPrependIntensity()
             }
 #else
             FrameStateFuncPtr = &c_OutputPixel::PixelSendIntensity;
-#endif // def SUPPORT_OutputType_GECE
+#endif // def SUPPORT_OutputProtocol_GECE
         }
 
     return response;
 }
 
-#ifdef SUPPORT_OutputType_GECE
+#ifdef SUPPORT_OutputProtocol_GECE
 //----------------------------------------------------------------------------
 uint32_t IRAM_ATTR c_OutputPixel::PixelSendGECEIntensity()
 {
@@ -577,7 +575,7 @@ uint32_t IRAM_ATTR c_OutputPixel::PixelSendGECEIntensity()
 
     return response;
 }
-#endif // def SUPPORT_OutputType_GECE
+#endif // def SUPPORT_OutputProtocol_GECE
 
 //----------------------------------------------------------------------------
 uint32_t IRAM_ATTR c_OutputPixel::PixelSendIntensity()

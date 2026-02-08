@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if defined (SUPPORT_OutputType_WS2801) && defined (SUPPORT_SPI_OUTPUT)
+#if defined (SUPPORT_OutputProtocol_WS2801)
 
 #include "OutputWS2801.hpp"
 #include "OutputSpi.hpp"
@@ -31,10 +31,8 @@ class c_OutputWS2801Spi : public c_OutputWS2801
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputWS2801Spi (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputWS2801Spi (OM_OutputPortDefinition_t & OutputPortDefinition,
+                       c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputWS2801Spi ();
 
     // functions to be provided by the derived class
@@ -52,4 +50,4 @@ private:
 
 }; // c_OutputWS2801Spi
 
-#endif // defined (SUPPORT_OutputType_WS2801) && defined (SUPPORT_SPI_OUTPUT)
+#endif // defined (SUPPORT_OutputProtocol_WS2801)

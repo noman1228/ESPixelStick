@@ -1,5 +1,5 @@
 {
-  "cfgver": 1,
+  "cfgver": 1.0,
   "init": true,
   "device": {
     "id": "ESPixelStick"
@@ -12,9 +12,9 @@
     "netmask": "",
     "gateway": "",
     "dhcp": true,
-    "sta_timeout": 15,
+    "sta_timeout": 15.0,
     "ap_fallback": false,
-    "ap_timeout": 120,
+    "ap_timeout": 120.0,
     "ap_reboot": false
   }
 }

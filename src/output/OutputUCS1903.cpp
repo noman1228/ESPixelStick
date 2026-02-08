@@ -18,16 +18,14 @@
 */
 
 #include "ESPixelStick.h"
-#ifdef SUPPORT_OutputType_UCS1903
+#ifdef SUPPORT_OutputProtocol_UCS1903
 
 #include "output/OutputUCS1903.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputUCS1903::c_OutputUCS1903 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel (OutputChannelId, outputGpio, uart, outputType)
+c_OutputUCS1903::c_OutputUCS1903 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                  c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputPixel (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -116,4 +114,4 @@ bool c_OutputUCS1903::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
 } // SetConfig
 
-#endif // def SUPPORT_OutputType_UCS1903
+#endif // def SUPPORT_OutputProtocol_UCS1903

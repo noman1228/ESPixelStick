@@ -18,7 +18,7 @@
 */
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_UCS8903) && defined(ARDUINO_ARCH_ESP32)
+#if defined(SUPPORT_OutputProtocol_UCS8903) && defined(ARDUINO_ARCH_ESP32)
 
 #include "output/OutputUCS8903Rmt.hpp"
 
@@ -43,11 +43,9 @@ static const c_OutputRmt::ConvertIntensityToRmtDataStreamEntry_t ConvertIntensit
 }; // ConvertIntensityToRmtDataStream
 
 //----------------------------------------------------------------------------
-c_OutputUCS8903Rmt::c_OutputUCS8903Rmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputUCS8903 (OutputChannelId, outputGpio, uart, outputType)
+c_OutputUCS8903Rmt::c_OutputUCS8903Rmt (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                        c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputUCS8903 (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -105,8 +103,8 @@ bool c_OutputUCS8903Rmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
     // DEBUG_V (String ("DataPin: ") + String (DataPin));
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
-    OutputRmtConfig.RmtChannelId       = rmt_channel_t(OutputChannelId);
-    OutputRmtConfig.DataPin            = gpio_num_t(DataPin);
+    OutputRmtConfig.RmtChannelId       = rmt_channel_t(OutputPortDefinition.PortId);
+    OutputRmtConfig.DataPin            = gpio_num_t(OutputPortDefinition.gpios.data);
     OutputRmtConfig.idle_level         = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
     OutputRmtConfig.IntensityDataWidth = UCS8903_INTENSITY_DATA_WIDTH;
     OutputRmtConfig.pPixelDataSource   = this;
@@ -155,7 +153,7 @@ bool c_OutputUCS8903Rmt::RmtPoll ()
     bool Response = false;
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             break;
         }
@@ -189,4 +187,4 @@ void c_OutputUCS8903Rmt::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_UCS8903) && defined(ARDUINO_ARCH_ESP32)
+#endif // defined(SUPPORT_OutputProtocol_UCS8903) && defined(ARDUINO_ARCH_ESP32)

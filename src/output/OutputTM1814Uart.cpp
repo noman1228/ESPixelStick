@@ -18,7 +18,7 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_TM1814)
+#if defined(SUPPORT_OutputProtocol_TM1814)
 
 #include "output/OutputTM1814Uart.hpp"
 
@@ -35,11 +35,9 @@ static const c_OutputUart::ConvertIntensityToUartDataStreamEntry_t ConvertIntens
 };
 
 //----------------------------------------------------------------------------
-c_OutputTM1814Uart::c_OutputTM1814Uart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputTM1814 (OutputChannelId, outputGpio, uart, outputType)
+c_OutputTM1814Uart::c_OutputTM1814Uart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                        c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputTM1814 (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -66,9 +64,9 @@ void c_OutputTM1814Uart::Begin ()
     SetIntensityBitTimeInUS(float(TM1814_PIXEL_NS_BIT_TOTAL) / float(NanoSecondsInAMicroSecond));
 
     c_OutputUart::OutputUartConfig_t OutputUartConfig;
-    OutputUartConfig.ChannelId              = OutputChannelId;
-    OutputUartConfig.UartId                 = UartId;
-    OutputUartConfig.DataPin                = DataPin;
+    OutputUartConfig.OutputPortId           = OutputPortDefinition.PortId;
+    OutputUartConfig.UartId                 = uart_port_t(OutputPortDefinition.DeviceId);
+    OutputUartConfig.DataPin                = OutputPortDefinition.gpios.data;
     OutputUartConfig.IntensityDataWidth     = TM1814_NUM_DATA_BYTES_PER_INTENSITY_BYTE;
     OutputUartConfig.UartDataSize           = c_OutputUart::UartDatauint32_t::OUTPUT_UART_8N2;
     OutputUartConfig.TranslateIntensityData = c_OutputUart::TranslateIntensityData_t::OneToOne;
@@ -134,7 +132,7 @@ uint32_t c_OutputTM1814Uart::Poll ()
 
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             FrameLen = 0;
             break;
@@ -169,4 +167,4 @@ void c_OutputTM1814Uart::PauseOutput(bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_TM1814)
+#endif // defined(SUPPORT_OutputProtocol_TM1814)

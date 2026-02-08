@@ -22,16 +22,14 @@
 *
 */
 #include "OutputCommon.hpp"
-#ifdef SUPPORT_OutputType_GRINCH
+#ifdef SUPPORT_OutputProtocol_GRINCH
 
 class c_OutputGrinch : public c_OutputCommon
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputGrinch (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputGrinch (OM_OutputPortDefinition_t & OutputPortDefinition,
+                    c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputGrinch ();
 
     // functions to be provided by the derived class
@@ -73,4 +71,4 @@ private:
 
 
 }; // c_OutputGrinch
-#endif // def SUPPORT_OutputType_GRINCH
+#endif // def SUPPORT_OutputProtocol_GRINCH

@@ -19,7 +19,7 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_GECE)
+#if defined(SUPPORT_OutputProtocol_GECE)
 
 #include "OutputGECEFrame.hpp"
 #include "OutputPixel.hpp"
@@ -27,10 +27,8 @@
 class c_OutputGECE: public c_OutputPixel
 {
 public:
-    c_OutputGECE (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                  gpio_num_t outputGpio,
-                  uart_port_t uart,
-                  c_OutputMgr::e_OutputType outputType);
+    c_OutputGECE (OM_OutputPortDefinition_t & OutputPortDefinition,
+                  c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputGECE ();
 
     // functions to be provided by the derived class
@@ -78,4 +76,4 @@ private:
 };
 
 
-#endif // defined(SUPPORT_OutputType_GECE)
+#endif // defined(SUPPORT_OutputProtocol_GECE)

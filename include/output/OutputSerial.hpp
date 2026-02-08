@@ -23,16 +23,14 @@
 */
 
 #include "OutputCommon.hpp"
-#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
 
 class c_OutputSerial : public c_OutputCommon
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputSerial (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                   gpio_num_t outputGpio,
-                   uart_port_t uart,
-                   c_OutputMgr::e_OutputType outputType);
+    c_OutputSerial (OM_OutputPortDefinition_t & OutputPortDefinition,
+                   c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputSerial ();
 
     // functions to be provided by the derived class
@@ -98,12 +96,10 @@ private:
     uint32_t      SerialFooterSize  = 0;
     uint32_t      SerialFooterIndex = 0;
 
-#if defined(SUPPORT_OutputType_FireGod)
     uint16_t      FireGodCurrentController = 0;
     uint8_t       FireGodBytesInFrameCount = 0;
     const uint8_t FireGodNumMaxControllers = 4;
     const uint8_t FireGodNumChanPerController = 32;
-#endif // defined(SUPPORT_OutputType_FireGod)
 
 #ifdef USE_SERIAL_DEBUG_COUNTERS
     uint32_t   IntensityBytesSent = 0;
@@ -164,4 +160,4 @@ private:
 
 }; // c_OutputSerial
 
-#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
