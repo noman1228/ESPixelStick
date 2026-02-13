@@ -23,7 +23,7 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_TM1814)
+#if defined(SUPPORT_OutputProtocol_TM1814)
 
 #include "OutputTM1814.hpp"
 #include "OutputUart.hpp"
@@ -32,10 +32,8 @@ class c_OutputTM1814Uart : public c_OutputTM1814
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputTM1814Uart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputTM1814Uart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                        c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputTM1814Uart ();
 
     // functions to be provided by the derived class
@@ -61,4 +59,4 @@ private:
 
 }; // c_OutputTM1814Uart
 
-#endif // defined(SUPPORT_OutputType_TM1814)
+#endif // defined(SUPPORT_OutputProtocol_TM1814)

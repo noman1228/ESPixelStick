@@ -14,7 +14,7 @@ GNU General Public License for more details.
 
 #include "ESPixelStick.h"
 
-#ifdef SUPPORT_OutputType_Servo_PCA9685
+#ifdef SUPPORT_OutputProtocol_Servo_PCA9685
 
 #include "output/OutputServoPCA9685.hpp"
 #include <utility>
@@ -22,11 +22,9 @@ GNU General Public License for more details.
 #include <math.h>
 
 //----------------------------------------------------------------------------
-c_OutputServoPCA9685::c_OutputServoPCA9685 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                                gpio_num_t outputGpio,
-                                uart_port_t uart,
-                                c_OutputMgr::e_OutputType outputType) :
-    c_OutputCommon(OutputChannelId, outputGpio, uart, outputType)
+c_OutputServoPCA9685::c_OutputServoPCA9685 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                            c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputCommon(OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -334,4 +332,4 @@ void c_OutputServoPCA9685::CalculateNumChannels()
     // DEBUG_END;
 } // CalculateNumChannels
 
-#endif // def SUPPORT_OutputType_Servo_PCA9685
+#endif // def SUPPORT_OutputProtocol_Servo_PCA9685

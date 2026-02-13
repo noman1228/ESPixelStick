@@ -2,7 +2,7 @@
 /******************************************************************
 *
 *       Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel (And Serial!) driver
-*       Orginal ESPixelStickproject by 2015 Shelby Merrick
+*       Orginal ESPixelStickproject by copyright 2015 - 2026 Shelby Merrick
 *
 *       Brought to you by:
 *              Bill Porter
@@ -29,7 +29,7 @@ GNU General Public License for more details.
 */
 #include "ESPixelStick.h"
 
-#ifdef SUPPORT_OutputType_Relay
+#ifdef SUPPORT_OutputProtocol_Relay
 
 #include "OutputCommon.hpp"
 
@@ -38,7 +38,7 @@ class c_OutputRelay : public c_OutputCommon
 public:
     struct RelayChannel_t
     {
-        bool        Enabled;
+        // bool        Enabled;
         bool        httpEnabled;
         bool        InvertOutput;
         bool        Pwm;
@@ -54,10 +54,8 @@ public:
     };
 
     // These functions are inherited from c_OutputCommon
-    c_OutputRelay (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                   gpio_num_t outputGpio,
-                   uart_port_t uart,
-                   c_OutputMgr::e_OutputType outputType);
+    c_OutputRelay (OM_OutputPortDefinition_t & OutputPortDefinition,
+                   c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputRelay ();
 
     // functions to be provided by the derived class
@@ -76,9 +74,10 @@ public:
     void        RelayUpdate  (uint8_t RelayId, String & NewValue, String & Response);
 
 private:
-#   define OM_RELAY_CHANNEL_LIMIT           8
+// #   define OM_RELAY_CHANNEL_LIMIT           8
+#   define OM_RELAY_CHANNEL_LIMIT           1
 #   define OM_RELAY_UPDATE_INTERVAL_NAME    CN_updateinterval
-#   define OM_RELAY_CHANNEL_ENABLED_NAME    CN_en
+// #   define OM_RELAY_CHANNEL_ENABLED_NAME    CN_en
 #   define OM_RELAY_CHANNEL_INVERT_NAME     CN_inv
 #   define OM_RELAY_CHANNEL_PWM_NAME        CN_pwm
 
@@ -94,4 +93,4 @@ private:
 
 }; // c_OutputRelay
 
-#endif // def SUPPORT_OutputType_Relay
+#endif // def SUPPORT_OutputProtocol_Relay

@@ -23,7 +23,7 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_WS2811)
+#if defined(SUPPORT_OutputProtocol_WS2811)
 
 #include "OutputWS2811.hpp"
 #include "OutputUart.hpp"
@@ -32,10 +32,8 @@ class c_OutputWS2811Uart : public c_OutputWS2811
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputWS2811Uart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                        gpio_num_t outputGpio,
-                        uart_port_t uart,
-                        c_OutputMgr::e_OutputType outputType);
+    c_OutputWS2811Uart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                        c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputWS2811Uart ();
 
     // functions to be provided by the derived class
@@ -61,4 +59,4 @@ private:
 
 }; // c_OutputWS2811Uart
 
-#endif // defined(SUPPORT_OutputType_WS2811)
+#endif // defined(SUPPORT_OutputProtocol_WS2811)

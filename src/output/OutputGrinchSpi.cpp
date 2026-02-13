@@ -18,16 +18,14 @@
 */
 
 #include "ESPixelStick.h"
-#if defined (SUPPORT_OutputType_GRINCH) && defined (SUPPORT_SPI_OUTPUT)
+#if defined (SUPPORT_OutputProtocol_GRINCH)
 
 #include "output/OutputGrinchSpi.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputGrinchSpi::c_OutputGrinchSpi (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputGrinch (OutputChannelId, outputGpio, uart, outputType)
+c_OutputGrinchSpi::c_OutputGrinchSpi (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                      c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputGrinch (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -51,7 +49,7 @@ c_OutputGrinchSpi::~c_OutputGrinchSpi ()
 void c_OutputGrinchSpi::Begin ()
 {
     // DEBUG_START;
-    Spi.Begin (this);
+    Spi.Begin (OutputPortDefinition, this);
     HasBeenInitialized = true;
 
     // DEBUG_END;
@@ -108,4 +106,4 @@ uint32_t c_OutputGrinchSpi::Poll ()
 
 } // render
 
-#endif // defined (SUPPORT_OutputType_GRINCH) && defined (SUPPORT_SPI_OUTPUT)
+#endif // defined (SUPPORT_OutputProtocol_GRINCH)

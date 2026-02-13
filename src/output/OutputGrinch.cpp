@@ -18,16 +18,14 @@
 */
 
 #include "ESPixelStick.h"
-#ifdef SUPPORT_OutputType_GRINCH
+#ifdef SUPPORT_OutputProtocol_GRINCH
 
 #include "output/OutputGrinch.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputGrinch::c_OutputGrinch (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputCommon (OutputChannelId, outputGpio, uart, outputType)
+c_OutputGrinch::c_OutputGrinch (OM_OutputPortDefinition_t & OutputPortDefinition,
+    c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputCommon (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -163,4 +161,4 @@ void c_OutputGrinch::StartNewFrame()
     // DEBUG_END;
 } // StartNewFrame
 
-#endif // def SUPPORT_OutputType_GRINCH
+#endif // def SUPPORT_OutputProtocol_GRINCH

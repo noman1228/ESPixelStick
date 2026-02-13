@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if defined (SUPPORT_OutputType_TM1814) && defined (ARDUINO_ARCH_ESP32)
+#if defined (SUPPORT_OutputProtocol_TM1814) && defined (ARDUINO_ARCH_ESP32)
 
 #include "OutputTM1814.hpp"
 #include "OutputRmt.hpp"
@@ -31,10 +31,8 @@ class c_OutputTM1814Rmt : public c_OutputTM1814
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputTM1814Rmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputTM1814Rmt (OM_OutputPortDefinition_t & OutputPortDefinition,
+                       c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputTM1814Rmt ();
 
     // functions to be provided by the derived class
@@ -52,4 +50,4 @@ private:
 
 }; // c_OutputTM1814Rmt
 
-#endif // defined (SUPPORT_OutputType_TM1814) && defined (ARDUINO_ARCH_ESP32)
+#endif // defined (SUPPORT_OutputProtocol_TM1814) && defined (ARDUINO_ARCH_ESP32)

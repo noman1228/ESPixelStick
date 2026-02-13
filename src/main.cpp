@@ -109,6 +109,7 @@ bool     ResetWiFi = false;
 bool     IsBooting = true;  // Configuration initialization flag
 time_t   ConfigLoadNeeded = NO_CONFIG_NEEDED;
 bool     ConfigSaveNeeded = false;
+bool     BackupFlashToolConfig = false;
 
 uint32_t DiscardedRxData = 0;
 
@@ -352,6 +353,7 @@ bool deserializeCore (JsonObject & json)
     JsonObject InitConfig = json[(char*)CN_init];
     JsonObject NetworkConfig = json[(char*)CN_network];
     JsonObject DeviceConfig;
+    // PrettyPrint (json, "Top level Device Config");
 
     do // once
     {
@@ -367,6 +369,7 @@ bool deserializeCore (JsonObject & json)
         {
             // trigger a save operation
             ConfigSaveNeeded = true;
+            BackupFlashToolConfig = true;
             logcon(String(F("Processing Flash Tool config")));
             DeviceConfig = json;
         }
@@ -402,7 +405,11 @@ bool deserializeCore (JsonObject & json)
         // is this a config from the web flash tool?
         // DEBUG_V("Forcing a save config due to missing GPIO settings");
         ConfigSaveNeeded = DeviceConfig["requiresConfigSave"].is<bool>();
-
+        if(ConfigSaveNeeded)
+        {
+            logcon(String(F("Detected Web Flash config")));
+            BackupFlashToolConfig = true;
+        }
         dsDevice(DeviceConfig);
         // DEBUG_V("");
         FileMgr.SetConfig(DeviceConfig);
@@ -463,9 +470,27 @@ void LoadConfig()
 
     ConfigLoadNeeded = NO_CONFIG_NEEDED;
 
-    String temp;
     // DEBUG_V ("");
-    ConfigSaveNeeded |= !FileMgr.LoadFlashFile (ConstConfig.ConfigFileName, &deserializeCoreHandler);
+    if(FileMgr.FlashFileExists(ConstConfig.ConfigFileName))
+    {
+        // DEBUG_V("Loading system config");
+        ConfigSaveNeeded |= !FileMgr.LoadFlashFile (ConstConfig.ConfigFileName, &deserializeCoreHandler);
+        if(BackupFlashToolConfig)
+        {
+            // the processed file is from the flash tool.
+            // Save it for later
+            // DEBUG_V("Saving Flash Tool Config file.");
+            String FlashToolConfigFileName = String(F("/flashTool.SysCfg"));
+            FileMgr.RenameFlashFile(String(ConstConfig.ConfigFileName), FlashToolConfigFileName);
+        }
+    }
+    else
+    {
+        // DEBUG_V("Try to load Flash Tool Config file.");
+        String FlashToolConfigFileName = String(F("/flashTool.SysCfg"));
+        FileMgr.LoadFlashFile (FlashToolConfigFileName, &deserializeCoreHandler);
+        ConfigSaveNeeded = true;
+    }
     ConfigSaveNeeded |= !validateConfig ();
 
     // DEBUG_END;

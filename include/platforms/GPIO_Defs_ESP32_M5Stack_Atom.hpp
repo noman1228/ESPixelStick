@@ -31,25 +31,22 @@
 */
 
 // Output Manager
-// Bottom extension interface
-#define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_19 // TxD for RS485 Base
-
-// Internal neopixel(s)
-#define DEFAULT_RMT_1_GPIO      gpio_num_t::GPIO_NUM_27
-
-// Bottom extension interface
-#define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_22
-#define DEFAULT_RMT_3_GPIO      gpio_num_t::GPIO_NUM_23
-#define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_33
-
-// GROVE extension interface
-#define DEFAULT_RMT_5_GPIO      gpio_num_t::GPIO_NUM_26 // TxD for RS485 Tail
-//#define DEFAULT_RMT_6_GPIO      gpio_num_t::GPIO_NUM_32  // disabled by default due to memory contraints.
-
-// Bottom extension interface
-// Disabled by default, on Atom Matrix I2C is shared with a 6-Axis IMU (MPU-6886)
-// #define DEFAULT_I2C_SDA         gpio_num_t::GPIO_NUM_25
-// #define DEFAULT_I2C_SCL         gpio_num_t::GPIO_NUM_21
+// MAX 8 Serial port on ESP32
+const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
+{
+    {OM_PortId_t(0), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_19}},
+    {OM_PortId_t(0), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_19}},
+    {OM_PortId_t(1), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_27}},
+    {OM_PortId_t(1), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_27}},
+    {OM_PortId_t(2), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_22}},
+    {OM_PortId_t(2), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_22}},
+    {OM_PortId_t(3), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_23}},
+    {OM_PortId_t(3), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_23}},
+    {OM_PortId_t(4), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_33}},
+    {OM_PortId_t(4), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_33}},
+    {OM_PortId_t(5), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_26}},
+    {OM_PortId_t(5), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_26}},
+};
 
 // File Manager - Defnitions must be present even if SD is not supported
 // #define SUPPORT_SD
@@ -59,19 +56,19 @@
 #define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_15
 
 // Output Types
-// Not Finished - #define SUPPORT_OutputType_TLS3001
-// #define SUPPORT_OutputType_APA102           // SPI
-#define SUPPORT_OutputType_DMX              // UART
-#define SUPPORT_OutputType_GECE             // UART
-#define SUPPORT_OutputType_GS8208           // UART / RMT
-#define SUPPORT_OutputType_Renard           // UART
-#define SUPPORT_OutputType_Serial           // UART
-#define SUPPORT_OutputType_TM1814           // UART / RMT
-#define SUPPORT_OutputType_UCS1903          // UART / RMT
-#define SUPPORT_OutputType_UCS8903          // UART / RMT
-// #define SUPPORT_OutputType_WS2801           // SPI
-#define SUPPORT_OutputType_WS2811           // UART / RMT
-#define SUPPORT_OutputType_Relay            // GPIO
-// Disabled by default, on Atom Matrix I2C is shared with a 6-Axis IMU (MPU-6886)
-// #define SUPPORT_OutputType_Servo_PCA9685    // I2C (default pins)
-#define SUPPORT_OutputType_FireGod          // UART / RMT
+// Not Finished - #define SUPPORT_OutputProtocol_TLS3001
+// #define SUPPORT_OutputProtocol_APA102           // OM_SPI
+#define SUPPORT_OutputProtocol_DMX              // OM_SERIAL
+#define SUPPORT_OutputProtocol_GECE             // OM_SERIAL
+#define SUPPORT_OutputProtocol_GS8208           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Renard           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Serial           // OM_SERIAL
+#define SUPPORT_OutputProtocol_TM1814           // OM_SERIAL
+#define SUPPORT_OutputProtocol_UCS1903          // OM_SERIAL
+#define SUPPORT_OutputProtocol_UCS8903          // OM_SERIAL
+// #define SUPPORT_OutputProtocol_WS2801           // OM_SPI
+#define SUPPORT_OutputProtocol_WS2811           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Relay            // OM_RELAY
+// #define SUPPORT_OutputProtocol_Servo_PCA9685    // OM_I2C
+#define SUPPORT_OutputProtocol_FireGod          // OM_SERIAL
+// #define SUPPORT_OutputProtocol_GRINCH           // OM_SPI

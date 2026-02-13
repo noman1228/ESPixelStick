@@ -19,16 +19,14 @@
 
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_GECE)
+#if defined(SUPPORT_OutputProtocol_GECE)
 
 #include "output/OutputGECE.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputGECE::c_OutputGECE (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                            gpio_num_t outputGpio,
-                            uart_port_t uart,
-                            c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel(OutputChannelId, outputGpio, uart, outputType)
+c_OutputGECE::c_OutputGECE (OM_OutputPortDefinition_t & OutputPortDefinition,
+                            c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputPixel(OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -69,12 +67,6 @@ bool c_OutputGECE::SetConfig(ArduinoJson::JsonObject & jsonConfig)
     // DEBUG_START;
 
     c_OutputPixel::SetConfig(jsonConfig);
-#ifdef foo
-    uint temp;
-    temp = map(brightness, 0, 255, 0, 100);
-    setFromJSON(temp,  jsonConfig, CN_brightness);
-    brightness = map (temp, 0, 100, 0, 255);
-#endif // def foo
 
     // DEBUG_END;
 
@@ -137,11 +129,6 @@ bool c_OutputGECE::validate ()
     // DEBUG_V (String ("pixel_count: ") + String (pixel_count));
     SetOutputBufferSize(PixelCount * GECE_NUM_INTENSITY_BYTES_PER_PIXEL);
     SetPixelCount(PixelCount);
-#ifdef foo
-
-    OutputFrame.CurrentPixelID = 0;
-    OutputFrame.pCurrentInputData = pOutputBuffer;
-#endif // def foo
 
     // DEBUG_END;
 
@@ -159,4 +146,4 @@ uint32_t c_OutputGECE::Poll()
     return 0;
 } // render
 
-#endif // defined(SUPPORT_OutputType_GECE)
+#endif // defined(SUPPORT_OutputProtocol_GECE)

@@ -19,16 +19,14 @@
 
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_GS8208)
+#if defined(SUPPORT_OutputProtocol_GS8208)
 
 #include "output/OutputGS8208.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputGS8208::c_OutputGS8208 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel (OutputChannelId, outputGpio, uart, outputType)
+c_OutputGS8208::c_OutputGS8208 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                c_OutputMgr::e_OutputProtocolType outputType) :
+        c_OutputPixel (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -115,4 +113,4 @@ bool c_OutputGS8208::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
 } // SetConfig
 
-#endif // defined(SUPPORT_OutputType_GS8208)
+#endif // defined(SUPPORT_OutputProtocol_GS8208)

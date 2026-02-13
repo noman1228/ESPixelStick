@@ -23,7 +23,7 @@
 */
 
 #include "OutputPixel.hpp"
-#if defined(SUPPORT_OutputType_WS2811)
+#if defined(SUPPORT_OutputProtocol_WS2811)
 
 #ifdef ARDUINO_ARCH_ESP32
 #   include <driver/uart.h>
@@ -33,10 +33,8 @@ class c_OutputWS2811 : public c_OutputPixel
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputWS2811 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputWS2811 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                    c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputWS2811 ();
 
     // functions to be provided by the derived class
@@ -74,4 +72,4 @@ protected:
 
 }; // c_OutputWS2811
 
-#endif // defined(SUPPORT_OutputType_WS2811)
+#endif // defined(SUPPORT_OutputProtocol_WS2811)

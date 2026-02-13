@@ -18,7 +18,7 @@
 */
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_GECE)
+#if defined(SUPPORT_OutputProtocol_GECE)
 
 #include "output/OutputGECEUart.hpp"
 
@@ -37,11 +37,9 @@ static const c_OutputUart::ConvertIntensityToUartDataStreamEntry_t ConvertIntens
 };
 
 //----------------------------------------------------------------------------
-c_OutputGECEUart::c_OutputGECEUart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                                    gpio_num_t outputGpio,
-                                    uart_port_t uart,
-                                    c_OutputMgr::e_OutputType outputType) :
-                                    c_OutputGECE (OutputChannelId, outputGpio, uart, outputType)
+c_OutputGECEUart::c_OutputGECEUart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                    c_OutputMgr::e_OutputProtocolType outputType) :
+        c_OutputGECE (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -68,9 +66,9 @@ void c_OutputGECEUart::Begin ()
     SetIntensityBitTimeInUS(float(GECE_USEC_PER_GECE_BIT));
 
     c_OutputUart::OutputUartConfig_t OutputUartConfig;
-    OutputUartConfig.ChannelId                      = OutputChannelId;
-    OutputUartConfig.UartId                         = UartId;
-    OutputUartConfig.DataPin                        = DataPin;
+    OutputUartConfig.OutputPortId                   = OutputPortDefinition.PortId;
+    OutputUartConfig.UartId                         = uart_port_t(OutputPortDefinition.DeviceId);
+    OutputUartConfig.DataPin                        = OutputPortDefinition.gpios.data;
     OutputUartConfig.IntensityDataWidth             = GECE_PACKET_SIZE;
     OutputUartConfig.UartDataSize                   = c_OutputUart::UartDatauint32_t::OUTPUT_UART_8N1;
     OutputUartConfig.TranslateIntensityData         = c_OutputUart::TranslateIntensityData_t::TwoToOne;
@@ -146,7 +144,7 @@ uint32_t c_OutputGECEUart::Poll ()
 
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             FrameLen = 0;
             break;
@@ -187,4 +185,4 @@ void c_OutputGECEUart::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_GECE)
+#endif // defined(SUPPORT_OutputProtocol_GECE)

@@ -16,24 +16,22 @@ GNU General Public License for more details.
 ******************************************************************/
 
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
 
 #include "output/OutputSerialUart.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputSerialUart::c_OutputSerialUart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                                        gpio_num_t outputGpio,
-                                        uart_port_t uart,
-                                        c_OutputMgr::e_OutputType outputType) :
-    c_OutputSerial(OutputChannelId, outputGpio, uart, outputType)
+c_OutputSerialUart::c_OutputSerialUart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                        c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputSerial(OutputPortDefinition, outputType)
 {
     // DEBUG_START;
-    #if defined(SUPPORT_OutputType_FireGod)
-    if (c_OutputMgr::e_OutputType::OutputType_FireGod == OutputType)
+    #if defined(SUPPORT_OutputProtocol_FireGod)
+    if (c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod == OutputType)
     {
         CurrentBaudrate = 115200;
     }
-    #endif // defined(SUPPORT_OutputType_FireGod)
+    #endif // defined(SUPPORT_OutputProtocol_FireGod)
     // DEBUG_END;
 } // c_OutputSerialUart
 
@@ -52,16 +50,16 @@ void c_OutputSerialUart::Begin ()
     c_OutputSerial::Begin();
 
     c_OutputUart::OutputUartConfig_t OutputUartConfig;
-#if defined(SUPPORT_OutputType_DMX)
-    if (c_OutputMgr::e_OutputType::OutputType_DMX == OutputType)
+#if defined(SUPPORT_OutputProtocol_DMX)
+    if (c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX == OutputType)
     {
         OutputUartConfig.FrameStartBreakUS          = 92;
         OutputUartConfig.FrameStartMarkAfterBreakUS = 23;
     }
-#endif // defined(SUPPORT_OutputType_DMX)
-    OutputUartConfig.ChannelId = OutputChannelId;
-    OutputUartConfig.UartId                 = UartId;
-    OutputUartConfig.DataPin                = DataPin;
+#endif // defined(SUPPORT_OutputProtocol_DMX)
+    OutputUartConfig.OutputPortId           = OutputPortDefinition.PortId;
+    OutputUartConfig.UartId                 = uart_port_t(OutputPortDefinition.DeviceId);
+    OutputUartConfig.DataPin                = OutputPortDefinition.gpios.data;
     OutputUartConfig.IntensityDataWidth     = 8;
     OutputUartConfig.UartDataSize           = c_OutputUart::UartDatauint32_t::OUTPUT_UART_8N2;
     OutputUartConfig.TranslateIntensityData = c_OutputUart::TranslateIntensityData_t::NoTranslation;
@@ -142,4 +140,4 @@ void c_OutputSerialUart::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+#endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)

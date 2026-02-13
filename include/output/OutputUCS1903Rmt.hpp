@@ -23,7 +23,7 @@
 */
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_UCS1903) && defined(ARDUINO_ARCH_ESP32)
+#if defined(SUPPORT_OutputProtocol_UCS1903) && defined(ARDUINO_ARCH_ESP32)
 
 #include "OutputUCS1903.hpp"
 #include "OutputRmt.hpp"
@@ -32,10 +32,8 @@ class c_OutputUCS1903Rmt : public c_OutputUCS1903
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputUCS1903Rmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                        gpio_num_t outputGpio,
-                        uart_port_t uart,
-                        c_OutputMgr::e_OutputType outputType);
+    c_OutputUCS1903Rmt (OM_OutputPortDefinition_t & OutputPortDefinition,
+                        c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputUCS1903Rmt ();
 
     // functions to be provided by the derived class
@@ -53,4 +51,4 @@ private:
 
 }; // c_OutputUCS1903Rmt
 
-#endif // defined(SUPPORT_OutputType_UCS1903) && defined(ARDUINO_ARCH_ESP32)
+#endif // defined(SUPPORT_OutputProtocol_UCS1903) && defined(ARDUINO_ARCH_ESP32)

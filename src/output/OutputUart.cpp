@@ -55,7 +55,7 @@ extern "C"
 // forward declaration for the isr handler
 static void IRAM_ATTR uart_intr_handler (void* param);
 #ifdef ARDUINO_ARCH_ESP8266
-static c_OutputUart *OutputTimerArray[c_OutputMgr::e_OutputChannelIds::OutputChannelId_End];
+static c_OutputUart **pOutputTimerArray = nullptr;
 #endif // def ARDUINO_ARCH_ESP8266
 
 #ifdef ARDUINO_ARCH_ESP8266
@@ -97,8 +97,9 @@ static bool AreTimersRunning()
 {
     // clean up the timer ISR
     bool foundActiveChannel = false;
-    for (auto currentChannel : OutputTimerArray)
+    for (uint8_t index = 0; index < OutputMgr.GetNumPorts(); index++)
     {
+        c_OutputUart * currentChannel = pOutputTimerArray[index];
         // DEBUG_V (String ("currentChannel: ") + String (uint(currentChannel), HEX));
         if (nullptr != currentChannel)
         {
@@ -115,8 +116,9 @@ static bool AreTimersRunning()
  */
 static void IRAM_ATTR timer_intr_handler()
 {
-    for (auto currentChannel : OutputTimerArray)
+    for (uint8_t index = 0; index < OutputMgr.GetNumPorts(); index++)
     {
+        c_OutputUart * currentChannel = pOutputTimerArray[index];
         if (nullptr != currentChannel)
         {
             // U0F = '.';
@@ -134,6 +136,17 @@ c_OutputUart::c_OutputUart()
 
     memset((void *)&Intensity2Uart[0],   0x00, sizeof(Intensity2Uart));
 
+    #ifdef ARDUINO_ARCH_ESP8266
+    // c_OutputUart* is an aligned structure
+    size_t alignment = alignof(c_OutputUart*);
+    size_t SizeOfTable = sizeof(c_OutputUart*) * OutputMgr.GetNumPorts();
+    // Ensure total_size is a multiple of alignment (which it should be if sizeof(AlignedObject) is used)
+    byte * raw_mem = (((byte*)malloc(SizeOfTable + (2*alignment))) + alignment);
+    pOutputTimerArray = static_cast<c_OutputUart**>((void*)raw_mem);
+    memset(pOutputTimerArray, 0x00, SizeOfTable);
+#endif // def ARDUINO_ARCH_ESP8266
+
+
     // DEBUG_END;
 } // c_OutputUart
 
@@ -146,7 +159,7 @@ c_OutputUart::~c_OutputUart ()
 
 #ifdef ARDUINO_ARCH_ESP8266
 
-    OutputTimerArray[OutputUartConfig.ChannelId] = nullptr;
+    pOutputTimerArray[OutputUartConfig.OutputPortId] = nullptr;
 
     // have all of the timer channels been killed?
     if (!AreTimersRunning())
@@ -183,11 +196,11 @@ void c_OutputUart::Begin (OutputUartConfig_t & config )
     {
         // save the initial config
         OutputUartConfig = config;
-        #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
         if ((nullptr == OutputUartConfig.pPixelDataSource) && (nullptr == OutputUartConfig.pSerialDataSource))
         #else
         if (nullptr == OutputUartConfig.pPixelDataSource)
-        #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
 
         {
             String Reason = (F("Invalid UART configuration parameters. Rebooting"));
@@ -358,7 +371,7 @@ void c_OutputUart::InitializeUart()
 
             default:
             {
-                logcon(String(F(" Initializing UART on Chan: '")) + String(OutputUartConfig.ChannelId) + "'. ERROR: Invalid UART Id");
+                logcon(String(F(" Initializing UART on Chan: '")) + String(OutputUartConfig.OutputPortId) + "'. ERROR: Invalid UART Id");
                 break;
             }
 
@@ -540,11 +553,11 @@ bool inline IRAM_ATTR c_OutputUart::MoreDataToSend()
     }
     else
     {
-        #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
         return OutputUartConfig.pSerialDataSource->ISR_MoreDataToSend();
         #else
         return false;
-        #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
     }
 } // MoreDataToSend
 
@@ -557,11 +570,11 @@ bool inline IRAM_ATTR c_OutputUart::GetNextIntensityToSend(uint32_t &DataToSend)
     }
     else
     {
-        #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
         return OutputUartConfig.pSerialDataSource->ISR_GetNextIntensityToSend(DataToSend);
         #else
         return false;
-        #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+        #endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
     }
 } // GetNextIntensityToSend
 
@@ -572,12 +585,12 @@ void IRAM_ATTR c_OutputUart::StartNewDataFrame()
     {
         OutputUartConfig.pPixelDataSource->StartNewFrame();
     }
-    #if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+    #if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
     else
     {
         OutputUartConfig.pSerialDataSource->StartNewFrame();
     }
-    #endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+    #endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
 } // StartNewDataFrame
 
 //----------------------------------------------------------------------------
@@ -1136,7 +1149,7 @@ void c_OutputUart::StartUart()
         // DEBUG_V("start processing the timer interrupts");
         if (IsUartTimerInUse())
         {
-            OutputTimerArray[OutputUartConfig.ChannelId] = this;
+            pOutputTimerArray[OutputUartConfig.OutputPortId] = this;
         }
 #endif // def ARDUINO_ARCH_ESP8266
 

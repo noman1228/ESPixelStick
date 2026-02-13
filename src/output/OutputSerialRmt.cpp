@@ -17,16 +17,14 @@
 *
 */
 #include "ESPixelStick.h"
-#if (defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)
+#if (defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)) && defined(ARDUINO_ARCH_ESP32)
 
 #include "output/OutputSerialRmt.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputSerialRmt::c_OutputSerialRmt (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputSerial (OutputChannelId, outputGpio, uart, outputType)
+c_OutputSerialRmt::c_OutputSerialRmt (OM_OutputPortDefinition_t & OutputPortDefinition,
+    c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputSerial (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -63,18 +61,18 @@ bool c_OutputSerialRmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 {
     // DEBUG_START;
 
-    #if defined(SUPPORT_OutputType_FireGod)
-    if (OutputType == c_OutputMgr::e_OutputType::OutputType_FireGod)
+    #if defined(SUPPORT_OutputProtocol_FireGod)
+    if (OutputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod)
     {
         idle_level = rmt_idle_level_t::RMT_IDLE_LEVEL_HIGH;
     }
-    #endif // defined(SUPPORT_OutputType_FireGod)
+    #endif // defined(SUPPORT_OutputProtocol_FireGod)
 
     bool response = c_OutputSerial::SetConfig (jsonConfig);
     // DEBUG_V (String ("DataPin: ") + String (DataPin));
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
-    OutputRmtConfig.RmtChannelId            = rmt_channel_t(OutputChannelId);
-    OutputRmtConfig.DataPin                 = gpio_num_t(DataPin);
+    OutputRmtConfig.RmtChannelId            = rmt_channel_t(OutputPortDefinition.DeviceId);
+    OutputRmtConfig.DataPin                 = gpio_num_t(OutputPortDefinition.gpios.data);
     OutputRmtConfig.idle_level              = idle_level;
     OutputRmtConfig.pSerialDataSource       = this;
     OutputRmtConfig.SendInterIntensityBits  = true;
@@ -174,8 +172,8 @@ void c_OutputSerialRmt::SetUpRmtBitTimes()
     BitValue.level1 = 1;
     Rmt.SetIntensity2Rmt(BitValue, c_OutputRmt::RmtDataBitIdType_t::RMT_END_OF_FRAME);
 
-#if defined(SUPPORT_OutputType_DMX)
-    if (c_OutputMgr::e_OutputType::OutputType_DMX == OutputType)
+#if defined(SUPPORT_OutputProtocol_DMX)
+    if (c_OutputMgr::e_OutputProtocolType::OutputProtocol_DMX == OutputType)
     {
         // turn it into a break signal
         BitValue.duration0 = (DMX_BREAK_US * NanoSecondsInAMicroSecond) / RMT_TickLengthNS;
@@ -184,16 +182,16 @@ void c_OutputSerialRmt::SetUpRmtBitTimes()
         BitValue.level1 = 1;
         Rmt.SetIntensity2Rmt(BitValue, c_OutputRmt::RmtDataBitIdType_t::RMT_INTERFRAME_GAP_ID);
     }
-#endif // defined(SUPPORT_OutputType_DMX)
+#endif // defined(SUPPORT_OutputProtocol_DMX)
 
-#if defined(SUPPORT_OutputType_Serial)
-#endif // defined(SUPPORT_OutputType_Serial)
+#if defined(SUPPORT_OutputProtocol_Serial)
+#endif // defined(SUPPORT_OutputProtocol_Serial)
 
-#if defined(SUPPORT_OutputType_Renard)
-#endif // defined(SUPPORT_OutputType_Renard)
+#if defined(SUPPORT_OutputProtocol_Renard)
+#endif // defined(SUPPORT_OutputProtocol_Renard)
 
-#if defined(SUPPORT_OutputType_FireGod)
-#endif // defined(SUPPORT_OutputType_Serial)
+#if defined(SUPPORT_OutputProtocol_FireGod)
+#endif // defined(SUPPORT_OutputProtocol_Serial)
 
 } // SetUpRmtBitTimes
 
@@ -237,7 +235,7 @@ bool c_OutputSerialRmt::RmtPoll ()
     bool Response = false;
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             break;
         }
@@ -268,4 +266,4 @@ void c_OutputSerialRmt::PauseOutput (bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // (defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)) && defined(ARDUINO_ARCH_ESP32)
+#endif // (defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)) && defined(ARDUINO_ARCH_ESP32)

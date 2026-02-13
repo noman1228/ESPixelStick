@@ -23,14 +23,14 @@
 */
 
 #include "ESPixelStick.h"
-#ifdef SUPPORT_SPI_OUTPUT
+#ifdef ARDUINO_ARCH_ESP32
 
 #include "OutputPixel.hpp"
 #include <driver/spi_master.h>
 #include <esp_task.h>
-#if defined(SUPPORT_OutputType_GRINCH)
+#if defined(SUPPORT_OutputProtocol_GRINCH)
     #include "OutputGrinch.hpp"
-#endif // defined(SUPPORT_OutputType_GRINCH)
+#endif // defined(SUPPORT_OutputProtocol_GRINCH)
 
 class c_OutputSpi
 {
@@ -40,10 +40,10 @@ public:
     virtual ~c_OutputSpi ();
 
     // functions to be provided by the derived class
-    void    Begin (c_OutputPixel* _OutputPixel);
-#if defined(SUPPORT_OutputType_GRINCH)
-    void    Begin (c_OutputGrinch* _OutputSerial);
-#endif // defined(SUPPORT_OutputType_GRINCH)
+    void    Begin (OM_OutputPortDefinition_t & OutputPortDefinition, c_OutputPixel* _OutputPixel);
+#if defined(SUPPORT_OutputProtocol_GRINCH)
+    void    Begin (OM_OutputPortDefinition_t & OutputPortDefinition, c_OutputGrinch* _OutputSerial);
+#endif // defined(SUPPORT_OutputProtocol_GRINCH)
     bool    Poll ();                                        ///< Call from loop (),  renders output data
     TaskHandle_t GetTaskHandle () { return SendIntensityDataTaskHandle; }
     void    GetDriverName (String& Name) { Name = CN_OutputSpi; }
@@ -56,6 +56,8 @@ public:
     uint32_t DataCbCounter = 0;
 
 private:
+
+    OM_OutputPortDefinition_t OutputPortDefinition;
 
 #define SPI_SPI_MASTER_FREQ_1M               (APB_CLK_FREQ/80) // 1Mhz
 #define SPI_NUM_TRANSACTIONS                 2
@@ -86,14 +88,10 @@ private:
 #   define DEFAULT_SPI_CS_GPIO gpio_num_t(-1)
 #endif // ndef DEFAULT_SPI_CS_GPIO
 
-    gpio_num_t DataPin = DEFAULT_SPI_DATA_GPIO;
-    gpio_num_t ClockPin = DEFAULT_SPI_CLOCK_GPIO;
-    gpio_num_t CsPin = DEFAULT_SPI_CS_GPIO;
-
     c_OutputPixel* OutputPixel = nullptr;
-#if defined(SUPPORT_OutputType_GRINCH)
+#if defined(SUPPORT_OutputProtocol_GRINCH)
     c_OutputGrinch * OutputGrinch = nullptr;
-#endif // defined(SUPPORT_OutputType_GRINCH)
+#endif // defined(SUPPORT_OutputProtocol_GRINCH)
 
 #ifndef HasBeenInitialized
     bool HasBeenInitialized = false;
@@ -101,4 +99,4 @@ private:
 
 }; // c_OutputSpi
 
-#endif // def SUPPORT_SPI_OUTPUT
+#endif // def ARDUINO_ARCH_ESP32

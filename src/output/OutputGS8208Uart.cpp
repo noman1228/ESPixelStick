@@ -19,7 +19,7 @@
 
 #include "ESPixelStick.h"
 
-#if defined(SUPPORT_OutputType_GS8208)
+#if defined(SUPPORT_OutputProtocol_GS8208)
 
 #include "output/OutputGS8208Uart.hpp"
 
@@ -37,11 +37,9 @@ static const c_OutputUart::ConvertIntensityToUartDataStreamEntry_t ConvertIntens
 };
 
 //----------------------------------------------------------------------------
-c_OutputGS8208Uart::c_OutputGS8208Uart (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputGS8208 (OutputChannelId, outputGpio, uart, outputType)
+c_OutputGS8208Uart::c_OutputGS8208Uart (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                        c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputGS8208 (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -67,9 +65,9 @@ void c_OutputGS8208Uart::Begin ()
     SetIntensityBitTimeInUS(float(GS8208_PIXEL_NS_BIT_TOTAL) / float(NanoSecondsInAMicroSecond));
 
     c_OutputUart::OutputUartConfig_t OutputUartConfig;
-    OutputUartConfig.ChannelId                     = OutputChannelId;
-    OutputUartConfig.UartId                         = UartId;
-    OutputUartConfig.DataPin                        = DataPin;
+    OutputUartConfig.OutputPortId                   = OutputPortDefinition.PortType;
+    OutputUartConfig.UartId                         = uart_port_t(OutputPortDefinition.DeviceId);
+    OutputUartConfig.DataPin                        = OutputPortDefinition.gpios.data;
     OutputUartConfig.IntensityDataWidth             = GS8208_PIXEL_BITS_PER_INTENSITY;
     OutputUartConfig.UartDataSize                   = c_OutputUart::UartDatauint32_t::OUTPUT_UART_6N1;
     OutputUartConfig.TranslateIntensityData         = c_OutputUart::TranslateIntensityData_t::TwoToOne;
@@ -147,7 +145,7 @@ uint32_t c_OutputGS8208Uart::Poll()
 
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             FrameLen = 0;
             break;
@@ -188,4 +186,4 @@ void c_OutputGS8208Uart::PauseOutput(bool State)
     // DEBUG_END;
 } // PauseOutput
 
-#endif // defined(SUPPORT_OutputType_GS8208)
+#endif // defined(SUPPORT_OutputProtocol_GS8208)

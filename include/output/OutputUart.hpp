@@ -75,7 +75,7 @@ public:
 
     struct OutputUartConfig_t
     {
-        c_OutputCommon::OID_t       ChannelId                       = c_OutputCommon::OID_t(-1);
+        OM_PortId_t                 OutputPortId                    = OM_PortId_t(-1);
         gpio_num_t                  DataPin                         = gpio_num_t(-1);
         uart_port_t                 UartId                          = uart_port_t(-1);
         uint32_t                    IntensityDataWidth              = 8; // 8 bits in a byte
@@ -92,9 +92,9 @@ public:
         bool                        TriggerIsrExternally            = false;
         const CitudsArray_t        *CitudsArray                     = nullptr;
 
-	#if defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+	#if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
     c_OutputSerial *pSerialDataSource = nullptr;
-	#endif // defined(SUPPORT_OutputType_FireGod) || defined(SUPPORT_OutputType_DMX) || defined(SUPPORT_OutputType_Serial) || defined(SUPPORT_OutputType_Renard)
+	#endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
     };
 
     c_OutputUart                 ();

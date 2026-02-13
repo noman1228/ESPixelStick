@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#ifdef SUPPORT_OutputType_TLS3001
+#ifdef SUPPORT_OutputProtocol_TLS3001
 
 #include "OutputPixel.hpp"
 
@@ -30,7 +30,7 @@ class c_OutputTLS3001 : public c_OutputPixel
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputTLS3001 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
+    c_OutputTLS3001 (OM_PortId_t OutputPortId,
         gpio_num_t outputGpio,
         uart_port_t uart,
         c_OutputMgr::e_OutputType outputType);
@@ -83,4 +83,4 @@ private:
 
 }; // c_OutputTLS3001
 
-#endif // def SUPPORT_OutputType_TLS3001
+#endif // def SUPPORT_OutputProtocol_TLS3001

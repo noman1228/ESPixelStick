@@ -22,6 +22,7 @@
 
 #include "ESPixelStick.h"
 #include "OutputMgr.hpp"
+#include "OutputMgrPortDefs.hpp"
 
 #ifdef ARDUINO_ARCH_ESP32
 #   include <driver/uart.h>
@@ -30,14 +31,11 @@
 class c_OutputCommon
 {
 public:
-    c_OutputCommon (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                    gpio_num_t outputGpio,
-                    uart_port_t uart,
-                    c_OutputMgr::e_OutputType outputType);
+    c_OutputCommon (OM_OutputPortDefinition_t & OutputPortDefinition,
+                    c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputCommon ();
 
-    typedef  c_OutputMgr::e_OutputChannelIds OID_t;
-    typedef  c_OutputMgr::e_OutputType       OTYPE_t;
+    typedef  c_OutputMgr::e_OutputProtocolType       OTYPE_t;
 
     // functions to be provided by the derived class
     virtual void         Begin () {}                                           ///< set up the operating environment based on the current config (or defaults)
@@ -48,10 +46,10 @@ public:
     virtual bool         RmtPoll () = 0;                                        ///< Call from loop(),  renders output data
 #endif // def ARDUINO_ARCH_ESP32
     virtual void         GetDriverName (String & sDriverName) = 0;             ///< get the name for the instantiated driver
-            OID_t        GetOutputChannelId () { return OutputChannelId; }     ///< return the output channel number
+            OM_PortId_t  GetOutputPortId ()    { return OutputPortDefinition.PortId; }     ///< return the output channel number
             uint8_t    * GetBufferAddress ()   { return pOutputBuffer;}        ///< Get the address of the buffer into which the E1.31 handler will stuff data
             uint32_t     GetBufferUsedSize ()  { return OutputBufferSize;}     ///< Get the address of the buffer into which the E1.31 handler will stuff data
-            gpio_num_t   GetOutputGpio ()      { return DataPin; }
+            OM_GPIOS_t   GetOutputGpio ()      { return OutputPortDefinition.gpios; }
             OTYPE_t      GetOutputType ()      { return OutputType; }          ///< Have the instance report its type.
     virtual void         GetStatus (ArduinoJson::JsonObject & jsonStatus) = 0;
     virtual void         BaseGetStatus (ArduinoJson::JsonObject & jsonStatus);
@@ -70,10 +68,8 @@ public:
 
 protected:
 
-    gpio_num_t  DataPin                     = gpio_num_t (-1);
-    uart_port_t UartId                      = uart_port_t (-1);
-    OTYPE_t     OutputType                  = OTYPE_t::OutputType_Disabled;
-    OID_t       OutputChannelId             = OID_t::OutputChannelId_End;
+    OM_OutputPortDefinition_t OutputPortDefinition;
+    OTYPE_t     OutputType                  = OTYPE_t::OutputProtocol_Disabled;
     bool        HasBeenInitialized          = false;
     uint32_t    FrameDurationInMicroSec     = 25000;
     uint32_t    ActualFrameDurationMicroSec = 50000; // Default time for relays is every 50ms

@@ -24,7 +24,7 @@
 
 #include "OutputPixel.hpp"
 
-#ifdef SUPPORT_OutputType_UCS8903
+#ifdef SUPPORT_OutputProtocol_UCS8903
 #ifdef ARDUINO_ARCH_ESP32
 #   include <driver/uart.h>
 #endif
@@ -33,10 +33,8 @@ class c_OutputUCS8903 : public c_OutputPixel
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputUCS8903 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                      gpio_num_t outputGpio,
-                      uart_port_t uart,
-                      c_OutputMgr::e_OutputType outputType);
+    c_OutputUCS8903 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                     c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputUCS8903 ();
 
     // functions to be provided by the derived class
@@ -65,4 +63,4 @@ protected:
 #define UCS8903_INTENSITY_DATA_WIDTH         16
 
 }; // c_OutputUCS8903
-#endif // def SUPPORT_OutputType_UCS8903
+#endif // def SUPPORT_OutputProtocol_UCS8903

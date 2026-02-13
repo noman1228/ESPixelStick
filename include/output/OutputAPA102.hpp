@@ -22,7 +22,7 @@
 *
 */
 #include "ESPixelStick.h"
-#if defined(SUPPORT_OutputType_APA102)
+#if defined(SUPPORT_OutputProtocol_APA102)
 
 #include "OutputPixel.hpp"
 
@@ -30,10 +30,8 @@ class c_OutputAPA102 : public c_OutputPixel
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputAPA102 (c_OutputMgr::e_OutputChannelIds OutputChannelId,
-                    gpio_num_t outputGpio,
-                    uart_port_t uart,
-                    c_OutputMgr::e_OutputType outputType);
+    c_OutputAPA102 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                    c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputAPA102 ();
 
     // functions to be provided by the derived class
@@ -57,4 +55,4 @@ protected:
 
 }; // c_OutputAPA102
 
-#endif // defined(SUPPORT_OutputType_APA102) && defined(SUPPORT_SPI_OUTPUT)
+#endif // defined(SUPPORT_OutputProtocol_APA102)
