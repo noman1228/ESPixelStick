@@ -463,7 +463,7 @@ void IRAM_ATTR c_OutputRmt::ISR_CreateIntensityData ()
 
     ///DEBUG_END;
 
-} // ISR_Handler_SendIntensityData
+} // ISR_CreateIntensityData
 
 //----------------------------------------------------------------------------
 inline bool IRAM_ATTR c_OutputRmt::ISR_GetNextIntensityToSend(uint32_t &DataToSend)
@@ -632,7 +632,7 @@ void IRAM_ATTR c_OutputRmt::ISR_TransferIntensityDataToRMT (uint32_t MaxNumEntri
 
     ///DEBUG_END;
 
-} // ISR_Handler_TransferBufferToRMT
+} // ISR_TransferIntensityDataToRMT
 
 //----------------------------------------------------------------------------
 inline void IRAM_ATTR c_OutputRmt::ISR_WriteToBuffer(uint32_t value)
