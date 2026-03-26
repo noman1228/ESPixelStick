@@ -19,7 +19,14 @@
 #include "ESPixelStick.h"
 #ifdef ARDUINO_ARCH_ESP32
 #include "output/OutputRmt.hpp"
-#include <driver/rmt.h>
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    #include <driver/rmt_tx.h>
+#else
+    #include <driver/rmt.h>
+#endif // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+
+
 
 // forward declaration for the isr handler
 static void IRAM_ATTR   rmt_intr_handler (void* param);
@@ -196,9 +203,9 @@ void c_OutputRmt::Begin (OutputRmtConfig_t config, c_OutputCommon * _pParent )
         // DEBUG_V (String ("               RmtChannelId: ") + String (OutputRmtConfig.RmtChannelId));
 
         // Configure RMT channel
-        rmt_config_t RmtConfig = RMT_DEFAULT_CONFIG_TX(OutputRmtConfig.DataPin, OutputRmtConfig.RmtChannelId);
+        rmt_config_t RmtConfig = RMT_DEFAULT_CONFIG_TX(OutputRmtConfig.DataPin, rmt_channel_t(OutputRmtConfig.RmtChannelId));
+        RmtConfig.channel = rmt_channel_t(OutputRmtConfig.RmtChannelId);
         RmtConfig.rmt_mode = rmt_mode_t::RMT_MODE_TX;
-        RmtConfig.channel = OutputRmtConfig.RmtChannelId;
         RmtConfig.gpio_num = OutputRmtConfig.DataPin;
         RmtConfig.clk_div = RMT_Clock_Divisor;
         RmtConfig.mem_block_num = rmt_reserve_memsize_t::RMT_MEM_64;
@@ -404,8 +411,13 @@ void IRAM_ATTR c_OutputRmt::ISR_CreateIntensityData ()
 {
     /// DEBUG_START;
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    uint32_t OneBitValue  = Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ONE_ID].val;
+    uint32_t ZeroBitValue = Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ZERO_ID].val;
+#else
     register uint32_t OneBitValue  = Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ONE_ID].val;
     register uint32_t ZeroBitValue = Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ZERO_ID].val;
+#endif // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 
     uint32_t IntensityValue; // = 0;
     uint32_t NumAvailableBufferSlotsToFill = NumSendBufferSlots - NumUsedEntriesInSendBuffer;
@@ -576,10 +588,17 @@ inline bool IRAM_ATTR c_OutputRmt::ISR_MoreDataToSend()
 //----------------------------------------------------------------------------
 inline void IRAM_ATTR c_OutputRmt::ResetRmtBlockPointers()
 {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    rmt_enable(&RMT, OutputRmtConfig.RmtChannelId);
+    rmt_ll_rx_set_mem_owner(&RMT, OutputRmtConfig.RmtChannelId, rmt_ll_mem_owner_t::RMT_LL_MEM_OWNER_SW);
+    rmt_ll_tx_reset_pointer(&RMT, OutputRmtConfig.RmtChannelId);
+    rmt_ll_enable_mem_access(&RMT, RMT_DATA_MODE_MEM);
+#else
     rmt_ll_tx_stop(&RMT, OutputRmtConfig.RmtChannelId);
     rmt_ll_rx_set_mem_owner(&RMT, OutputRmtConfig.RmtChannelId,RMT_MEM_OWNER_TX);
     rmt_ll_tx_reset_pointer(&RMT, OutputRmtConfig.RmtChannelId);
     rmt_ll_enable_mem_access(&RMT, RMT_DATA_MODE_MEM);
+#endif // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 
     memset((void*)&RMTMEM.chan[OutputRmtConfig.RmtChannelId].data32[0], 0x0, sizeof(RMTMEM.chan[0].data32));
 
