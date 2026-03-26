@@ -102,7 +102,7 @@ bool c_OutputWS2811Rmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
     BitValue.level1    = 0;
 
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
-    OutputRmtConfig.RmtChannelId      = rmt_channel_t(OutputPortDefinition.PortId);
+    OutputRmtConfig.RmtChannelId      = uint32_t(OutputPortDefinition.PortId);
     OutputRmtConfig.DataPin           = gpio_num_t(OutputPortDefinition.gpios.data);
     OutputRmtConfig.idle_level        = rmt_idle_level_t::RMT_IDLE_LEVEL_HIGH;
     OutputRmtConfig.pPixelDataSource  = this;
