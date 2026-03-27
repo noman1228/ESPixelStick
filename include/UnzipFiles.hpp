@@ -22,6 +22,7 @@
 #include "ESPixelStick.h"
 #include <unzipLIB.h>
 #include <TimeLib.h>
+#include <vector>
 
 class UnzipFiles
 {
@@ -30,6 +31,7 @@ public:
     virtual ~UnzipFiles ();
 
     void    Run();
+    void    Poll();
 
     void *  OpenZipFile(const char *filename, int32_t *size);
     void    CloseZipFile(void *p);
@@ -39,12 +41,32 @@ public:
     void    ProcessZipFile(String & FileName);
     void    ProcessCurrentFileInZip(unz_file_info & fi, String & Name);
 
+    bool    IsUnzipping() const { return isUnzipping; }
+    bool    HasPendingZipFile() const { return hasPendingZipFile; }
+    bool    IsUnzipComplete() const { return isUnzipComplete; }
+    String  GetCurrentZipFileName() const { return currentZipFileName; }
+    uint32_t GetUnzipProgress() const { return unzipBytesWritten; }
+    uint32_t GetUnzipTotalSize() const { return unzipTotalSize; }
+    uint32_t GetPendingCount() const { return uint32_t(pendingArchives.size()); }
+    uint32_t GetCurrentArchiveIndex1Based() const { return (pendingArchives.empty() ? 0u : (currentArchiveIndex + 1)); }
+
 private:
     UNZIP       zip; // statically allocate the UNZIP structure (41K)
     uint8_t     *pOutputBuffer = nullptr;
     uint32_t    BufferSize = 0;
     int32_t     SeekPosition = 0;
     void        DosDateToTmuDate (uint32_t DosDate, tmElements_t * ptm);
+
+    bool        isUnzipping = false;
+    bool        hasPendingZipFile = false;
+    bool        isUnzipComplete = false;
+    String      currentZipFileName = emptyString;
+    uint32_t    networkConnectionCheckTime = 0;
+    uint32_t    unzipCompleteTime = 0;
+    uint32_t    unzipBytesWritten = 0;
+    uint32_t    unzipTotalSize = 0;
+    std::vector<String> pendingArchives;
+    uint32_t    currentArchiveIndex = 0;
 
 protected:
 

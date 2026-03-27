@@ -23,6 +23,9 @@
 #include "input/InputMgr.hpp"
 #include "service/FPPDiscovery.h"
 #include "network/NetworkMgr.hpp"
+#ifdef SUPPORT_UNZIP
+#include "UnzipFiles.hpp"
+#endif
 #ifdef ARDUINO_ARCH_ESP8266
 #   include <ESPAsyncTCP.h>
 #endif // def ARDUINO_ARCH_ESP8266
@@ -814,6 +817,33 @@ void c_WebMgr::ProcessXJRequest (AsyncWebServerRequest* client)
     // DEBUG_V ("FileMgr.GetStatus");
     FileMgr.GetStatus (system);
     // DEBUG_V ("");
+
+#ifdef SUPPORT_UNZIP
+    JsonObject unzipStatus = system[F("unzip")].to<JsonObject>();
+    JsonWrite(unzipStatus, F("isUnzipping"), gUnzipFiles.IsUnzipping());
+    JsonWrite(unzipStatus, F("hasPending"), gUnzipFiles.HasPendingZipFile());
+    JsonWrite(unzipStatus, F("isComplete"), gUnzipFiles.IsUnzipComplete());
+    JsonWrite(unzipStatus, F("totalCount"), gUnzipFiles.GetPendingCount());
+    JsonWrite(unzipStatus, F("currentIndex"), gUnzipFiles.GetCurrentArchiveIndex1Based());
+
+    if(gUnzipFiles.HasPendingZipFile() || gUnzipFiles.IsUnzipping() || gUnzipFiles.IsUnzipComplete())
+    {
+        JsonWrite(unzipStatus, F("fileName"), gUnzipFiles.GetCurrentZipFileName());
+    }
+
+    if(gUnzipFiles.IsUnzipping())
+    {
+        uint32_t totalSize = gUnzipFiles.GetUnzipTotalSize();
+        uint32_t bytesWritten = gUnzipFiles.GetUnzipProgress();
+        if(totalSize > 0)
+        {
+            uint8_t progress = (bytesWritten * 100) / totalSize;
+            JsonWrite(unzipStatus, F("progress"), progress);
+            JsonWrite(unzipStatus, F("bytesWritten"), bytesWritten);
+            JsonWrite(unzipStatus, F("totalSize"), totalSize);
+        }
+    }
+#endif // def SUPPORT_UNZIP
 
     // DEBUG_V("Send XJ response");
     String XjResult;

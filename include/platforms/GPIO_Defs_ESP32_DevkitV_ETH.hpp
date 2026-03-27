@@ -21,23 +21,31 @@
 // Output Manager
 // MAX 8 Serial port on ESP32
 const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
-{
-    {OM_PortId_t(0), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_2}},
-    {OM_PortId_t(0), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_2}},
-    {OM_PortId_t(1), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_5}},
-    {OM_PortId_t(1), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_5}},
-    {OM_PortId_t(2), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_32}},
-    {OM_PortId_t(2), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_32}},
-    {OM_PortId_t(3), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_33}},
-    {OM_PortId_t(3), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_33}},
+    {
+        {OM_PortId_t(0), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_2}},
+        {OM_PortId_t(0), OM_PortType_t::OM_RELAY, {gpio_num_t::GPIO_NUM_2}},
+        {OM_PortId_t(1), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_4}},
+        {OM_PortId_t(1), OM_PortType_t::OM_RELAY, {gpio_num_t::GPIO_NUM_4}},
+        {OM_PortId_t(2), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_5}},
+        {OM_PortId_t(2), OM_PortType_t::OM_RELAY, {gpio_num_t::GPIO_NUM_5}},
+        {OM_PortId_t(3), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_16}},
+        {OM_PortId_t(3), OM_PortType_t::OM_RELAY, {gpio_num_t::GPIO_NUM_16}},
+
+        {OM_PortId_t(4), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_0}},
+        {OM_PortId_t(4), OM_PortType_t::OM_RELAY, {gpio_num_t::GPIO_NUM_0}},
+        {OM_PortId_t(5), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_12}},
+        {OM_PortId_t(5), OM_PortType_t::OM_RELAY, {gpio_num_t::GPIO_NUM_12}},
+        {OM_PortId_t(6), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_3}},
+        {OM_PortId_t(7), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_1}},
+
 };
 
 // File Manager
-// #define SUPPORT_SD
-#define SD_CARD_MISO_PIN        gpio_num_t::GPIO_NUM_13
-#define SD_CARD_MOSI_PIN        gpio_num_t::GPIO_NUM_15
+#define SUPPORT_SD
+#define SD_CARD_MISO_PIN        gpio_num_t::GPIO_NUM_34
+#define SD_CARD_MOSI_PIN        gpio_num_t::GPIO_NUM_13
 #define SD_CARD_CLK_PIN         gpio_num_t::GPIO_NUM_14
-#define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_4
+#define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_15
 
 // #define DEFAULT_RELAY_GPIO      gpio_num_t::GPIO_NUM_14
 
@@ -56,8 +64,8 @@ const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
 
 // Pin# of the enable signal for the external crystal oscillator (-1 to disable for internal APLL source)
 
-//#define DEFAULT_ETH_POWER_PIN        gpio_num_t(-1)
-#define DEFAULT_ETH_POWER_PIN          gpio_num_t::GPIO_NUM_16
+#define DEFAULT_ETH_POWER_PIN        gpio_num_t(-1)
+//#define DEFAULT_ETH_POWER_PIN          gpio_num_t::GPIO_NUM_20
 #define ETH_POWER_PIN                  DEFAULT_ETH_POWER_PIN
 #define DEFAULT_ETH_POWER_PIN_ACTIVE   HIGH
 

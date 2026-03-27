@@ -205,13 +205,9 @@ void c_FileMgr::StartSdCard ()
     // DEBUG_V(String("FoundZipFile: ") + String(FoundZipFile))
     if(FoundZipFile)
     {
-        // DEBUG_V("Start Unzipping");
+        // Queue unzip work; processing starts later in the main loop.
         FeedWDT();
-        UnzipFiles * Unzipper = new UnzipFiles();
-        Unzipper->Run();
-        delete Unzipper;
-        String Reason = F("Requesting reboot after unzipping files");
-        RequestReboot(Reason, 1, true);
+        gUnzipFiles.Run();
     }
     #endif // def SUPPORT_UNZIP
 

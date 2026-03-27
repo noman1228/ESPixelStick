@@ -20,7 +20,11 @@
 
 #include "UnzipFiles.hpp"
 #include "FileMgr.hpp"
+#include "network/NetworkMgr.hpp"
 #include <TimeLib.h>
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 //
 // Callback functions needed by the unzipLIB to access a file system
 // The library has built-in code for memory-to-memory transfers, but needs
@@ -83,26 +87,98 @@ void UnzipFiles::Run()
 {
     // DEBUG_START;
 
-    String FileName = emptyString;
+    pendingArchives.clear();
+    currentArchiveIndex = 0;
+    unzipBytesWritten = 0;
+    unzipTotalSize = 0;
+    currentZipFileName = emptyString;
+    isUnzipComplete = false;
+    isUnzipping = false;
 
-    do
+    std::vector<String> allFiles;
+    FileMgr.GetListOfSdFiles(allFiles);
+    for (auto & fileName : allFiles)
     {
-        FeedWDT();
-        FileName = emptyString;
-        FileMgr.FindFirstZipFile(FileName);
-        if(FileName.isEmpty())
+        if (fileName.endsWith(".zip") || fileName.endsWith(".xlz"))
         {
-            break;
+            pendingArchives.push_back(fileName);
         }
+    }
 
-        ProcessZipFile(FileName);
-
-        FileMgr.DeleteSdFile(FileName);
-
-    } while(true);
+    hasPendingZipFile = !pendingArchives.empty();
+    if (hasPendingZipFile)
+    {
+        currentZipFileName = pendingArchives[currentArchiveIndex];
+        logcon(String("Found ") + String(pendingArchives.size()) + " compressed file(s); waiting for network before decompression");
+    }
 
     // DEBUG_END;
 } // Run
+
+//-----------------------------------------------------------------------------
+void UnzipFiles::Poll()
+{
+    // DEBUG_START;
+    if(isUnzipComplete)
+    {
+        if(millis() - unzipCompleteTime > 3000)
+        {
+            String Reason = F("Requesting reboot after unzipping files");
+            RequestReboot(Reason, 1, true);
+            isUnzipComplete = false;
+        }
+        return;
+    }
+
+    if(!hasPendingZipFile || isUnzipping)
+    {
+        return;
+    }
+
+    if(millis() - networkConnectionCheckTime < 1000)
+    {
+        return;
+    }
+    networkConnectionCheckTime = millis();
+
+    if(!NetworkMgr.IsConnected())
+    {
+        return;
+    }
+
+    isUnzipping = true;
+    currentZipFileName = pendingArchives[currentArchiveIndex];
+
+#ifdef SUPPORT_OLED
+    OLED.ShowToast("DECOMPRESSING", currentZipFileName);
+#endif
+
+    FeedWDT();
+    ProcessZipFile(currentZipFileName);
+    FileMgr.DeleteSdFile(currentZipFileName);
+    FeedWDT();
+
+#ifdef SUPPORT_OLED
+    OLED.ShowToast("COMPLETE", currentZipFileName);
+#endif
+
+    isUnzipping = false;
+
+    if (currentArchiveIndex + 1 < pendingArchives.size())
+    {
+        currentArchiveIndex++;
+        currentZipFileName = pendingArchives[currentArchiveIndex];
+        hasPendingZipFile = true;
+    }
+    else
+    {
+        hasPendingZipFile = false;
+        isUnzipComplete = true;
+        unzipCompleteTime = millis();
+    }
+
+    // DEBUG_END;
+} // Poll
 
 //-----------------------------------------------------------------------------
 void UnzipFiles::ProcessZipFile(String & ArchiveFileName)
@@ -157,6 +233,9 @@ void UnzipFiles::ProcessZipFile(String & ArchiveFileName)
 
                 FileMgr.DeleteSdFile(FinalFileName);
 
+                unzipTotalSize = fi.uncompressed_size;
+                unzipBytesWritten = 0;
+
                 ProcessCurrentFileInZip(fi, ArchiveSubFileName);
 
                 if(IsSpecialxLightsZipFile)
@@ -188,6 +267,7 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
 
     int BytesRead = 0;
     uint32_t TotalBytesWritten = 0;
+    uint32_t BytesProcessedSinceYield = 0;
 
     logcon(String("Uncompressing '") + FileName + "'" +
     " - " + String(fi.compressed_size, DEC) +
@@ -222,8 +302,19 @@ void UnzipFiles::ProcessCurrentFileInZip(unz_file_info & fi, String & FileName)
                 break;
             }
             TotalBytesWritten += BytesRead;
-            LOG_PORT.println(String("\033[Fprogress: ") + String(TotalBytesWritten));
-            LOG_PORT.flush();
+            unzipBytesWritten = TotalBytesWritten;
+
+            BytesProcessedSinceYield += uint32_t(BytesRead);
+            if (BytesProcessedSinceYield >= 16384)
+            {
+                FeedWDT();
+#ifdef ARDUINO_ARCH_ESP32
+                vTaskDelay(1);
+#else
+                delay(1);
+#endif
+                BytesProcessedSinceYield = 0;
+            }
 
         } while (BytesRead > 0);
 

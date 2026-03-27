@@ -16,3 +16,4 @@ Changelog.pdf
 *.ino.generic.bin
 *.gz
 *.pyc
+/MODS

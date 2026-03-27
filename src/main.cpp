@@ -23,6 +23,9 @@
 #include "ESPixelStick.h"
 #include "EFUpdate.h"
 #include <Int64String.h>
+#ifdef SUPPORT_OLED
+#include "service/DisplayOLED.h"
+#endif
 
 // Input modules
 #include "input/InputMgr.hpp"
@@ -38,6 +41,9 @@
 
 // File System Interface
 #include "FileMgr.hpp"
+#ifdef SUPPORT_UNZIP
+#include "UnzipFiles.hpp"
+#endif
 
 // Services
 #include "service/FPPDiscovery.h"
@@ -184,6 +190,10 @@ void setup()
     // Setup serial log port
     LOG_PORT.begin(115200);
     delay(10);
+
+#ifdef SUPPORT_OLED
+    OLED.Begin();
+#endif
 
     // DEBUG_START;
     // DEBUG_HW_START;
@@ -593,10 +603,19 @@ void loop()
     // DEBUG_V();
 
     WebMgr.Process ();
+
+#ifdef SUPPORT_OLED
+    // Update OLED after network/web so I2C transfer does not delay them
+    OLED.Poll();
+#endif
     // DEBUG_V();
 
     FileMgr.Poll ();
     // DEBUG_V();
+
+#ifdef SUPPORT_UNZIP
+    gUnzipFiles.Poll();
+#endif
 
     FPPDiscovery.Poll ();
     // DEBUG_V();

@@ -17,6 +17,7 @@ var FseqFileTransferStartTime = new Date();
 var ServerTransactionTimer = null;
 var FailedToCompleteServerTransaction = 0;
 var DocumentIsHidden = false;
+var LastRenderedUnzipState = '';
 
 // Update the UI badge that shows how many files are selected
 function updateSelectedCount() {
@@ -132,49 +133,91 @@ function updateSelectedCount() {
     }
 }
 
-// Periodic status polling to show unzip queue progress (n of m) and current file
-(function(){
-    async function fetchStatus() {
-        try {
-            const res = await fetch('/XJ', { method: 'GET' });
-            if (!res.ok) return;
-            const data = await res.json();
-            const sys = (data && data.status && data.status.system) ? data.status.system : null;
-            if (!sys) return;
-            const uz = sys.unzip || {};
+function RenderUnzipStatusCard(unzipStatus)
+{
+    let indicator = $('#unzipStatusIndicator');
+    let title = $('#unzipTitle');
+    let meta = $('#unzipMeta');
+    let fileName = $('#unzipFileName');
+    let progressWrap = $('#unzipProgressWrap');
+    let progressBar = $('#unzipProgressBar');
+    let progressText = $('#unzipProgressText');
 
-            const indicator = document.getElementById('unzipStatusIndicator');
-            const fnEl = document.getElementById('unzipFileName');
-            const ctrEl = document.getElementById('unzipCounter');
-            if (!indicator || !fnEl || !ctrEl) return;
-
-            const show = !!(uz.isUnzipping || uz.hasPending || uz.waitingForEth);
-            indicator.style.display = show ? 'block' : 'none';
-
-            // Counter: currentIndex of totalCount (e.g., 1 of 4)
-            const idx = Number(uz.currentIndex || 0);
-            const tot = Number(uz.totalCount || 0);
-            ctrEl.textContent = (idx > 0 && tot > 0) ? `(${idx} of ${tot})` : '';
-
-            // Current file name
-            fnEl.textContent = uz.fileName || '';
-
-            // Optional: append waiting indicator when gating on Ethernet
-            if (uz.waitingForEth) {
-                const ms = Number(uz.ethWaitRemainingMs || 0);
-                ctrEl.textContent = `${ctrEl.textContent} waiting for Ethernet${ms ? ` (${Math.ceil(ms/1000)}s)` : ''}`.trim();
-            }
-        } catch (e) {
-            // ignore transient errors
-        }
+    if (!indicator.length)
+    {
+        return;
     }
 
-    // Start polling
-    document.addEventListener('DOMContentLoaded', () => {
-        setInterval(fetchStatus, 1000);
-        fetchStatus();
-    });
-})();
+    let isUnzipping = !!unzipStatus.isUnzipping;
+    let hasPending = !!unzipStatus.hasPending;
+    let isComplete = !!unzipStatus.isComplete;
+    let waitingForEth = !!unzipStatus.waitingForEth;
+    let shouldShow = isUnzipping || hasPending || isComplete || waitingForEth;
+
+    if (!shouldShow)
+    {
+        LastRenderedUnzipState = '';
+        indicator.hide();
+        return;
+    }
+
+    let idx = Number(unzipStatus.currentIndex || 0);
+    let total = Number(unzipStatus.totalCount || 0);
+    let progress = Number(unzipStatus.progress || 0);
+    let bytesWritten = Number(unzipStatus.bytesWritten || 0);
+    let totalSize = Number(unzipStatus.totalSize || 0);
+    let labelFile = unzipStatus.fileName || 'Preparing file list';
+
+    let stateSignature = [isUnzipping, hasPending, isComplete, waitingForEth, idx, total, progress, bytesWritten, totalSize, labelFile].join('|');
+    if (stateSignature === LastRenderedUnzipState)
+    {
+        return;
+    }
+    LastRenderedUnzipState = stateSignature;
+
+    indicator.removeClass('is-active is-waiting is-complete');
+    indicator.show();
+
+    let queueText = (idx > 0 && total > 0) ? ('File ' + idx + ' of ' + total) : 'Working';
+
+    if (isUnzipping)
+    {
+        indicator.addClass('is-active');
+        title.text('Decompressing Files');
+        meta.text(queueText);
+        fileName.text(labelFile);
+        progressWrap.show();
+        progressBar.css('width', Math.max(0, Math.min(100, progress)) + '%');
+
+        if (totalSize > 0)
+        {
+            progressText.text(progress + '%  (' + bytesWritten + ' / ' + totalSize + ' bytes)');
+        }
+        else
+        {
+            progressText.text(progress + '%');
+        }
+    }
+    else if (isComplete)
+    {
+        indicator.addClass('is-complete');
+        title.text('Decompression Complete');
+        meta.text('Reboot pending');
+        fileName.text(labelFile);
+        progressWrap.show();
+        progressBar.css('width', '100%');
+        progressText.text('100%');
+    }
+    else
+    {
+        indicator.addClass('is-waiting');
+        title.text('Queued For Decompression');
+        meta.text(waitingForEth ? 'Waiting for network readiness' : queueText);
+        fileName.text(labelFile);
+        progressWrap.hide();
+        progressText.text('');
+    }
+}
 
 // Drawing canvas - move to diagnostics
 var canvas = document.getElementById("canvas");
@@ -2531,31 +2574,14 @@ function ProcessReceivedJsonStatusMessage(JsonStat) {
     indicator.addClass('alert ' + statusClass);
     indicator.text(statusText);
 
-    // --- Unzip Status Indicator Logic ---
-    let unzipIndicator = $('#unzipStatusIndicator');
-    if ({}.hasOwnProperty.call(System, 'unzip')) {
-        let unzipStatus = System.unzip;
-        if (unzipStatus.isUnzipping || unzipStatus.hasPending || unzipStatus.isComplete) {
-            unzipIndicator.show();
-            if (unzipStatus.isUnzipping) {
-                unzipIndicator.removeClass('alert-info alert-success').addClass('alert-warning');
-                let progressText = unzipStatus.fileName || 'Unknown file';
-                if ({}.hasOwnProperty.call(unzipStatus, 'progress')) {
-                    progressText += ' - ' + unzipStatus.progress + '%';
-                }
-                $('#unzipFileName').text(progressText);
-            } else if (unzipStatus.isComplete) {
-                unzipIndicator.removeClass('alert-warning alert-info').addClass('alert-success');
-                $('#unzipFileName').text(unzipStatus.fileName + ' - Complete! Rebooting...');
-            } else if (unzipStatus.hasPending) {
-                unzipIndicator.removeClass('alert-warning alert-success').addClass('alert-info');
-                $('#unzipFileName').text(unzipStatus.fileName + ' (Waiting for network...)');
-            }
-        } else {
-            unzipIndicator.hide();
-        }
-    } else {
-        unzipIndicator.hide();
+    // --- Unzip Status Card Logic ---
+    if ({}.hasOwnProperty.call(System, 'unzip'))
+    {
+        RenderUnzipStatusCard(System.unzip || {});
+    }
+    else
+    {
+        RenderUnzipStatusCard({});
     }
 
     // --- Existing WiFi/Ethernet status logic ---
