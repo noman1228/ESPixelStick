@@ -2,7 +2,7 @@
 * OutputTLS3001Rmt.cpp - TLS3001 driver code for ESPixelStick RMT Channel
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2015, 2025 Shelby Merrick
+* Copyright (c) 2015, 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -40,11 +40,9 @@ static const c_OutputRmt::ConvertIntensityToRmtDataStreamEntry_t ConvertIntensit
 }; // ConvertIntensityToRmtDataStream
 
 //----------------------------------------------------------------------------
-c_OutputTLS3001Rmt::c_OutputTLS3001Rmt (OM_PortId_t OutputPortId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputTLS3001 (OutputPortId, outputGpio, uart, outputType)
+c_OutputTLS3001Rmt::c_OutputTLS3001Rmt(OM_OutputPortDefinition_t & OutputPortDefinition,
+                                       c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputTLS3001 (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 
@@ -72,22 +70,7 @@ void c_OutputTLS3001Rmt::Begin ()
     // DEBUG_START;
 
     c_OutputTLS3001::Begin ();
-
-    // DEBUG_V (String ("DataPin: ") + String (DataPin));
-    Rmt.SetNumStartBits (15);
-    Rmt.SetNumStopBits  (0);
-    Rmt.SetNumIdleBits  (0);
-    Rmt.Begin (rmt_channel_t (OutputPortId), gpio_num_t (DataPin), this, rmt_idle_level_t::RMT_IDLE_LEVEL_LOW);
-
-    c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
-    OutputRmtConfig.RmtChannelId     = rmt_channel_t(OutputPortId);
-    OutputRmtConfig.DataPin          = gpio_num_t(DataPin);
-    OutputRmtConfig.idle_level       = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
-    OutputRmtConfig.pPixelDataSource = this;
-    OutputRmtConfig.CitrdsArray      = ConvertIntensityToRmtDataStream;
-
-    Rmt.Begin(OutputRmtConfig, this);
-
+    HasBeenInitialized = true;
 
     // DEBUG_END;
 
@@ -100,8 +83,31 @@ bool c_OutputTLS3001Rmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
     bool response = c_OutputTLS3001::SetConfig (jsonConfig);
 
-    Rmt.set_pin (DataPin);
-    Rmt.SetMinFrameDurationInUs (FrameDurationInMicroSec);
+    uint32_t ifgNS = 1000; // (InterFrameGapInMicroSec * NanoSecondsInAMicroSecond);
+    uint32_t ifgTicks = ifgNS / RMT_TickLengthNS;
+
+    // Default is 100us * 3
+    rmt_item32_t BitValue;
+    // by default there are 6 rmt_item32_t instances replicated for the start of a frame.
+    // 1 instances times 2 time periods per instance = 2
+    BitValue.duration0 = ifgTicks / 2;
+    BitValue.level0    = 0;
+    BitValue.duration1 = ifgTicks / 2;
+    BitValue.level1    = 0;
+
+    c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
+    OutputRmtConfig.RmtChannelId        = uint32_t(OutputPortDefinition.PortId);
+    OutputRmtConfig.DataPin             = gpio_num_t(OutputPortDefinition.gpios.data);
+    OutputRmtConfig.idle_level          = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
+    OutputRmtConfig.pPixelDataSource    = this;
+    OutputRmtConfig.CitrdsArray         = ConvertIntensityToRmtDataStream;
+    OutputRmtConfig.NumFrameStartBits   = 15;
+    OutputRmtConfig.NumFrameStopBits    = 0;
+
+    // DEBUG_V();
+    Rmt.Begin(OutputRmtConfig, this);
+    Rmt.ValidateBitXlatTable(ConvertIntensityToRmtDataStream);
+    Rmt.SetIntensity2Rmt (BitValue, c_OutputRmt::RmtDataBitIdType_t::RMT_INTERFRAME_GAP_ID);
 
     // DEBUG_END;
     return response;
@@ -123,8 +129,20 @@ void c_OutputTLS3001Rmt::SetOutputBufferSize (uint32_t NumChannelsAvailable)
 //----------------------------------------------------------------------------
 void c_OutputTLS3001Rmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
 {
+    // // DEBUG_START;
     c_OutputTLS3001::GetStatus (jsonStatus);
+    Rmt.GetStatus (jsonStatus);
+#ifdef USE_RMT_DEBUG_COUNTERS
+    jsonStatus[F("Can Refresh")] = CanRefresh;
+    jsonStatus[F("Cannot Refresh")] = CannotRefresh;
+    jsonStatus[F("FrameDurationInMicroSec")] = FrameDurationInMicroSec;
+    jsonStatus[F("FrameStartTimeInMicroSec")] = FrameStartTimeInMicroSec;
+    uint32_t now = micros();
+    jsonStatus[F("Now")] = now;
+    jsonStatus[F("FrameStartDelta")] = now - FrameStartTimeInMicroSec;
+#endif // def USE_RMT_DEBUG_COUNTERS
 
+    // // DEBUG_END;
 } // GetStatus
 
 //----------------------------------------------------------------------------
@@ -144,20 +162,27 @@ bool c_OutputTLS3001Rmt::RmtPoll ()
     bool Response = false;
     do // Once
     {
-        if (gpio_num_t(-1) == DataPin)
+        if (gpio_num_t(-1) == OutputPortDefinition.gpios.data)
         {
             break;
         }
 
         if(!canRefresh())
         {
+            RMT_DEBUG_COUNTER(CannotRefresh++);
+
             // DEBUG_V ("not ready to send yet");
             break;
         }
+        RMT_DEBUG_COUNTER(CanRefresh++);
 
-        // DEBUG_V("get the next frame started");
+        // DEBUG_V(String("get the next frame started on ") + String(DataPin));
         pCurrentFsmState->Poll();
         Response = Rmt.StartNewFrame ();
+
+        #ifdef DEBUG_RMT_XLAT_ISSUES
+        Rmt.ValidateBitXlatTable(ConvertIntensityToRmtDataStream);
+        #endif // def DEBUG_RMT_XLAT_ISSUES
 
         // DEBUG_V();
 

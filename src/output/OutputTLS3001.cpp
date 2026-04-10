@@ -2,7 +2,7 @@
 * OutputTLS3001.cpp - TLS3001 driver code for ESPixelStick UART
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2015, 2022 Shelby Merrick
+* Copyright (c) 2015, 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -18,16 +18,14 @@
 */
 
 #include "ESPixelStick.h"
-#ifdef SUPPORT_OutputProtocol_TLS3001
+#if defined(SUPPORT_OutputProtocol_TLS3001)
 
 #include "output/OutputTLS3001.hpp"
 
 //----------------------------------------------------------------------------
-c_OutputTLS3001::c_OutputTLS3001 (OM_PortId_t OutputPortId,
-    gpio_num_t outputGpio,
-    uart_port_t uart,
-    c_OutputMgr::e_OutputType outputType) :
-    c_OutputPixel (OutputPortId, outputGpio, uart, outputType)
+c_OutputTLS3001::c_OutputTLS3001 (OM_OutputPortDefinition_t & OutputPortDefinition,
+                                  c_OutputMgr::e_OutputProtocolType outputType) :
+    c_OutputPixel (OutputPortDefinition, outputType)
 {
     // DEBUG_START;
 

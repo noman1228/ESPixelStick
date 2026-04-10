@@ -3,7 +3,7 @@
 * OutputTLS3001Rmt.h - TLS3001 driver code for ESPixelStick RMT Channel
 *
 * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2015, 2025 Shelby Merrick
+* Copyright (c) 2015, 2026 Shelby Merrick
 * http://www.forkineye.com
 *
 *  This program is provided free for you to use in any way that you wish,
@@ -27,6 +27,8 @@
 #include "OutputTLS3001.hpp"
 #include "OutputRmt.hpp"
 
+// forward declaration
+class c_OutputTLS3001Rmt;
 class fsm_RMT_state
 {
 public:
@@ -43,16 +45,14 @@ class c_OutputTLS3001Rmt : public c_OutputTLS3001
 {
 public:
     // These functions are inherited from c_OutputCommon
-    c_OutputTLS3001Rmt (OM_PortId_t OutputPortId,
-        gpio_num_t outputGpio,
-        uart_port_t uart,
-        c_OutputMgr::e_OutputType outputType);
+    c_OutputTLS3001Rmt(OM_OutputPortDefinition_t & OutputPortDefinition,
+                       c_OutputMgr::e_OutputProtocolType outputType);
     virtual ~c_OutputTLS3001Rmt ();
 
     // functions to be provided by the derived class
     void    Begin ();                                         ///< set up the operating environment based on the current config (or defaults)
     bool    SetConfig (ArduinoJson::JsonObject& jsonConfig);  ///< Set a new config in the driver
-    void    Poll ();                                        ///< Call from loop (),  renders output data
+    uint32_t Poll ();                                        ///< Call from loop (),  renders output data
     bool    RmtPoll ();
     void    GetStatus (ArduinoJson::JsonObject& jsonStatus);
     void    SetOutputBufferSize (uint32_t NumChannelsAvailable);
