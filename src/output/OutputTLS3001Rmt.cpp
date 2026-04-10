@@ -120,7 +120,7 @@ void c_OutputTLS3001Rmt::SetOutputBufferSize (uint32_t NumChannelsAvailable)
     // DEBUG_START;
 
     c_OutputTLS3001::SetOutputBufferSize (NumChannelsAvailable);
-    Rmt.SetMinFrameDurationInUs (FrameDurationInMicroSec);
+    // Rmt.SetMinFrameDurationInUs (FrameDurationInMicroSec);
 
     // DEBUG_END;
 
@@ -177,7 +177,7 @@ bool c_OutputTLS3001Rmt::RmtPoll ()
         RMT_DEBUG_COUNTER(CanRefresh++);
 
         // DEBUG_V(String("get the next frame started on ") + String(DataPin));
-        pCurrentFsmState->Poll();
+        pCurrentFsmState->Poll(this);
         Response = Rmt.StartNewFrame ();
 
         #ifdef DEBUG_RMT_XLAT_ISSUES
