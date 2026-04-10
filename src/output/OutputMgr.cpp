@@ -1215,7 +1215,7 @@ bool c_OutputMgr::FindJsonChannelConfig (JsonDocument& jsonConfig,
         // PrettyPrint (OutputChannelConfig, "Output Channel Config");
 
         // do we have a configuration for the channel type?
-        ChanConfig = OutputChannelConfig[type];
+        ChanConfig = OutputChannelConfig[String(type)];
         if (!ChanConfig)
         {
             // Not found
