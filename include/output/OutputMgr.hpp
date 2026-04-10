@@ -131,7 +131,7 @@ public:
         #endif // def SUPPORT_OutputProtocol_UCS8903
 
         #ifdef SUPPORT_OutputProtocol_TLS3001
-        OutputType_TLS3001 = 14,
+        OutputProtocol_TLS3001 = 14,
         #endif // def SUPPORT_OutputProtocol_TLS3001
 
         #ifdef SUPPORT_OutputProtocol_GRINCH
