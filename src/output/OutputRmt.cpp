@@ -26,8 +26,6 @@
     #include <driver/rmt.h>
 #endif // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 
-
-
 // forward declaration for the isr handler
 static void IRAM_ATTR   rmt_intr_handler (void* param);
 static rmt_isr_handle_t RMT_intr_handle = NULL;
@@ -407,9 +405,60 @@ void c_OutputRmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
 } // GetStatus
 
 //----------------------------------------------------------------------------
+void c_OutputRmt::SetBitDuration (double BitLenNs, rmt_item32_t & OutputBit, uint32_t & OutputNumBits)
+{
+    // DEBUG_START;
+
+    double NumBitTicks        = BitLenNs / RMT_TickLengthNS;
+    double MaxTicksPerBitHalf = 0b111111111111111;
+    double MaxTicksPerBit     = MaxTicksPerBitHalf * 2;
+           OutputNumBits      = ceil(NumBitTicks / MaxTicksPerBit);
+    if(0 == OutputNumBits) {OutputNumBits = 1;}
+    uint   NumTicksPerbit     = (NumBitTicks / OutputNumBits);
+
+    OutputBit.duration0       = uint(NumTicksPerbit / 2);
+    // OutputBit.level0          = 0;
+    OutputBit.duration1       = OutputBit.duration0;
+    // OutputBit.level1          = 0;
+
+    // DEBUG_V(String("            BitLenNs: ") + String(BitLenNs));
+    // DEBUG_V(String("         NumBitTicks: ") + String(NumBitTicks));
+    // DEBUG_V(String("  MaxTicksPerBitHalf: ") + String(MaxTicksPerBitHalf));
+    // DEBUG_V(String("      MaxTicksPerBit: ") + String(MaxTicksPerBit));
+    // DEBUG_V(String("       OutputNumBits: ") + String(OutputNumBits));
+    // DEBUG_V(String("      NumTicksPerbit: ") + String(NumTicksPerbit));
+    // DEBUG_V(String(" OutputBit.duration0: ") + String(OutputBit.duration0));
+    // DEBUG_V(String(" OutputBit.duration1: ") + String(OutputBit.duration1));
+    // DEBUG_V(String("     OutputBit.Total: ") + String(OutputBit.duration0 + OutputBit.duration1));
+
+    // DEBUG_END;
+} // SetBitDuration
+
+//----------------------------------------------------------------------------
 void IRAM_ATTR c_OutputRmt::ISR_CreateIntensityData ()
 {
     /// DEBUG_START;
+    // Serial.print('I');
+
+    if(OutputRmtConfig.UseLowLevelBitAPI)
+    {
+        // Serial.print('U');
+        uint32_t NumAvailableBufferSlotsToFill = NumSendBufferSlots - NumUsedEntriesInSendBuffer;
+        // Serial.print(String(NumAvailableBufferSlotsToFill));
+        bool KeepGoing = true;
+        while(KeepGoing && NumAvailableBufferSlotsToFill)
+        {
+            // Serial.print('K');
+            --NumAvailableBufferSlotsToFill;
+            uint32_t Data;
+            KeepGoing = OutputRmtConfig.pPixelDataSource->ISR_GetNextBitToSend(Data);
+            if(KeepGoing)
+            {
+                ISR_WriteToBuffer(Data);
+            }
+        }
+        return;
+    }
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
     uint32_t OneBitValue  = Intensity2Rmt[RmtDataBitIdType_t::RMT_DATA_BIT_ONE_ID].val;
@@ -689,7 +738,7 @@ void c_OutputRmt::PauseOutput(bool PauseOutput)
 //----------------------------------------------------------------------------
 bool c_OutputRmt::StartNewFrame ()
 {
-    /// DEBUG_START;
+    // DEBUG_START;
 
     bool Response = false;
 
@@ -779,7 +828,7 @@ bool c_OutputRmt::StartNewFrame ()
         Response = true;
     } while(false);
 
-    ///DEBUG_END;
+    // DEBUG_END;
     return Response;
 
 } // StartNewFrame
