@@ -48,6 +48,7 @@ void c_OutputTLS3001::GetConfig (ArduinoJson::JsonObject& jsonConfig)
     // DEBUG_START;
 
     c_OutputPixel::GetConfig (jsonConfig);
+    JsonWrite(jsonConfig, CN_FramesBetweenResets, NumFramesAllowedBetweenResets);
 
     // DEBUG_END;
 } // GetConfig
@@ -81,8 +82,10 @@ bool c_OutputTLS3001::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
     bool response = c_OutputPixel::SetConfig (jsonConfig);
 
+    setFromJSON(NumFramesAllowedBetweenResets, jsonConfig, CN_FramesBetweenResets);
+
     // Calculate our refresh time
-    SetFrameDurration (((1.0 / float (TLS3001_PIXEL_NS_BIT)) * MicroSecondsInASecond), 0, 0);
+    SetFrameDurration (((1.0 / float (TLS3001_PIXEL_NS_BIT)) * NanoSecondsInASecond), 0, 0);
 
     // DEBUG_END;
     return response;

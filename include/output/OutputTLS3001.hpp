@@ -83,43 +83,19 @@ public:
             void GetDriverName (String& sDriverName) { sDriverName = CN_TLS3001; }
     virtual void GetStatus (ArduinoJson::JsonObject & jsonStatus);
     virtual void SetOutputBufferSize (uint32_t NumChannelsAvailable);
-
+            bool IRAM_ATTR FrameResetIsNeeded() {return NumFramesSinceLastReset >= NumFramesAllowedBetweenResets;}
+            void IRAM_ATTR ResetFrameCounter() {NumFramesSinceLastReset = 0;}
+            void IRAM_ATTR IncrementFrameCounter() {++NumFramesSinceLastReset;}
 protected:
 
-#define TLS3001_PIXEL_DATA_RATE              500000.0
+#define TLS3001_PIXEL_DATA_RATE             1000000.0 // bits /sec
 #define TLS3001_PIXEL_NS_BIT                ((1.0 / TLS3001_PIXEL_DATA_RATE) * NanoSecondsInASecond)
-
-#define TLS3001_PIXEL_NS_IDLE                50000.0 // 50us
-#define TLS3001_MIN_IDLE_TIME_US             (TLS3001_PIXEL_NS_IDLE / float(NanoSecondsInAMicroSecond))
-
-#define TLS3001_DEFAULT_INTENSITY_PER_PIXEL  3
-/*
-    Frame Start = 15 1s Always followed by four bit Frame Type
-
-    Frame Types
-        Sync   0b0001 Followed by 15 0s followed by an idle period
-        Reset  0b0100 Followed by long idle time (calculation needed)
-        Data   0b0010 Followed by 39 bit data times num pixels
-
-    39 bit data
-        1 zero
-        12 R
-        1 zero
-        12 g
-        1 zero
-        12 b
-*/
-#define TLS3001_MAX_CONSECUTIVE_DATA_FRAMES 50
+#define TLS3001_MIN_IDLE_TIME_US             50
 
 private:
-
-    uint8_t CurrentLimit = 50;
-    struct PreambleData_t
-    {
-        uint8_t normal[4];
-        uint8_t inverted[4];
-    };
-    PreambleData_t PreambleData;
+#define TLS3001_DEFAULT_FRAMES_BETWEEN_RESETS  40
+        uint32_t NumFramesAllowedBetweenResets = TLS3001_DEFAULT_FRAMES_BETWEEN_RESETS;
+        uint32_t NumFramesSinceLastReset = uint32_t(-1); // Force a reset on power on.
 
 }; // c_OutputTLS3001
 
