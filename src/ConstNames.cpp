@@ -108,6 +108,7 @@ const CN_PROGMEM char CN_FlashMaxDelay            [] = "FlashMaxDelay";
 const CN_PROGMEM char CN_FlashMinDur              [] = "FlashMinDur";
 const CN_PROGMEM char CN_FlashMaxDur              [] = "FlashMaxDur";
 const CN_PROGMEM char CN_Frequency                [] = "Frequency";
+const CN_PROGMEM char CN_FramesBetweenResets      [] = "FramesBetweenResets";
 const CN_PROGMEM char CN_fseqfilelist             [] = "/fseqfilelist";
 const CN_PROGMEM char CN_fseqfilename             [] = "fseqfilename";
 const CN_PROGMEM char CN_g                        [] = "g";
