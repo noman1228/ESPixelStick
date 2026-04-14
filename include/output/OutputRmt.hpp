@@ -84,7 +84,8 @@ public:
         DataDirection_t     DataDirection          = DataDirection_t::MSB2LSB;
         const CitrdsArray_t *CitrdsArray           = nullptr;
 
-        c_OutputPixel  *pPixelDataSource      = nullptr;
+        c_OutputPixel  *pPixelDataSource           = nullptr;
+        bool UseLowLevelBitAPI = false;
 		#if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
         c_OutputSerial *pSerialDataSource = nullptr;
 		#endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
@@ -120,21 +121,18 @@ private:
     rmt_item32_t        Intensity2Rmt[RmtDataBitIdType_t::RMT_LIST_END];
     bool                OutputIsPaused   = false;
 
-    uint32_t            NumRmtSlotsPerIntensityValue      = 8;
-    uint32_t            NumRmtSlotOverruns                = 0;
-    const uint32_t      MaxNumRmtSlotsPerInterrupt        = (_NUM_RMT_SLOTS/2);
+    uint32_t            NumRmtSlotsPerIntensityValue    = 8;
+    uint32_t            NumRmtSlotOverruns              = 0;
+    const uint32_t      MaxNumRmtSlotsPerInterrupt      = (_NUM_RMT_SLOTS/2);
 
-    #define         NumSendBufferSlots 64
-    rmt_item32_t    SendBuffer[NumSendBufferSlots];
-    uint32_t        RmtBufferWriteIndex         = 0;
-    uint32_t        SendBufferWriteIndex        = 0;
-    uint32_t        SendBufferReadIndex         = 0;
-    uint32_t        NumUsedEntriesInSendBuffer  = 0;
-
-#define MIN_FRAME_TIME_MS 25
+    #define             NumSendBufferSlots 64
+    rmt_item32_t        SendBuffer[NumSendBufferSlots];
+    uint32_t            RmtBufferWriteIndex         = 0;
+    uint32_t            SendBufferWriteIndex        = 0;
+    uint32_t            SendBufferReadIndex         = 0;
+    uint32_t            NumUsedEntriesInSendBuffer  = 0;
 
     uint32_t            TxIntensityDataStartingMask = 0x80;
-    RmtDataBitIdType_t  InterIntensityValueId       = RMT_INVALID_VALUE;
 
     inline void IRAM_ATTR ISR_TransferIntensityDataToRMT (uint32_t NumEntriesToTransfer);
     inline void IRAM_ATTR ISR_CreateIntensityData ();
@@ -154,12 +152,13 @@ public:
     c_OutputRmt ();
     virtual ~c_OutputRmt ();
 
-    void Begin                                  (OutputRmtConfig_t config, c_OutputCommon * pParent);
-    bool StartNewFrame                          ();
-    bool StartNextFrame                         () { return ((nullptr != pParent) & (!OutputIsPaused)) ? pParent->RmtPoll() : false; }
-    void GetStatus                              (ArduinoJson::JsonObject& jsonStatus);
-    void PauseOutput                            (bool State);
-    void GetDriverName                          (String &value)  { value = CN_RMT; }
+    void Begin              (OutputRmtConfig_t config, c_OutputCommon * pParent);
+    bool StartNewFrame      ();
+    bool StartNextFrame     () { return ((nullptr != pParent) & (!OutputIsPaused)) ? pParent->RmtPoll() : false; }
+    void GetStatus          (ArduinoJson::JsonObject& jsonStatus);
+    void PauseOutput        (bool State);
+    void GetDriverName      (String &value)  { value = CN_RMT; }
+    void SetBitDuration     (double BitLenNs, rmt_item32_t & OutputBit, uint32_t & OutputNumBits);
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #define RMT_TX_BITS RMT_LL_EVENT_TX_THRES(OutputRmtConfig.RmtChannelId) | \
