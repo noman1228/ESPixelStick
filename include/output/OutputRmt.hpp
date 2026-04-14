@@ -64,6 +64,12 @@ public:
         RmtDataBitIdType_t  Id;
     };
     typedef ConvertIntensityToRmtDataStreamEntry_t CitrdsArray_t;
+    struct LowLevelBitApi
+    {
+        void * arg = nullptr;
+        bool (*func)(void * arg, uint32_t &DataToSend) = nullptr;
+        bool UseLowLevelBitAPI = false;
+    };
 
     struct OutputRmtConfig_t
     {
@@ -85,18 +91,18 @@ public:
         const CitrdsArray_t *CitrdsArray           = nullptr;
 
         c_OutputPixel  *pPixelDataSource           = nullptr;
-        bool UseLowLevelBitAPI = false;
+        LowLevelBitApi BitApi;
 		#if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
         c_OutputSerial *pSerialDataSource = nullptr;
 		#endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
     };
 
-struct isrTxFlags_t
-{
-    uint32_t End = 0;
-    uint32_t Err = 0;
-    uint32_t Thres = 0;
-};
+    struct isrTxFlags_t
+    {
+        uint32_t End = 0;
+        uint32_t Err = 0;
+        uint32_t Thres = 0;
+    };
 
 private:
 #ifdef CONFIG_IDF_TARGET_ESP32S3

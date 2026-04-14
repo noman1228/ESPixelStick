@@ -23,6 +23,12 @@
 
 #define TLS3001_PIXEL_RMT_TICKS_BIT  uint16_t(TLS3001_PIXEL_NS_BIT / RMT_TickLengthNS)
 
+//----------------------------------------------------------------------------
+static bool IRAM_ATTR ISR_GetNextBitToSendBase (void * arg, uint32_t & DataToSend)
+{
+    return reinterpret_cast<c_OutputTLS3001Rmt*>(arg)->ISR_GetNextBitToSend(DataToSend);
+} // ISR_GetNextBitToSend
+
 static const c_OutputRmt::ConvertIntensityToRmtDataStreamEntry_t ConvertIntensityToRmtDataStream[] =
 {
     // {{.duration0,.level0,.duration1,.level1},Type},
@@ -112,7 +118,10 @@ bool c_OutputTLS3001Rmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
     OutputRmtConfig.CitrdsArray         = ConvertIntensityToRmtDataStream;
     OutputRmtConfig.NumFrameStartBits   = 0;
     OutputRmtConfig.NumFrameStopBits    = 0;
-    OutputRmtConfig.UseLowLevelBitAPI   = true;
+
+    OutputRmtConfig.BitApi.UseLowLevelBitAPI = true;
+    OutputRmtConfig.BitApi.arg               = this;
+    OutputRmtConfig.BitApi.func              = ISR_GetNextBitToSendBase;
 
     // DEBUG_V();
     SetBitTimes();
@@ -235,14 +244,6 @@ bool c_OutputTLS3001Rmt::RmtPoll ()
         }
         Response = true;
 
-        // String StateName;
-        // pCurrentFsmState->GetDriverName(StateName);
-        // DEBUG_V(String("             StateName: ") + String(StateName));
-        // DEBUG_V(String(" NumberOfOneBitsToSend: ") + String(pCurrentFsmState->NumberOfOneBitsToSend));
-        // DEBUG_V(String("       CommandCodeMask: ") + String(pCurrentFsmState->CommandCodeMask));
-        // DEBUG_V(String("NumberOfZeroBitsToSend: ") + String(pCurrentFsmState->NumberOfZeroBitsToSend));
-        // DEBUG_V(String("NumberOfIdleBitsToSend: ") + String(pCurrentFsmState->NumberOfIdleBitsToSend));
-
         if(false == SendingData)
         {
             // DEBUG_V(String("frame started on ") + String(OutputPortDefinition.gpios.data));
@@ -289,8 +290,37 @@ void c_OutputTLS3001Rmt::PauseOutput (bool State)
 //----------------------------------------------------------------------------
 bool IRAM_ATTR c_OutputTLS3001Rmt::ISR_GetNextBitToSend (uint32_t &DataToSend)
 {
-    // Serial.print('1');
-    return pCurrentFsmState->ISR_GetNextBitToSend(DataToSend);
+    bool Response = false;
+    switch(CurrentFsmState)
+    {
+        case OutputTLS3001RmtFsmStates_t::TLS3001Sync:
+        {
+            Response = fsm_RMT_state_SendSync_imp.ISR_GetNextBitToSend(DataToSend);
+            break;
+        }
+        case OutputTLS3001RmtFsmStates_t::TLS3001DataStart:
+        {
+            Response = fsm_RMT_state_SendDataStart_imp.ISR_GetNextBitToSend(DataToSend);
+            break;
+        }
+        case OutputTLS3001RmtFsmStates_t::TLS3001DataSend:
+        {
+            Response = fsm_RMT_state_SendData_imp.ISR_GetNextBitToSend(DataToSend);
+            break;
+        }
+        case OutputTLS3001RmtFsmStates_t::TLS3001DataIdle:
+        {
+            Response = fsm_RMT_state_SendDataIdle_imp.ISR_GetNextBitToSend(DataToSend);
+            break;
+        }
+        default:
+        case OutputTLS3001RmtFsmStates_t::TLS3001Reset:
+        {
+            Response = fsm_RMT_state_SendReset_imp.ISR_GetNextBitToSend(DataToSend);
+            break;
+        }
+    };
+    return Response;
 } // ISR_GetNextIntensityToSend
 
 //----------------------------------------------------------------------------
@@ -303,7 +333,7 @@ void IRAM_ATTR fsm_RMT_state_SendReset::Init ()
 
     // Serial.print('b');
 
-    Parent->pCurrentFsmState = this;
+    Parent->CurrentFsmState = OutputTLS3001RmtFsmStates_t::TLS3001Reset;
     Parent->SendingData = true;
     Parent->ResetFrameCounter();
 
@@ -354,7 +384,7 @@ void IRAM_ATTR fsm_RMT_state_SendSync::Init ()
 
     // Serial.print('c');
 
-    Parent->pCurrentFsmState = this;
+    Parent->CurrentFsmState = OutputTLS3001RmtFsmStates_t::TLS3001Sync;
     Parent->SendingData = true;
 
     NumberOfOneBitsToSend = 15;
@@ -405,7 +435,7 @@ void IRAM_ATTR fsm_RMT_state_SendDataStart::Init ()
     // DEBUG_START;
     // Serial.print('d');
 
-    Parent->pCurrentFsmState = this;
+    Parent->CurrentFsmState = OutputTLS3001RmtFsmStates_t::TLS3001DataStart;
     Parent->SendingData = true;
     Parent->IncrementFrameCounter();
 
@@ -446,18 +476,11 @@ void IRAM_ATTR fsm_RMT_state_SendData::Init ()
     // DEBUG_START;
     // Serial.print('e');
 
-    Parent->pCurrentFsmState = this;
+    Parent->CurrentFsmState = OutputTLS3001RmtFsmStates_t::TLS3001DataSend;
 
-    NumberOfZeroBitsToSend = 1;
+    // Preamble, data and postamble
 
-    // Get the first channel data
-    uint32_t NewData = 0;
-    HaveValidData = Parent->c_OutputTLS3001::ISR_GetNextIntensityToSend(NewData);
-
-    // convert 8 bit data to 12 bit data
-    DataPattern = map(NewData, 0, 255, 0, 4095);
-    DataPatternMask = 0b100000000000;
-
+    ISR_RefreshData();
     NumPostDataBitsToSend = Parent->NumIfgBitsPerFrame;
 
     // DEBUG_END;
@@ -466,6 +489,7 @@ void IRAM_ATTR fsm_RMT_state_SendData::Init ()
 //----------------------------------------------------------------------------
 bool IRAM_ATTR fsm_RMT_state_SendData::ISR_GetNextBitToSend (uint32_t &DataToSend)
 {
+    bool Response = true;
     // Serial.print('5');
     // starting zero bit
     if(NumberOfZeroBitsToSend)
@@ -482,31 +506,49 @@ bool IRAM_ATTR fsm_RMT_state_SendData::ISR_GetNextBitToSend (uint32_t &DataToSen
         // is there more data to send?
         if(0 == DataPatternMask)
         {
-            // convert 8 bit data to 12 bit data
-            uint32_t NewData = 0;
-            HaveValidData = Parent->c_OutputTLS3001::ISR_GetNextIntensityToSend(NewData);
-
-            if(HaveValidData)
-            {
-                DataPattern = map(NewData, 0, 255, 0, 4095);
-                DataPatternMask = 0b100000000000;
-                // next channel start bit
-                NumberOfZeroBitsToSend = 1;
-            }
+            ISR_RefreshData();
         }
     }
     else if(NumPostDataBitsToSend)
     {
         --NumPostDataBitsToSend;
         DataToSend = Parent->SendDataIfg.val;
-        if(0 == NumPostDataBitsToSend)
-        {
-            Parent->fsm_RMT_state_SendDataIdle_imp.Init();
-        }
+    }
+    else
+    {
+        Parent->fsm_RMT_state_SendDataIdle_imp.Init();
+        Response = false;
     }
 
-    return true;
+    return Response;
 } // fsm_RMT_state_SendData
+
+//----------------------------------------------------------------------------
+bool IRAM_ATTR fsm_RMT_state_SendData::ISR_RefreshData ()
+{
+    MoreDataAvailable = Parent->ISR_MoreDataToSend();
+
+    if(MoreDataAvailable)
+    {
+        uint32_t NewData = 0;
+        Parent->c_OutputTLS3001::ISR_GetNextIntensityToSend(NewData);
+        // NewData = 0xff;
+
+        // convert 8 bit data to 12 bit data
+        DataPattern = map(NewData, 0, 255, 0, 0b111111111111);
+        // DataPattern = 0b111111111111;
+        DataPatternMask = 0b100000000000;
+        // next channel start bit
+        NumberOfZeroBitsToSend = 1;
+    }
+    else
+    {
+        NumberOfZeroBitsToSend = 0;
+        DataPatternMask = 0;
+    }
+
+    return MoreDataAvailable;
+} // ISR_RefreshData
 
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
@@ -515,7 +557,7 @@ void IRAM_ATTR fsm_RMT_state_SendDataIdle::Init ()
     // DEBUG_START;
     // Serial.print('f');
 
-    Parent->pCurrentFsmState = this;
+    Parent->CurrentFsmState = OutputTLS3001RmtFsmStates_t::TLS3001DataIdle;
     Parent->SendingData = false;
     // DEBUG_END;
 } // fsm_RMT_state_SendData

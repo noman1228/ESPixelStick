@@ -440,7 +440,7 @@ void IRAM_ATTR c_OutputRmt::ISR_CreateIntensityData ()
     /// DEBUG_START;
     // Serial.print('I');
 
-    if(OutputRmtConfig.UseLowLevelBitAPI)
+    if(OutputRmtConfig.BitApi.UseLowLevelBitAPI)
     {
         // Serial.print('U');
         uint32_t NumAvailableBufferSlotsToFill = NumSendBufferSlots - NumUsedEntriesInSendBuffer;
@@ -451,7 +451,7 @@ void IRAM_ATTR c_OutputRmt::ISR_CreateIntensityData ()
             // Serial.print('K');
             --NumAvailableBufferSlotsToFill;
             uint32_t Data;
-            KeepGoing = OutputRmtConfig.pPixelDataSource->ISR_GetNextBitToSend(Data);
+            KeepGoing = OutputRmtConfig.BitApi.func(OutputRmtConfig.BitApi.arg, Data);
             if(KeepGoing)
             {
                 ISR_WriteToBuffer(Data);

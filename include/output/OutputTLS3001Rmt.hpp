@@ -44,7 +44,7 @@ public:
     void    GetStatus (ArduinoJson::JsonObject& jsonStatus);
     void    SetOutputBufferSize (uint32_t NumChannelsAvailable);
     void    PauseOutput(bool State);
-    virtual bool IRAM_ATTR ISR_GetNextBitToSend (uint32_t &DataToSend);
+    bool IRAM_ATTR ISR_GetNextBitToSend (uint32_t &DataToSend);
 
 private:
     void    SetBitTimes ();
@@ -56,7 +56,7 @@ protected:
     friend class fsm_RMT_state_SendData;
     friend class fsm_RMT_state_SendDataIdle;
     friend class fsm_RMT_state;
-    fsm_RMT_state * pCurrentFsmState = nullptr;
+    OutputTLS3001RmtFsmStates_t CurrentFsmState = OutputTLS3001RmtFsmStates_t::TLS3001DataIdle;
 
     fsm_RMT_state_SendSync      fsm_RMT_state_SendSync_imp;
     fsm_RMT_state_SendReset     fsm_RMT_state_SendReset_imp;

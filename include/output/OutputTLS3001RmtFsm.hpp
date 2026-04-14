@@ -27,6 +27,15 @@
 // forward declaration
 class c_OutputTLS3001Rmt;
 
+enum OutputTLS3001RmtFsmStates_t
+{
+    TLS3001Reset = 0,
+    TLS3001Sync,
+    TLS3001DataStart,
+    TLS3001DataSend,
+    TLS3001DataIdle
+};
+
 /*****************************************************************************/
 /*
  *	Generic fsm base class.
@@ -38,8 +47,6 @@ public:
              fsm_RMT_state() {}
     virtual ~fsm_RMT_state() {}
             void SetParent(c_OutputTLS3001Rmt *_Parent) {Parent = _Parent;};
-    virtual IRAM_ATTR void Init() = 0;
-    virtual IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend) = 0;
     virtual void GetDriverName (String& Name) = 0;
 public:
     c_OutputTLS3001Rmt  *Parent = nullptr;
@@ -56,8 +63,8 @@ class fsm_RMT_state_SendSync : public fsm_RMT_state
 public:
     fsm_RMT_state_SendSync() {}
     virtual ~fsm_RMT_state_SendSync() {}
-    virtual IRAM_ATTR void Init();
-    virtual IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR void Init();
+            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
     virtual void GetDriverName (String& Name) { Name = "TLS3001SYN"; }
 private:
     const uint8_t CommandCode = 0b0001;
@@ -69,8 +76,8 @@ class fsm_RMT_state_SendReset : public fsm_RMT_state
 public:
     fsm_RMT_state_SendReset() {}
     virtual ~fsm_RMT_state_SendReset() {}
-    virtual IRAM_ATTR void Init();
-    virtual IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR void Init();
+            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
     virtual void GetDriverName (String& Name) { Name = "TLS3001RST"; }
 private:
     const uint8_t CommandCode = 0b0100;
@@ -82,8 +89,8 @@ class fsm_RMT_state_SendDataStart : public fsm_RMT_state
 public:
     fsm_RMT_state_SendDataStart() {}
     virtual ~fsm_RMT_state_SendDataStart() {}
-    virtual IRAM_ATTR void Init();
-    virtual IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR void Init();
+            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
     virtual void GetDriverName (String& Name) { Name = "TLS3001STR"; }
 private:
     const uint8_t CommandCode = 0b0010;
@@ -96,13 +103,14 @@ class fsm_RMT_state_SendData : public fsm_RMT_state
 public:
     fsm_RMT_state_SendData() {}
     virtual ~fsm_RMT_state_SendData() {}
-    virtual IRAM_ATTR void Init();
-    virtual IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR void Init();
+            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR bool ISR_RefreshData ();
     virtual void GetDriverName (String& Name) { Name = "TLS3001DAT"; }
 private:
     uint32_t DataPattern = 0;
     uint32_t DataPatternMask = 0;
-    bool HaveValidData = false;
+    bool MoreDataAvailable = false;
     uint32_t NumPostDataBitsToSend = 0;
 }; // fsm_RMT_state_SendData
 
@@ -112,8 +120,8 @@ class fsm_RMT_state_SendDataIdle : public fsm_RMT_state
 public:
     fsm_RMT_state_SendDataIdle() {}
     virtual ~fsm_RMT_state_SendDataIdle() {}
-    virtual IRAM_ATTR void Init();
-    virtual IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR void Init();
+            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
     virtual void GetDriverName (String& Name) { Name = "TLS3001IDL"; }
 private:
 }; // fsm_RMT_state_SendData
