@@ -26,20 +26,7 @@
 
 #include "OutputTLS3001.hpp"
 #include "OutputRmt.hpp"
-
-// forward declaration
-class c_OutputTLS3001Rmt;
-class fsm_RMT_state
-{
-public:
-    fsm_RMT_state() {}
-    virtual ~fsm_RMT_state() {}
-    virtual void Init(c_OutputTLS3001Rmt *Parent) = 0;
-    virtual void Poll (c_OutputTLS3001Rmt * Parent) = 0;
-    uint32_t     FsmTimerStartTime = 0;
-    void GetDriverName (String& Name) { Name = "TLS3001"; }
-
-}; // fsm_RMT_state
+#include "OutputTLS3001RmtFsm.hpp"
 
 class c_OutputTLS3001Rmt : public c_OutputTLS3001
 {
@@ -52,64 +39,44 @@ public:
     // functions to be provided by the derived class
     void    Begin ();                                         ///< set up the operating environment based on the current config (or defaults)
     bool    SetConfig (ArduinoJson::JsonObject& jsonConfig);  ///< Set a new config in the driver
-    uint32_t Poll ();                                        ///< Call from loop (),  renders output data
+    uint32_t Poll ();                                         ///< Call from loop (),  renders output data
     bool    RmtPoll ();
     void    GetStatus (ArduinoJson::JsonObject& jsonStatus);
     void    SetOutputBufferSize (uint32_t NumChannelsAvailable);
     void    PauseOutput(bool State);
+    virtual bool IRAM_ATTR ISR_GetNextBitToSend (uint32_t &DataToSend);
 
 private:
-
+    void    SetBitTimes ();
 
 protected:
+    friend class fsm_RMT_state_SendSync;
     friend class fsm_RMT_state_SendReset;
-    friend class fsm_RMT_state_SendStart;
+    friend class fsm_RMT_state_SendDataStart;
     friend class fsm_RMT_state_SendData;
+    friend class fsm_RMT_state_SendDataIdle;
     friend class fsm_RMT_state;
     fsm_RMT_state * pCurrentFsmState = nullptr;
+
+    fsm_RMT_state_SendSync      fsm_RMT_state_SendSync_imp;
+    fsm_RMT_state_SendReset     fsm_RMT_state_SendReset_imp;
+    fsm_RMT_state_SendDataStart fsm_RMT_state_SendDataStart_imp;
+    fsm_RMT_state_SendData      fsm_RMT_state_SendData_imp;
+    fsm_RMT_state_SendDataIdle  fsm_RMT_state_SendDataIdle_imp;
+
+    rmt_item32_t                RmtResetOneMsDelay;
+    uint32_t                    NumResetDelayBits = 1;
+
+    rmt_item32_t                RmtSyncIdle;
+    uint32_t                    NumSyncIdleBits = 1;
+
+    rmt_item32_t                SendDataIfg;
+    uint32_t                    NumIfgBitsPerFrame = 1;
+
+    bool                        SendingData = false;
 
     c_OutputRmt Rmt;
 
 }; // c_OutputTLS3001Rmt
-
-/*****************************************************************************/
-/*
-*	Generic fsm base class.
-*/
-/*****************************************************************************/
-/*****************************************************************************/
-class fsm_RMT_state_SendReset : public fsm_RMT_state
-{
-public:
-    fsm_RMT_state_SendReset() {}
-    virtual ~fsm_RMT_state_SendReset() {}
-    virtual void Init(c_OutputTLS3001Rmt *Parent);
-    virtual void Poll (c_OutputTLS3001Rmt * Parent);
-
-}; // fsm_RMT_state_SendReset
-
-/*****************************************************************************/
-class fsm_RMT_state_SendStart : public fsm_RMT_state
-{
-public:
-    fsm_RMT_state_SendStart() {}
-    virtual ~fsm_RMT_state_SendStart() {}
-    virtual void Init(c_OutputTLS3001Rmt *Parent);
-    virtual void Poll (c_OutputTLS3001Rmt * Parent);
-
-}; // fsm_RMT_state_SendStart
-
-/*****************************************************************************/
-class fsm_RMT_state_SendData : public fsm_RMT_state
-{
-public:
-    fsm_RMT_state_SendData() {}
-    virtual ~fsm_RMT_state_SendData() {}
-    virtual void Init(c_OutputTLS3001Rmt *Parent);
-    virtual void Poll (c_OutputTLS3001Rmt * Parent);
-private:
-    uint32_t FrameCount = 0;
-
-}; // fsm_RMT_state_SendData
 
 #endif // defined(SUPPORT_OutputProtocol_TLS3001) && defined (ARDUINO_ARCH_ESP32)
