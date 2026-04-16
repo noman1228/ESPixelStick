@@ -113,6 +113,7 @@ extern const CN_PROGMEM char CN_FlashMinDelay [];
 extern const CN_PROGMEM char CN_FlashMaxDelay [];
 extern const CN_PROGMEM char CN_FlashMinDur [];
 extern const CN_PROGMEM char CN_FlashMaxDur [];
+extern const CN_PROGMEM char CN_FramesBetweenResets [];
 extern const CN_PROGMEM char CN_Frequency [];
 extern const CN_PROGMEM char CN_fseqfilelist [];
 extern const CN_PROGMEM char CN_fseqfilename [];

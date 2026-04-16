@@ -71,7 +71,7 @@ bool c_OutputSerialRmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
     bool response = c_OutputSerial::SetConfig (jsonConfig);
     // DEBUG_V (String ("DataPin: ") + String (DataPin));
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
-    OutputRmtConfig.RmtChannelId            = rmt_channel_t(OutputPortDefinition.DeviceId);
+    OutputRmtConfig.RmtChannelId            = uint32_t(OutputPortDefinition.DeviceId);
     OutputRmtConfig.DataPin                 = gpio_num_t(OutputPortDefinition.gpios.data);
     OutputRmtConfig.idle_level              = idle_level;
     OutputRmtConfig.pSerialDataSource       = this;

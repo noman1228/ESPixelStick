@@ -44,7 +44,11 @@ extern "C"
 #   define UART_INT_ENA        UART_INT_ENA_REG
 #   define UART_INT_CLR        UART_INT_CLR_REG
 #   define UART_INT_ST         UART_INT_ST_REG
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#   define UART_TX_FIFO_SIZE   UART_HW_FIFO_LEN(0)
+#else
 #   define UART_TX_FIFO_SIZE   UART_FIFO_LEN
+#endif // ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #endif
 } // extern C
 
@@ -598,6 +602,8 @@ uint32_t inline IRAM_ATTR c_OutputUart::getUartFifoLength()
 {
 #ifdef ARDUINO_ARCH_ESP8266
     return uint32_t((U1S >> USTXC) & 0xff);
+#elif ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    return uint32_t((READ_PERI_REG(UART_STATUS_REG(OutputUartConfig.UartId)) & UART_TXFIFO_CNT_M) >> UART_TXFIFO_CNT_S);
 #elif defined(ARDUINO_ARCH_ESP32)
     return uint32_t((READ_PERI_REG(UART_STATUS_REG(OutputUartConfig.UartId)) & UART_TXFIFO_CNT_M) >> UART_TXFIFO_CNT_S);
 #endif // defined(ARDUINO_ARCH_ESP32)
