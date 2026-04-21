@@ -126,6 +126,7 @@ extern const CN_PROGMEM char CN_gen_ser_hdr [];
 extern const CN_PROGMEM char CN_gen_ser_ftr [];
 extern const CN_PROGMEM char CN_gid [];
 extern const CN_PROGMEM char CN_group_size [];
+extern const CN_PROGMEM char CN_groups [];
 extern const CN_PROGMEM char CN_GS8208 [];
 extern const CN_PROGMEM char CN_hadisco [];
 extern const CN_PROGMEM char CN_haprefix [];

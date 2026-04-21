@@ -34,7 +34,7 @@ protected:
 
     uint16_t  InterFrameGapInMicroSec = 300;
 
-    void SetFrameDurration (float IntensityBitTimeInUs, uint16_t BlockSize = 1, float BlockDelayUs = 0.0);
+    void SetFrameDurration (float IntensityBitTimeInUs, uint16_t BlockSize = 1, float BlockDelayUs = 0.0, uint OutBitsPerDataBit = 8);
 
 private:
 #define PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL 3
@@ -60,7 +60,7 @@ private:
     uint32_t      PixelPrependDataCurrentIndex = 0;
 
     uint32_t      PixelGroupSize              = 1;
-    uint32_t      PixelGroups                 = 1;
+    uint32_t      PixelGroups                 = 100;
 
     float       IntensityBitTimeInUs        = 0.0;
     uint32_t    BlockSize                   = 1;
@@ -164,7 +164,7 @@ public:
     virtual  void         ReadChannelData (uint32_t StartChannelId, uint32_t ChannelCount, byte *pTargetData);
     inline   void         SetIntensityBitTimeInUS (float value) { IntensityBitTimeInUs = value; }
              void         SetIntensityDataWidth(uint32_t value);
-             void         StartNewFrame();
+    virtual  void         StartNewFrame();
     inline   bool IRAM_ATTR ISR_MoreDataToSend () {return (&c_OutputPixel::FrameDone != FrameStateFuncPtr);}
              bool IRAM_ATTR ISR_GetNextIntensityToSend (uint32_t &DataToSend);
     void                  SetPixelCount(uint32_t value) {pixel_count = value;}

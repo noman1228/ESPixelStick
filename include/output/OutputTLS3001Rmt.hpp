@@ -74,8 +74,31 @@ protected:
     uint32_t                    NumIfgBitsPerFrame = 1;
 
     bool                        SendingData = false;
+    rmt_item32_t                OneBit;
+    rmt_item32_t                ZeroBit;
 
     c_OutputRmt Rmt;
+
+    #define USE_TLS3001RMT_COUNTERS
+    #ifdef USE_TLS3001RMT_COUNTERS
+    #define INCREMENT_TLS3001_COUNTER(c) (++TLS3001RMTCounters.c)
+    struct TLS3001RMTCounters_t
+    {
+        uint32_t FrameStarted  = 0;
+        uint32_t FrameErrorNotFinished = 0;
+        uint32_t MinFrameLenMs = uint32_t(-1);
+        uint32_t MaxFrameLenMs = 0;
+        uint32_t MinPollTimeMs = uint32_t(-1);
+        uint32_t MaxPollTimeMs = 0;
+        uint32_t PollCounter   = 0;
+        uint32_t TooSoon       = 0;
+        uint32_t NoGpio        = 0;
+
+    } TLS3001RMTCounters;
+
+    #else
+    #define INCREMENT_TLS3001_COUNTER(c)
+    #endif // def USE_TLS3001RMT_COUNTERS
 
 }; // c_OutputTLS3001Rmt
 
