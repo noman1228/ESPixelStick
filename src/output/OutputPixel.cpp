@@ -185,7 +185,9 @@ bool c_OutputPixel::SetConfig (ArduinoJson::JsonObject& jsonConfig)
     setFromJSON (color_order,             jsonConfig, CN_color_order);
     setFromJSON (pixel_count,             jsonConfig, CN_pixel_count);
     setFromJSON (PixelGroupSize,          jsonConfig, CN_group_size);
-    setFromJSON (PixelGroups,             jsonConfig, CN_groups);
+    // setFromJSON (PixelGroups,             jsonConfig, CN_groups);
+    // handle config sources that do not keep this aligned
+    PixelGroups = pixel_count / PixelGroupSize;
     setFromJSON (zig_size,                jsonConfig, CN_zig_size);
     setFromJSON (gamma,                   jsonConfig, CN_gamma);
     setFromJSON (brightness,              jsonConfig, CN_brightness);
