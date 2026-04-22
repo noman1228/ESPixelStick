@@ -152,7 +152,7 @@
                 // console.debug("NumGroups: " + NumGroups);
                 // console.debug("GroupSize: " + GroupSize);
 
-                NumGroups = Math.trunc(NumPixels / NumGroups);
+                NumGroups = Math.trunc(NumPixels / GroupSize);
                 $(ElementPath + ' #groups').val (NumGroups);
 
                 if(1 === GroupSize)
