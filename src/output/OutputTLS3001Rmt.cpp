@@ -232,6 +232,8 @@ void c_OutputTLS3001Rmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
     CounterStatus[F("NoGpio")]        = TLS3001RMTCounters.NoGpio;
     CounterStatus[F("FramesStarted")] = TLS3001RMTCounters.FrameStarted;
     CounterStatus[F("FrameErrorNotFinished")] = TLS3001RMTCounters.FrameErrorNotFinished;
+    CounterStatus[F("TooSoon")]       = TLS3001RMTCounters.TooSoon;
+
     #endif // def USE_TLS3001RMT_COUNTERS
 
     // // DEBUG_END;
@@ -261,7 +263,6 @@ bool c_OutputTLS3001Rmt::RmtPoll ()
             INCREMENT_TLS3001_COUNTER(NoGpio);
             break;
         }
-        Response = true;
 
         if(!canRefresh())
         {
@@ -270,8 +271,8 @@ bool c_OutputTLS3001Rmt::RmtPoll ()
             break;
         }
 
-        TLS3001RMTCounters.MinPollTimeMs = min((uint32_t(micros()) - FrameStartTimeInMicroSec) / MicroSecondsInAmilliSecond, TLS3001RMTCounters.MinPollTimeMs);
-        TLS3001RMTCounters.MaxPollTimeMs = max((uint32_t(micros()) - FrameStartTimeInMicroSec) / MicroSecondsInAmilliSecond, TLS3001RMTCounters.MaxPollTimeMs);
+        // TLS3001RMTCounters.MinPollTimeMs = min((uint32_t(micros()) - FrameStartTimeInMicroSec) / MicroSecondsInAmilliSecond, TLS3001RMTCounters.MinPollTimeMs);
+        // TLS3001RMTCounters.MaxPollTimeMs = max((uint32_t(micros()) - FrameStartTimeInMicroSec) / MicroSecondsInAmilliSecond, TLS3001RMTCounters.MaxPollTimeMs);
 
         if(false == SendingData)
         {
@@ -292,7 +293,7 @@ bool c_OutputTLS3001Rmt::RmtPoll ()
         {
             INCREMENT_TLS3001_COUNTER(FrameErrorNotFinished);
             fsm_RMT_state_SendReset_imp.Init();
-            Rmt.StartNewFrame();
+            Response = Rmt.StartNewFrame();
         }
 
         #ifdef DEBUG_RMT_XLAT_ISSUES
