@@ -79,7 +79,7 @@ protected:
 
     c_OutputRmt Rmt;
 
-    #define USE_TLS3001RMT_COUNTERS
+    // #define USE_TLS3001RMT_COUNTERS
     #ifdef USE_TLS3001RMT_COUNTERS
     #define INCREMENT_TLS3001_COUNTER(c) (++TLS3001RMTCounters.c)
     struct TLS3001RMTCounters_t
