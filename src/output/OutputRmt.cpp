@@ -40,6 +40,8 @@ static TaskHandle_t SendFrameTaskHandle = NULL;
 static BaseType_t xHigherPriorityTaskWoken = pdTRUE;
 static uint32_t FrameCompletes = 0;
 static uint32_t FrameTimeouts = 0;
+static uint32_t SavedInterruptEnables = 0;
+static uint32_t SavedInterruptStatus = 0;
 
 //----------------------------------------------------------------------------
 void RMT_Task (void *arg)
@@ -135,6 +137,8 @@ static void IRAM_ATTR rmt_intr_handler (void* param)
         // read the current ISR flags
         bool HaveAnInterrupt = false;
         c_OutputRmt::isrTxFlags_t isrTxFlags;
+        // SavedInterruptEnables = RMT.int_ena.val;
+        // WSavedInterruptStatus  = RMT.int_raw.val;
         HaveAnInterrupt |= (0 != (isrTxFlags.End   = rmt_ll_get_tx_end_interrupt_status(&RMT)));
         HaveAnInterrupt |= (0 != (isrTxFlags.Err   = rmt_ll_get_tx_err_interrupt_status(&RMT)));
         HaveAnInterrupt |= (0 != (isrTxFlags.Thres = rmt_ll_get_tx_thres_interrupt_status(&RMT)));
@@ -337,6 +341,9 @@ void c_OutputRmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
     debugStatus["conf0"]                        = "0x" + String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf0.val, HEX);
     debugStatus["conf1"]                        = "0x" + String(RMT.conf_ch[OutputRmtConfig.RmtChannelId].conf1.val, HEX);
     debugStatus["tx_lim_ch"]                    = String(RMT.tx_lim_ch[OutputRmtConfig.RmtChannelId].limit);
+    debugStatus["int_ena"]                      = "0x" + String(SavedInterruptEnables, HEX);
+    debugStatus["int_st"]                       = "0x" + String(SavedInterruptStatus, HEX);
+
     #endif // def CONFIG_IDF_TARGET_ESP32S3
 
     debugStatus["ErrorIsr"]                     = ErrorIsr;
@@ -445,17 +452,13 @@ void IRAM_ATTR c_OutputRmt::ISR_CreateIntensityData ()
         // Serial.print('U');
         uint32_t NumAvailableBufferSlotsToFill = NumSendBufferSlots - NumUsedEntriesInSendBuffer;
         // Serial.print(String(NumAvailableBufferSlotsToFill));
-        bool KeepGoing = true;
-        while(KeepGoing && NumAvailableBufferSlotsToFill)
+        while(ThereIsDataToSend && NumAvailableBufferSlotsToFill)
         {
             // Serial.print('K');
             --NumAvailableBufferSlotsToFill;
             uint32_t Data;
-            KeepGoing = OutputRmtConfig.BitApi.func(OutputRmtConfig.BitApi.arg, Data);
-            if(KeepGoing)
-            {
-                ISR_WriteToBuffer(Data);
-            }
+            ThereIsDataToSend = OutputRmtConfig.BitApi.func(OutputRmtConfig.BitApi.arg, Data);
+            ISR_WriteToBuffer(Data);
         }
         return;
     }
@@ -598,7 +601,6 @@ void IRAM_ATTR c_OutputRmt::ISR_Handler (isrTxFlags_t isrTxFlags)
 
                 // tell the background task to start the next output
                 vTaskNotifyGiveFromISR( SendFrameTaskHandle, &xHigherPriorityTaskWoken );
-                // portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
             }
         }
         // else ignore the interrupt and let the transmitter stall when it runs out of data
