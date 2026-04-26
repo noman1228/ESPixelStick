@@ -63,9 +63,9 @@ private:
     uint32_t        DataPattern;
     uint32_t        DataPatternMask;
 
-    #define TM1814_RMT_DEBUG_COUNTERS
+    // #define TM1814_RMT_DEBUG_COUNTERS
     #ifdef TM1814_RMT_DEBUG_COUNTERS
-    #define INC_TM1814_RMT_DEBUG_COUNTERS(c) (++SerialRmtDebugCounters.c)
+    #define INC_TM1814_RMT_DEBUG_COUNTERS(c) (++RmtDebugCounters.c)
     struct
     {
         uint32_t GetNextBit = 0;
@@ -77,7 +77,7 @@ private:
         uint32_t DataBits = 0;
         uint32_t StopBits = 0;
         uint32_t Underrun = 0;
-    } SerialRmtDebugCounters;
+    } RmtDebugCounters;
     #else
     #define INC_TM1814_RMT_DEBUG_COUNTERS(c)
     #endif // def TM1814_RMT_DEBUG_COUNTERS

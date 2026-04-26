@@ -69,7 +69,7 @@ private:
 
     // #define GECE_RMT_DEBUG_COUNTERS
     #ifdef GECE_RMT_DEBUG_COUNTERS
-    #define INC_GECE_RMT_DEBUG_COUNTERS(c) (++SerialRmtDebugCounters.c)
+    #define INC_GECE_RMT_DEBUG_COUNTERS(c) (++RmtDebugCounters.c)
     struct
     {
         uint32_t GetNextBit = 0;
@@ -81,7 +81,7 @@ private:
         uint32_t DataBits = 0;
         uint32_t StopBits = 0;
         uint32_t Underrun = 0;
-    } SerialRmtDebugCounters;
+    } RmtDebugCounters;
     #else
     #define INC_GECE_RMT_DEBUG_COUNTERS(c)
     #endif // def GECE_RMT_DEBUG_COUNTERS

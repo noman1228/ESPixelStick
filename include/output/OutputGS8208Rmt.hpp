@@ -50,7 +50,7 @@ public:
 private:
     // #define GS8208_RMT_DEBUG_COUNTERS
     #ifdef GS8208_RMT_DEBUG_COUNTERS
-    #define INC_GS8208_RMT_DEBUG_COUNTERS(c) (++SerialRmtDebugCounters.c)
+    #define INC_GS8208_RMT_DEBUG_COUNTERS(c) (++RmtDebugCounters.c)
     struct
     {
         uint32_t GetNextBit = 0;
@@ -62,7 +62,7 @@ private:
         uint32_t DataBits = 0;
         uint32_t StopBits = 0;
         uint32_t Underrun = 0;
-    } SerialRmtDebugCounters;
+    } RmtDebugCounters;
     #else
     #define INC_GS8208_RMT_DEBUG_COUNTERS(c)
     #endif // def GS8208_RMT_DEBUG_COUNTERS

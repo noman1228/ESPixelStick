@@ -123,15 +123,15 @@ void c_OutputTM1814Rmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
 
     #ifdef TM1814_RMT_DEBUG_COUNTERS
     JsonObject JsonCounters = jsonStatus["JsonCounters"].to<JsonObject>();
-    JsonWrite(JsonCounters, "GetNextBit",  SerialRmtDebugCounters.GetNextBit);
-    JsonWrite(JsonCounters, "FrameStarts", SerialRmtDebugCounters.FrameStarts);
-    JsonWrite(JsonCounters, "FrameEnds",   SerialRmtDebugCounters.FrameEnds);
-    JsonWrite(JsonCounters, "BreakBits",   SerialRmtDebugCounters.BreakBits);
-    JsonWrite(JsonCounters, "MabBits",     SerialRmtDebugCounters.MabBits);
-    JsonWrite(JsonCounters, "StartBits",   SerialRmtDebugCounters.StartBits);
-    JsonWrite(JsonCounters, "DataBits",    SerialRmtDebugCounters.DataBits);
-    JsonWrite(JsonCounters, "StopBits",    SerialRmtDebugCounters.StopBits);
-    JsonWrite(JsonCounters, "Underrun",    SerialRmtDebugCounters.Underrun);
+    JsonWrite(JsonCounters, "GetNextBit",  RmtDebugCounters.GetNextBit);
+    JsonWrite(JsonCounters, "FrameStarts", RmtDebugCounters.FrameStarts);
+    JsonWrite(JsonCounters, "FrameEnds",   RmtDebugCounters.FrameEnds);
+    JsonWrite(JsonCounters, "BreakBits",   RmtDebugCounters.BreakBits);
+    JsonWrite(JsonCounters, "MabBits",     RmtDebugCounters.MabBits);
+    JsonWrite(JsonCounters, "StartBits",   RmtDebugCounters.StartBits);
+    JsonWrite(JsonCounters, "DataBits",    RmtDebugCounters.DataBits);
+    JsonWrite(JsonCounters, "StopBits",    RmtDebugCounters.StopBits);
+    JsonWrite(JsonCounters, "Underrun",    RmtDebugCounters.Underrun);
     #endif // def TM1814_RMT_DEBUG_COUNTERS
 
 } // GetStatus
