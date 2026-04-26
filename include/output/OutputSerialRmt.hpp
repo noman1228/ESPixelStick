@@ -48,6 +48,7 @@ public:
 
 private:
     void    SetUpRmtBitTimes();
+    rmt_idle_level_t idle_level = rmt_idle_level_t::RMT_IDLE_LEVEL_HIGH;
 
     c_OutputRmt Rmt;
 

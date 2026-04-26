@@ -72,19 +72,12 @@ bool c_OutputSerialRmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 {
     // DEBUG_START;
 
-    #if defined(SUPPORT_OutputProtocol_FireGod)
-    if (OutputType == c_OutputMgr::e_OutputProtocolType::OutputProtocol_FireGod)
-    {
-        idle_level = rmt_idle_level_t::RMT_IDLE_LEVEL_HIGH;
-    }
-    #endif // defined(SUPPORT_OutputProtocol_FireGod)
-
     bool response = c_OutputSerial::SetConfig (jsonConfig);
     // DEBUG_V (String ("DataPin: ") + String (DataPin));
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
     OutputRmtConfig.RmtChannelId            = uint32_t(OutputPortDefinition.DeviceId);
     OutputRmtConfig.DataPin                 = gpio_num_t(OutputPortDefinition.gpios.data);
-    OutputRmtConfig.idle_level              = rmt_idle_level_t::RMT_IDLE_LEVEL_HIGH;
+    OutputRmtConfig.idle_level              = idle_level;
     OutputRmtConfig.arg                     = this;
     OutputRmtConfig.ISR_GetNextIntensityBit = ISR_GetNextBitToSendBase;
     OutputRmtConfig.StartNewDataFrame       = StartNewDataFrameBase;
