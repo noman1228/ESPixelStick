@@ -44,7 +44,7 @@ public:
     void    GetStatus (ArduinoJson::JsonObject& jsonStatus);
     void    SetOutputBufferSize (uint32_t NumChannelsAvailable);
     void    PauseOutput(bool State);
-    bool IRAM_ATTR ISR_GetNextBitToSend (rmt_item32_t &DataToSend);
+    bool    ISR_GetNextBitToSend (rmt_item32_t &DataToSend);
     void    StartNewDataFrame();
 
 private:
