@@ -125,14 +125,14 @@ void c_OutputSerialRmt::SetUpRmtBitTimes()
 
     // 01
     Rmt.SetBitDuration(BitTimeNS * 2, DataBitArray[1], BitCount);
-    DataBitArray[1].level0 = 0;
-    DataBitArray[1].level1 = 1;
+    DataBitArray[1].level0 = 1;
+    DataBitArray[1].level1 = 0;
     // DEBUG_V(String("DataBitArray[1]: ") + String(DataBitArray[1].duration0 * 2) + " ticks");
 
     // 10
     Rmt.SetBitDuration(BitTimeNS * 2, DataBitArray[2], BitCount);
-    DataBitArray[2].level0 = 1;
-    DataBitArray[2].level1 = 0;
+    DataBitArray[2].level0 = 0;
+    DataBitArray[2].level1 = 1;
     // DEBUG_V(String("DataBitArray[2]: ") + String(DataBitArray[2].duration0 * 2) + " ticks");
 
     // 11
@@ -286,7 +286,8 @@ bool IRAM_ATTR c_OutputSerialRmt::ISR_GetNextBitToSend (rmt_item32_t & DataToSen
     {
         INC_SERIAL_RMT_DEBUG_COUNTERS(DataBits);
         --CurrentDataPairId;
-        DataToSend = DataBitArray[(DataPattern >> (CurrentDataPairId * 2)) && 0x3];
+        DataToSend = DataBitArray[DataPattern & 0x3];
+        DataPattern = DataPattern >> 2;
     }
     else if(StopBitCount)
     {
