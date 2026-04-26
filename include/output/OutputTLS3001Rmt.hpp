@@ -44,7 +44,8 @@ public:
     void    GetStatus (ArduinoJson::JsonObject& jsonStatus);
     void    SetOutputBufferSize (uint32_t NumChannelsAvailable);
     void    PauseOutput(bool State);
-    bool IRAM_ATTR ISR_GetNextBitToSend (uint32_t &DataToSend);
+    bool IRAM_ATTR ISR_GetNextBitToSend (rmt_item32_t &DataToSend);
+    void    StartNewDataFrame();
 
 private:
     void    SetBitTimes ();
@@ -70,18 +71,21 @@ protected:
     rmt_item32_t                RmtSyncIdle;
     uint32_t                    NumSyncIdleBits = 1;
 
-    rmt_item32_t                SendDataIfg;
+    rmt_item32_t                RmtIfgBit;
     uint32_t                    NumIfgBitsPerFrame = 1;
 
+    #define TLS3001_PIXEL_RMT_TICKS_BIT  uint16_t(TLS3001_PIXEL_NS_BIT / RMT_TickLengthNS)
+    const rmt_item32_t          RmtOneBit  = {TLS3001_PIXEL_RMT_TICKS_BIT / 2, 1, TLS3001_PIXEL_RMT_TICKS_BIT / 2, 0};
+    const rmt_item32_t          RmtZeroBit = {TLS3001_PIXEL_RMT_TICKS_BIT / 2, 0, TLS3001_PIXEL_RMT_TICKS_BIT / 2, 1};
+
     bool                        SendingData = false;
-    rmt_item32_t                OneBit;
-    rmt_item32_t                ZeroBit;
 
     c_OutputRmt Rmt;
 
     // #define USE_TLS3001RMT_COUNTERS
     #ifdef USE_TLS3001RMT_COUNTERS
-    #define INCREMENT_TLS3001_COUNTER(c) (++TLS3001RMTCounters.c)
+        #define INCREMENT_TLS3001_COUNTER(c) (++TLS3001RMTCounters.c)
+        #define INCREMENT_TLS3001_FSM_COUNTER(c) (++Parent->TLS3001RMTCounters.c)
     struct TLS3001RMTCounters_t
     {
         uint32_t FrameStarted  = 0;
@@ -93,11 +97,22 @@ protected:
         uint32_t PollCounter   = 0;
         uint32_t TooSoon       = 0;
         uint32_t NoGpio        = 0;
-
+        uint32_t SendReset_Init = 0;
+        uint32_t SendReset_GetNextBitToSend = 0;
+        uint32_t SendSync_Init = 0;
+        uint32_t SendSync_GetNextBitToSend = 0;
+        uint32_t SendDataStart_Init = 0;
+        uint32_t SendDataStart_GetNextBitToSend = 0;
+        uint32_t SendData_Init = 0;
+        uint32_t SendData_GetNextBitToSend = 0;
+        uint32_t SendData_RefreshData = 0;
+        uint32_t SendDataIdle_Init = 0;
+        uint32_t SendDataIdle_GetNextBitToSend = 0;
     } TLS3001RMTCounters;
 
     #else
-    #define INCREMENT_TLS3001_COUNTER(c)
+        #define INCREMENT_TLS3001_COUNTER(c)
+        #define INCREMENT_TLS3001_FSM_COUNTER(c)
     #endif // def USE_TLS3001RMT_COUNTERS
 
 }; // c_OutputTLS3001Rmt

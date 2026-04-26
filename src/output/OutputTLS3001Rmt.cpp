@@ -21,25 +21,17 @@
 
 #include "output/OutputTLS3001Rmt.hpp"
 
-#define TLS3001_PIXEL_RMT_TICKS_BIT  uint16_t(TLS3001_PIXEL_NS_BIT / RMT_TickLengthNS)
-
 //----------------------------------------------------------------------------
-static bool IRAM_ATTR ISR_GetNextBitToSendBase (void * arg, uint32_t & DataToSend)
+static bool IRAM_ATTR ISR_GetNextBitToSendBase (void * arg, rmt_item32_t & DataToSend)
 {
     return reinterpret_cast<c_OutputTLS3001Rmt*>(arg)->ISR_GetNextBitToSend(DataToSend);
 } // ISR_GetNextBitToSend
 
-static const c_OutputRmt::ConvertIntensityToRmtDataStreamEntry_t ConvertIntensityToRmtDataStream[] =
+//----------------------------------------------------------------------------
+static void StartNewDataFrameBase(void * arg)
 {
-    // {{.duration0,.level0,.duration1,.level1},Type},
-
-    {{TLS3001_PIXEL_RMT_TICKS_BIT / 2, 1, TLS3001_PIXEL_RMT_TICKS_BIT / 2, 0}, c_OutputRmt::RmtDataBitIdType_t::RMT_STARTBIT_ID},
-    {{TLS3001_PIXEL_RMT_TICKS_BIT / 2, 0, TLS3001_PIXEL_RMT_TICKS_BIT / 2, 1}, c_OutputRmt::RmtDataBitIdType_t::RMT_DATA_BIT_ZERO_ID},
-    {{TLS3001_PIXEL_RMT_TICKS_BIT / 2, 1, TLS3001_PIXEL_RMT_TICKS_BIT / 2, 0}, c_OutputRmt::RmtDataBitIdType_t::RMT_DATA_BIT_ONE_ID},
-    {{TLS3001_PIXEL_RMT_TICKS_BIT / 2, 0, TLS3001_PIXEL_RMT_TICKS_BIT / 2, 0}, c_OutputRmt::RmtDataBitIdType_t::RMT_INTERFRAME_GAP_ID},
-    {{                              0, 0,                               0, 0}, c_OutputRmt::RmtDataBitIdType_t::RMT_STOPBIT_ID},
-    {{                              0, 0,                               0, 0}, c_OutputRmt::RmtDataBitIdType_t::RMT_LIST_END},
-}; // ConvertIntensityToRmtDataStream
+    return reinterpret_cast<c_OutputTLS3001Rmt*>(arg)->StartNewDataFrame();
+}
 
 //----------------------------------------------------------------------------
 c_OutputTLS3001Rmt::c_OutputTLS3001Rmt(OM_OutputPortDefinition_t & OutputPortDefinition,
@@ -49,9 +41,6 @@ c_OutputTLS3001Rmt::c_OutputTLS3001Rmt(OM_OutputPortDefinition_t & OutputPortDef
     // DEBUG_START;
 
     // DEBUG_V (String ("TLS3001_PIXEL_RMT_TICKS_BIT: 0x") + String (TLS3001_PIXEL_RMT_TICKS_BIT, HEX));
-    OneBit.val  = ConvertIntensityToRmtDataStream[2].Translation.val;
-    ZeroBit.val = ConvertIntensityToRmtDataStream[1].Translation.val;
-
     fsm_RMT_state_SendSync_imp.SetParent(this);
     fsm_RMT_state_SendReset_imp.SetParent(this);
     fsm_RMT_state_SendDataStart_imp.SetParent(this);
@@ -101,38 +90,18 @@ bool c_OutputTLS3001Rmt::SetConfig (ArduinoJson::JsonObject& jsonConfig)
 
     bool response = c_OutputTLS3001::SetConfig (jsonConfig);
 
-    uint32_t ifgNS = 1000; // (InterFrameGapInMicroSec * NanoSecondsInAMicroSecond);
-    uint32_t ifgTicks = ifgNS / RMT_TickLengthNS;
-
-    // Default is 100us * 3
-    rmt_item32_t BitValue;
-    // by default there are 6 rmt_item32_t instances replicated for the start of a frame.
-    // 1 instances times 2 time periods per instance = 2
-    BitValue.duration0 = ifgTicks / 2;
-    BitValue.level0    = 0;
-    BitValue.duration1 = ifgTicks / 2;
-    BitValue.level1    = 0;
-
     c_OutputRmt::OutputRmtConfig_t OutputRmtConfig;
-    OutputRmtConfig.RmtChannelId        = uint32_t(OutputPortDefinition.PortId);
-    OutputRmtConfig.DataPin             = gpio_num_t(OutputPortDefinition.gpios.data);
-    OutputRmtConfig.idle_level          = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
-    OutputRmtConfig.pPixelDataSource    = this;
-    OutputRmtConfig.CitrdsArray         = ConvertIntensityToRmtDataStream;
-    OutputRmtConfig.NumFrameStartBits   = 0;
-    OutputRmtConfig.NumFrameStopBits    = 0;
-    OutputRmtConfig.NumIdleBits         = 0;
-
-    OutputRmtConfig.BitApi.UseLowLevelBitAPI = true;
-    OutputRmtConfig.BitApi.arg               = this;
-    OutputRmtConfig.BitApi.func              = ISR_GetNextBitToSendBase;
+    OutputRmtConfig.RmtChannelId            = uint32_t(OutputPortDefinition.PortId);
+    OutputRmtConfig.DataPin                 = gpio_num_t(OutputPortDefinition.gpios.data);
+    OutputRmtConfig.idle_level              = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
+    OutputRmtConfig.arg                     = this;
+    OutputRmtConfig.ISR_GetNextIntensityBit = ISR_GetNextBitToSendBase;
+    OutputRmtConfig.StartNewDataFrame       = StartNewDataFrameBase;
 
     // DEBUG_V();
     SetBitTimes();
     fsm_RMT_state_SendDataIdle_imp.Init ();
     Rmt.Begin(OutputRmtConfig, this);
-    Rmt.ValidateBitXlatTable(ConvertIntensityToRmtDataStream);
-    Rmt.SetIntensity2Rmt (BitValue, c_OutputRmt::RmtDataBitIdType_t::RMT_INTERFRAME_GAP_ID);
 
     // DEBUG_END;
     return response;
@@ -146,7 +115,7 @@ void c_OutputTLS3001Rmt::SetBitTimes ()
 
     double NumChannelsAvailable = double(GetNumOutputBufferChannelsServiced());
     double NumPixels            = NumChannelsAvailable / double(PIXEL_DEFAULT_INTENSITY_BYTES_PER_PIXEL);
-    double BaudRateMhz          = double(TLS3001_PIXEL_DATA_RATE) / 1000000.0;
+    double BaudRateMhz          = double(TLS3001_PIXEL_DATA_RATE) / MicroSecondsInASecond;
     // calculate the after sync delay based on bit rate and number of pixels on port
     // (Number of connected chips) ÷ (Communication baud rate in MHz) × 30
     double delayUs              = (NumPixels / BaudRateMhz) * 30;
@@ -184,9 +153,9 @@ void c_OutputTLS3001Rmt::SetBitTimes ()
     // DEBUG_V(String("DeltaFrameLenNs: ") + String(DeltaFrameLenNs));
 
     // DEBUG_V("SendDataIfg");
-    Rmt.SetBitDuration(int(DeltaFrameLenNs), SendDataIfg, NumIfgBitsPerFrame);
-    SendDataIfg.level0 = 0;
-    SendDataIfg.level1 = 0;
+    Rmt.SetBitDuration(int(DeltaFrameLenNs), RmtIfgBit, NumIfgBitsPerFrame);
+    RmtIfgBit.level0 = 0;
+    RmtIfgBit.level1 = 0;
 
     // DEBUG_END;
 } // SetBitTimes
@@ -197,7 +166,6 @@ void c_OutputTLS3001Rmt::SetOutputBufferSize (uint32_t NumChannelsAvailable)
     // DEBUG_START;
 
     c_OutputTLS3001::SetOutputBufferSize (NumChannelsAvailable);
-    // Rmt.SetMinFrameDurationInUs (FrameDurationInMicroSec);
     // DEBUG_V(String("    TLS3001_PIXEL_DATA_RATE: ") + String(TLS3001_PIXEL_DATA_RATE));
 
     SetBitTimes();
@@ -215,24 +183,30 @@ void c_OutputTLS3001Rmt::GetStatus (ArduinoJson::JsonObject& jsonStatus)
 #ifdef USE_RMT_DEBUG_COUNTERS
     // jsonStatus[F("Can Refresh")] = CanRefresh;
     // jsonStatus[F("Cannot Refresh")] = CannotRefresh;
-    jsonStatus[F("FrameDurationInMicroSec")] = FrameDurationInMicroSec;
-    jsonStatus[F("FrameStartTimeInMicroSec")] = FrameStartTimeInMicroSec;
-    uint32_t now = micros();
-    jsonStatus[F("Now")] = now;
-    jsonStatus[F("FrameStartDelta")] = now - FrameStartTimeInMicroSec;
 #endif // def USE_RMT_DEBUG_COUNTERS
 
     #ifdef USE_TLS3001RMT_COUNTERS
     JsonObject CounterStatus = jsonStatus.createNestedObject("TLS3001");
-    CounterStatus[F("MinFrameLenMs")] = TLS3001RMTCounters.MinFrameLenMs;
-    CounterStatus[F("MaxFrameLenMs")] = TLS3001RMTCounters.MaxFrameLenMs;
-    CounterStatus[F("MinPollTimeMs")] = TLS3001RMTCounters.MinPollTimeMs;
-    CounterStatus[F("MaxPollTimeMs")] = TLS3001RMTCounters.MaxPollTimeMs;
-    CounterStatus[F("PollCounter")]   = TLS3001RMTCounters.PollCounter;
-    CounterStatus[F("NoGpio")]        = TLS3001RMTCounters.NoGpio;
-    CounterStatus[F("FramesStarted")] = TLS3001RMTCounters.FrameStarted;
-    CounterStatus[F("FrameErrorNotFinished")] = TLS3001RMTCounters.FrameErrorNotFinished;
-    CounterStatus[F("TooSoon")]       = TLS3001RMTCounters.TooSoon;
+    CounterStatus[F("MinFrameLenMs")]                   = TLS3001RMTCounters.MinFrameLenMs;
+    CounterStatus[F("MaxFrameLenMs")]                   = TLS3001RMTCounters.MaxFrameLenMs;
+    CounterStatus[F("MinPollTimeMs")]                   = TLS3001RMTCounters.MinPollTimeMs;
+    CounterStatus[F("MaxPollTimeMs")]                   = TLS3001RMTCounters.MaxPollTimeMs;
+    CounterStatus[F("PollCounter")]                     = TLS3001RMTCounters.PollCounter;
+    CounterStatus[F("NoGpio")]                          = TLS3001RMTCounters.NoGpio;
+    CounterStatus[F("FramesStarted")]                   = TLS3001RMTCounters.FrameStarted;
+    CounterStatus[F("FrameErrorNotFinished")]           = TLS3001RMTCounters.FrameErrorNotFinished;
+    CounterStatus[F("TooSoon")]                         = TLS3001RMTCounters.TooSoon;
+    CounterStatus[F("SendReset_Init")]                  = TLS3001RMTCounters.SendReset_Init;
+    CounterStatus[F("SendReset_GetNextBitToSend")]      = TLS3001RMTCounters.SendReset_GetNextBitToSend;
+    CounterStatus[F("SendSync_Init")]                   = TLS3001RMTCounters.SendSync_Init;
+    CounterStatus[F("SendSync_GetNextBitToSend")]       = TLS3001RMTCounters.SendSync_GetNextBitToSend;
+    CounterStatus[F("SendDataStart_Init")]              = TLS3001RMTCounters.SendDataStart_Init;
+    CounterStatus[F("SendDataStart_GetNextBitToSend")]  = TLS3001RMTCounters.SendDataStart_GetNextBitToSend;
+    CounterStatus[F("SendData_Init")]                   = TLS3001RMTCounters.SendData_Init;
+    CounterStatus[F("SendData_GetNextBitToSend")]       = TLS3001RMTCounters.SendData_GetNextBitToSend;
+    CounterStatus[F("SendData_RefreshData")]            = TLS3001RMTCounters.SendData_RefreshData;
+    CounterStatus[F("SendDataIdle_Init")]               = TLS3001RMTCounters.SendDataIdle_Init;
+    CounterStatus[F("SendDataIdle_GetNextBitToSend")]   = TLS3001RMTCounters.SendDataIdle_GetNextBitToSend;
 
     #endif // def USE_TLS3001RMT_COUNTERS
 
@@ -248,6 +222,26 @@ uint32_t c_OutputTLS3001Rmt::Poll ()
     return ActualFrameDurationMicroSec;
 
 } // Poll
+
+//----------------------------------------------------------------------------
+void c_OutputTLS3001Rmt::StartNewDataFrame()
+{
+    // DEBUG_START;
+    // DEBUG_V(String("frame started on ") + String(OutputPortDefinition.gpios.data));
+    INCREMENT_TLS3001_COUNTER(FrameStarted);
+
+    if(FrameResetIsNeeded())
+    {
+        fsm_RMT_state_SendReset_imp.Init();
+    }
+    else
+    {
+        fsm_RMT_state_SendDataStart_imp.Init();
+    }
+    c_OutputTLS3001::StartNewFrame();
+
+    // DEBUG_END;
+} // StartNewDataFrame
 
 //----------------------------------------------------------------------------
 bool c_OutputTLS3001Rmt::RmtPoll ()
@@ -271,34 +265,12 @@ bool c_OutputTLS3001Rmt::RmtPoll ()
             break;
         }
 
-        // TLS3001RMTCounters.MinPollTimeMs = min((uint32_t(micros()) - FrameStartTimeInMicroSec) / MicroSecondsInAmilliSecond, TLS3001RMTCounters.MinPollTimeMs);
-        // TLS3001RMTCounters.MaxPollTimeMs = max((uint32_t(micros()) - FrameStartTimeInMicroSec) / MicroSecondsInAmilliSecond, TLS3001RMTCounters.MaxPollTimeMs);
-
-        if(false == SendingData)
-        {
-            // DEBUG_V(String("frame started on ") + String(OutputPortDefinition.gpios.data));
-            INCREMENT_TLS3001_COUNTER(FrameStarted);
-
-            if(FrameResetIsNeeded())
-            {
-                fsm_RMT_state_SendReset_imp.Init();
-            }
-            else
-            {
-                fsm_RMT_state_SendDataStart_imp.Init();
-            }
-            Response = Rmt.StartNewFrame ();
-        }
-        else
+        if(true == SendingData)
         {
             INCREMENT_TLS3001_COUNTER(FrameErrorNotFinished);
-            fsm_RMT_state_SendReset_imp.Init();
-            Response = Rmt.StartNewFrame();
+            ForceFrameReset();
         }
-
-        #ifdef DEBUG_RMT_XLAT_ISSUES
-        Rmt.ValidateBitXlatTable(ConvertIntensityToRmtDataStream);
-        #endif // def DEBUG_RMT_XLAT_ISSUES
+        Response = Rmt.StartNewFrame ();
 
         // DEBUG_V();
 
@@ -325,7 +297,7 @@ void c_OutputTLS3001Rmt::PauseOutput (bool State)
 } // PauseOutput
 
 //----------------------------------------------------------------------------
-bool IRAM_ATTR c_OutputTLS3001Rmt::ISR_GetNextBitToSend (uint32_t &DataToSend)
+bool IRAM_ATTR c_OutputTLS3001Rmt::ISR_GetNextBitToSend (rmt_item32_t &DataToSend)
 {
     bool Response = false;
     switch(CurrentFsmState)
@@ -366,6 +338,7 @@ bool IRAM_ATTR c_OutputTLS3001Rmt::ISR_GetNextBitToSend (uint32_t &DataToSend)
 //----------------------------------------------------------------------------
 void IRAM_ATTR fsm_RMT_state_SendReset::Init ()
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendReset_Init);
     // DEBUG_START;
 
     // Serial.print('b');
@@ -382,23 +355,24 @@ void IRAM_ATTR fsm_RMT_state_SendReset::Init ()
 } // fsm_RMT_state_SendReset
 
 //----------------------------------------------------------------------------
-bool IRAM_ATTR fsm_RMT_state_SendReset::ISR_GetNextBitToSend (uint32_t &DataToSend)
+bool IRAM_ATTR fsm_RMT_state_SendReset::ISR_GetNextBitToSend (rmt_item32_t &DataToSend)
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendReset_GetNextBitToSend);
     // Serial.print('2');
     if(NumberOfOneBitsToSend)
     {
         --NumberOfOneBitsToSend;
-        DataToSend = Parent->OneBit.val;
+        DataToSend = Parent->RmtOneBit;
     }
     else if(CommandCodeMask)
     {
-        DataToSend = (CommandCode & CommandCodeMask) ? Parent->OneBit.val : Parent->ZeroBit.val;
+        DataToSend = (CommandCode & CommandCodeMask) ? Parent->RmtOneBit : Parent->RmtZeroBit;
         CommandCodeMask = CommandCodeMask >> 1;
     }
     else if(NumberOfIdleBitsToSend)
     {
         --NumberOfIdleBitsToSend;
-        DataToSend = Parent->RmtResetOneMsDelay.val;
+        DataToSend = Parent->RmtResetOneMsDelay;
         if(0 == NumberOfIdleBitsToSend)
         {
             Parent->fsm_RMT_state_SendSync_imp.Init();
@@ -417,6 +391,7 @@ bool IRAM_ATTR fsm_RMT_state_SendReset::ISR_GetNextBitToSend (uint32_t &DataToSe
 //----------------------------------------------------------------------------
 void IRAM_ATTR fsm_RMT_state_SendSync::Init ()
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendSync_Init);
     // DEBUG_START;
 
     // Serial.print('c');
@@ -433,29 +408,30 @@ void IRAM_ATTR fsm_RMT_state_SendSync::Init ()
 } // fsm_RMT_state_SendSync
 
 //----------------------------------------------------------------------------
-bool IRAM_ATTR fsm_RMT_state_SendSync::ISR_GetNextBitToSend (uint32_t &DataToSend)
+bool IRAM_ATTR fsm_RMT_state_SendSync::ISR_GetNextBitToSend (rmt_item32_t &DataToSend)
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendSync_GetNextBitToSend);
     // Serial.print('3');
     if(NumberOfOneBitsToSend)
     {
         --NumberOfOneBitsToSend;
-        DataToSend = Parent->OneBit.val;
+        DataToSend = Parent->RmtOneBit;
     }
     else if(CommandCodeMask)
     {
-        DataToSend = (CommandCode & CommandCodeMask) ? Parent->OneBit.val : Parent->ZeroBit.val;
+        DataToSend = (CommandCode & CommandCodeMask) ? Parent->RmtOneBit : Parent->RmtZeroBit;
         CommandCodeMask = CommandCodeMask >> 1;
     }
     else if(NumberOfZeroBitsToSend)
     {
         --NumberOfZeroBitsToSend;
-        DataToSend = Parent->ZeroBit.val;
+        DataToSend = Parent->RmtZeroBit;
     }
     else if (NumberOfIdleBitsToSend)
     {
-        DataToSend = Parent->RmtSyncIdle.val;
+        DataToSend = Parent->RmtSyncIdle;
         -- NumberOfIdleBitsToSend;
-        if(!NumberOfIdleBitsToSend)
+        if(0 == NumberOfIdleBitsToSend)
         {
             // no more bits to send. Go to the data state
             Parent->fsm_RMT_state_SendDataStart_imp.Init();
@@ -469,6 +445,7 @@ bool IRAM_ATTR fsm_RMT_state_SendSync::ISR_GetNextBitToSend (uint32_t &DataToSen
 //----------------------------------------------------------------------------
 void IRAM_ATTR fsm_RMT_state_SendDataStart::Init ()
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendDataStart_Init);
     // DEBUG_START;
     // Serial.print('d');
 
@@ -483,17 +460,18 @@ void IRAM_ATTR fsm_RMT_state_SendDataStart::Init ()
 } // fsm_RMT_state_SendStart
 
 //----------------------------------------------------------------------------
-bool IRAM_ATTR fsm_RMT_state_SendDataStart::ISR_GetNextBitToSend (uint32_t &DataToSend)
+bool IRAM_ATTR fsm_RMT_state_SendDataStart::ISR_GetNextBitToSend (rmt_item32_t &DataToSend)
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendDataStart_GetNextBitToSend);
     // Serial.print('4');
     if(NumberOfOneBitsToSend)
     {
         --NumberOfOneBitsToSend;
-        DataToSend = Parent->OneBit.val;
+        DataToSend = Parent->RmtOneBit;
     }
     else if(CommandCodeMask)
     {
-        DataToSend = (CommandCode & CommandCodeMask) ? Parent->OneBit.val : Parent->ZeroBit.val;
+        DataToSend = (CommandCode & CommandCodeMask) ? Parent->RmtOneBit : Parent->RmtZeroBit;
         CommandCodeMask = CommandCodeMask >> 1;
 
         if(0 == CommandCodeMask)
@@ -510,27 +488,30 @@ bool IRAM_ATTR fsm_RMT_state_SendDataStart::ISR_GetNextBitToSend (uint32_t &Data
 //----------------------------------------------------------------------------
 void IRAM_ATTR fsm_RMT_state_SendData::Init ()
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendData_Init);
     // DEBUG_START;
     // Serial.print('e');
 
     Parent->CurrentFsmState = OutputTLS3001RmtFsmStates_t::TLS3001DataSend;
+    Parent->SendingData = true;
 
     ISR_RefreshData();
-    NumPostDataBitsToSend = Parent->NumIfgBitsPerFrame;
+    // NumPostDataBitsToSend = Parent->NumIfgBitsPerFrame;
     NumPostDataBitsToSend = 0;
 
     // DEBUG_END;
 } // fsm_RMT_state_SendData
 
 //----------------------------------------------------------------------------
-bool IRAM_ATTR fsm_RMT_state_SendData::ISR_GetNextBitToSend (uint32_t &DataToSend)
+bool IRAM_ATTR fsm_RMT_state_SendData::ISR_GetNextBitToSend (rmt_item32_t &DataToSend)
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendData_GetNextBitToSend);
     bool Response = true;
     // Serial.print('5');
     // starting zero bit
     if(DataPatternMask)
     {
-        DataToSend = (DataPattern & DataPatternMask) ? Parent->OneBit.val : Parent->ZeroBit.val;
+        DataToSend = (DataPattern & DataPatternMask) ? Parent->RmtOneBit : Parent->RmtZeroBit;
         DataPatternMask = DataPatternMask >> 1;
 
         // is there more data to send?
@@ -542,7 +523,7 @@ bool IRAM_ATTR fsm_RMT_state_SendData::ISR_GetNextBitToSend (uint32_t &DataToSen
     else if(NumPostDataBitsToSend)
     {
         --NumPostDataBitsToSend;
-        DataToSend = Parent->SendDataIfg.val;
+        DataToSend = Parent->RmtIfgBit;
     }
     else
     {
@@ -556,6 +537,7 @@ bool IRAM_ATTR fsm_RMT_state_SendData::ISR_GetNextBitToSend (uint32_t &DataToSen
 //----------------------------------------------------------------------------
 bool IRAM_ATTR fsm_RMT_state_SendData::ISR_RefreshData ()
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendData_RefreshData);
     MoreDataAvailable = Parent->ISR_MoreDataToSend();
 
     if(MoreDataAvailable)
@@ -582,6 +564,7 @@ bool IRAM_ATTR fsm_RMT_state_SendData::ISR_RefreshData ()
 //----------------------------------------------------------------------------
 void IRAM_ATTR fsm_RMT_state_SendDataIdle::Init ()
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendDataIdle_Init);
     // DEBUG_START;
     // Serial.print('f');
 
@@ -591,8 +574,9 @@ void IRAM_ATTR fsm_RMT_state_SendDataIdle::Init ()
 } // fsm_RMT_state_SendData
 
 //----------------------------------------------------------------------------
-bool IRAM_ATTR fsm_RMT_state_SendDataIdle::ISR_GetNextBitToSend (uint32_t &DataToSend)
+bool IRAM_ATTR fsm_RMT_state_SendDataIdle::ISR_GetNextBitToSend (rmt_item32_t &DataToSend)
 {
+    INCREMENT_TLS3001_FSM_COUNTER(SendDataIdle_GetNextBitToSend);
     // Serial.print('6');
     return false;
 } // fsm_RMT_state_SendDataIdle
