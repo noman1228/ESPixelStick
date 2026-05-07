@@ -399,10 +399,10 @@ void c_OutputUart::InitializeUart()
         WRITE_PERI_REG(UART_CONF1(OutputUartConfig.UartId), OutputUartConfig.FiFoTriggerLevel << UART_TXFIFO_EMPTY_THRHD_S);
 
         // DEBUG_V("Disable RX & TX interrupts. It is enabled by uart.c in the SDK");
-        DisableUartInterrupts();
+        ISR_DisableUartInterrupts();
 
         // DEBUG_V("Clear all pending interrupts in the UART");
-        ClearUartInterrupts();
+        ISR_ClearUartInterrupts();
 
         // DEBUG_V("Setup UART ISR flags");
         CalculateEnableUartInterruptFlags();
@@ -731,7 +731,7 @@ void IRAM_ATTR c_OutputUart::ISR_Timer_Handler()
     TimerIsrCounter++;
 #endif // def USE_UART_DEBUG_COUNTERS
 
-    if (MoreDataToSend())
+    if (ISR_MoreDataToSend())
     {
 #ifdef USE_UART_DEBUG_COUNTERS
         TimerIsrSendData++;
@@ -748,7 +748,7 @@ void IRAM_ATTR c_OutputUart::ISR_Timer_Handler()
         }
 
         ISR_Handler_SendIntensityData();
-        DisableUartInterrupts();
+        ISR_DisableUartInterrupts();
 #ifdef USE_UART_DEBUG_COUNTERS
         if (!MoreDataToSend())
         {
