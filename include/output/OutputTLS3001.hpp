@@ -86,6 +86,7 @@ public:
             bool IRAM_ATTR FrameResetIsNeeded() {return NumFramesSinceLastReset >= NumFramesAllowedBetweenResets;}
             void IRAM_ATTR ResetFrameCounter() {NumFramesSinceLastReset = 0;}
             void IRAM_ATTR IncrementFrameCounter() {++NumFramesSinceLastReset;}
+            void ForceFrameReset() {NumFramesSinceLastReset = NumFramesAllowedBetweenResets + 1;}
 protected:
 
 #define TLS3001_PIXEL_DATA_RATE             1000000.0 // bits /sec

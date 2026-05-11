@@ -64,7 +64,7 @@ public:
     fsm_RMT_state_SendSync() {}
     virtual ~fsm_RMT_state_SendSync() {}
             IRAM_ATTR void Init();
-            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR bool ISR_GetNextBitToSend (rmt_item32_t &DataToSend);
     virtual void GetDriverName (String& Name) { Name = "TLS3001SYN"; }
 private:
     const uint8_t CommandCode = 0b0001;
@@ -77,7 +77,7 @@ public:
     fsm_RMT_state_SendReset() {}
     virtual ~fsm_RMT_state_SendReset() {}
             IRAM_ATTR void Init();
-            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR bool ISR_GetNextBitToSend (rmt_item32_t &DataToSend);
     virtual void GetDriverName (String& Name) { Name = "TLS3001RST"; }
 private:
     const uint8_t CommandCode = 0b0100;
@@ -90,7 +90,7 @@ public:
     fsm_RMT_state_SendDataStart() {}
     virtual ~fsm_RMT_state_SendDataStart() {}
             IRAM_ATTR void Init();
-            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR bool ISR_GetNextBitToSend (rmt_item32_t &DataToSend);
     virtual void GetDriverName (String& Name) { Name = "TLS3001STR"; }
 private:
     const uint8_t CommandCode = 0b0010;
@@ -104,7 +104,7 @@ public:
     fsm_RMT_state_SendData() {}
     virtual ~fsm_RMT_state_SendData() {}
             IRAM_ATTR void Init();
-            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR bool ISR_GetNextBitToSend (rmt_item32_t &DataToSend);
             IRAM_ATTR bool ISR_RefreshData ();
     virtual void GetDriverName (String& Name) { Name = "TLS3001DAT"; }
 private:
@@ -121,7 +121,7 @@ public:
     fsm_RMT_state_SendDataIdle() {}
     virtual ~fsm_RMT_state_SendDataIdle() {}
             IRAM_ATTR void Init();
-            IRAM_ATTR bool ISR_GetNextBitToSend (uint32_t &DataToSend);
+            IRAM_ATTR bool ISR_GetNextBitToSend (rmt_item32_t &DataToSend);
     virtual void GetDriverName (String& Name) { Name = "TLS3001IDL"; }
 private:
 }; // fsm_RMT_state_SendData

@@ -42,59 +42,14 @@
 class c_OutputRmt
 {
 public:
-    enum RmtDataBitIdType_t
-    {
-        RMT_DATA_BIT_ZERO_ID = 0,   // 0 UART 00
-        RMT_DATA_BIT_ONE_ID,        // 1 UART 01
-        RMT_DATA_BIT_TWO_ID,        // 2 UART 10
-        RMT_DATA_BIT_THREE_ID,      // 3 UART 11
-        RMT_INTERFRAME_GAP_ID,      // 4 UART Break / MAB
-        RMT_STARTBIT_ID,            // 5
-        RMT_STOPBIT_ID,             // 6 UART Stop/start bit
-        RMT_END_OF_FRAME,           // 7
-        RMT_LIST_END,               // 8 This must be last
-        RMT_INVALID_VALUE,
-        RMT_NUM_BIT_TYPES = RMT_LIST_END,
-        RMT_STOP_START_BIT_ID = RMT_STOPBIT_ID,
-    };
-
-    struct ConvertIntensityToRmtDataStreamEntry_t
-    {
-        rmt_item32_t        Translation;
-        RmtDataBitIdType_t  Id;
-    };
-    typedef ConvertIntensityToRmtDataStreamEntry_t CitrdsArray_t;
-    struct LowLevelBitApi
-    {
-        void * arg = nullptr;
-        bool (*func)(void * arg, uint32_t &DataToSend) = nullptr;
-        bool UseLowLevelBitAPI = false;
-    };
-
     struct OutputRmtConfig_t
     {
         uint32_t            RmtChannelId           = uint32_t(-1);
         gpio_num_t          DataPin                = gpio_num_t(-1);
         rmt_idle_level_t    idle_level             = rmt_idle_level_t::RMT_IDLE_LEVEL_LOW;
-        uint32_t            IntensityDataWidth     = 8;
-        bool                SendInterIntensityBits = false;
-        bool                SendEndOfFrameBits     = false;
-        uint8_t             NumFrameStartBits      = 1;
-        uint8_t             NumFrameStopBits       = 1;
-        uint8_t             NumIdleBits            = 6;
-        enum DataDirection_t
-        {
-            MSB2LSB = 0,
-            LSB2MSB = 1
-        };
-        DataDirection_t     DataDirection          = DataDirection_t::MSB2LSB;
-        const CitrdsArray_t *CitrdsArray           = nullptr;
-
-        c_OutputPixel  *pPixelDataSource           = nullptr;
-        LowLevelBitApi BitApi;
-		#if defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
-        c_OutputSerial *pSerialDataSource = nullptr;
-		#endif // defined(SUPPORT_OutputProtocol_FireGod) || defined(SUPPORT_OutputProtocol_DMX) || defined(SUPPORT_OutputProtocol_Serial) || defined(SUPPORT_OutputProtocol_Renard)
+        void                *arg                   = nullptr;
+        bool                (*ISR_GetNextIntensityBit)   (void*arg, rmt_item32_t&data) = nullptr;
+        void                (*StartNewDataFrame)        (void*arg) = nullptr;
     };
 
     struct isrTxFlags_t
@@ -123,11 +78,7 @@ private:
 
     const uint32_t      NUM_RMT_SLOTS = _NUM_RMT_SLOTS;
     OutputRmtConfig_t   OutputRmtConfig;
-
-    rmt_item32_t        Intensity2Rmt[RmtDataBitIdType_t::RMT_LIST_END];
     bool                OutputIsPaused   = false;
-
-    uint32_t            NumRmtSlotsPerIntensityValue    = 8;
     uint32_t            NumRmtSlotOverruns              = 0;
     const uint32_t      MaxNumRmtSlotsPerInterrupt      = (_NUM_RMT_SLOTS/2);
 
@@ -144,9 +95,9 @@ private:
     inline void IRAM_ATTR ISR_CreateIntensityData ();
     inline void IRAM_ATTR ISR_WriteToBuffer(uint32_t value);
     inline bool IRAM_ATTR ISR_MoreDataToSend();
-    inline bool IRAM_ATTR ISR_GetNextIntensityToSend(uint32_t &DataToSend);
+//    inline bool IRAM_ATTR ISR_GetNextIntensityToSend(uint32_t &DataToSend);
     inline void StartNewDataFrame();
-    inline void ResetRmtBlockPointers();
+    inline void ISR_ResetRmtBlockPointers();
 
 #ifndef HasBeenInitialized
     bool HasBeenInitialized = false;
@@ -216,10 +167,6 @@ inline void IRAM_ATTR ClearRmtInterrupts()
 #define RMT_Clock_Divisor   2.0
 #define RMT_TickLengthNS    float ( (1/ (RMT_ClockRate/RMT_Clock_Divisor)) * float(NanoSecondsInASecond))
 
-    void UpdateBitXlatTable(const CitrdsArray_t * CitrdsArray);
-    bool ValidateBitXlatTable(const CitrdsArray_t * CitrdsArray);
-    void SetIntensity2Rmt (rmt_item32_t NewValue, RmtDataBitIdType_t ID) { Intensity2Rmt[ID] = NewValue; }
-
     bool ThereIsDataToSend = false;
 
     void IRAM_ATTR ISR_Handler (isrTxFlags_t isrFlags);
@@ -245,7 +192,6 @@ inline void IRAM_ATTR ClearRmtInterrupts()
    uint32_t IntensityValuesSentLastFrame = 0;
    uint32_t IntensityBitsSentLastFrame = 0;
    uint32_t IncompleteFrame = 0;
-   uint32_t BitTypeCounters[RmtDataBitIdType_t::RMT_NUM_BIT_TYPES];
    uint32_t RmtEntriesTransfered = 0;
    uint32_t RmtXmtFills = 0;
    uint32_t RmtWhiteDetected = 0;

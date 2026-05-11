@@ -150,7 +150,8 @@ public:
     uint32_t NumberOfOutputProtocols = uint32_t(0);
 
     // must be 16 byte aligned. Determined by upshifting the max size of all drivers
-    #define OutputDriverMemorySize 1200
+    // #define OutputDriverMemorySize 1200
+    #define OutputDriverMemorySize 1400
     uint32_t GetDriverSize() {return OutputDriverMemorySize;}
 private:
     struct alignas(16) DriverInfo_t
