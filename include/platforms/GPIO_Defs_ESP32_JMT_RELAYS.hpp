@@ -1,38 +1,40 @@
 #pragma once
 /*
-* GPIO_Defs_ESP32_WROVER.hpp - Output Management class
-*
-* Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
-* Copyright (c) 2025 Shelby Merrick
-* http://www.forkineye.com
-*
-*  This program is provided free for you to use in any way that you wish,
-*  subject to the laws and regulations where you are using it.  Due diligence
-*  is strongly suggested before using this code.  Please give credit where due.
-*
-*  The Author makes no warranty of any kind, express or implied, with regard
-*  to this program or the documentation contained in this document.  The
-*  Author shall not be liable in any event for incidental or consequential
-*  damages in connection with, or arising out of, the furnishing, performance
-*  or use of these programs.
-*
-*/
-//Output Manager
-#define DEFAULT_RMT_0_GPIO     gpio_num_t::GPIO_NUM_2
-#define DEFAULT_RMT_1_GPIO     gpio_num_t::GPIO_NUM_4
+ * GPIO_Defs_ESP32_JMT_RELAYS.hpp - Output Management class
+ *
+ * Project: ESPixelStick - An ESP8266 / ESP32 and E1.31 based pixel driver
+ * Copyright (c) 2025 Shelby Merrick
+ * http://www.forkineye.com
+ *
+ *  This program is provided free for you to use in any way that you wish,
+ *  subject to the laws and regulations where you are using it.  Due diligence
+ *  is strongly suggested before using this code.  Please give credit where due.
+ *
+ *  The Author makes no warranty of any kind, express or implied, with regard
+ *  to this program or the documentation contained in this document.  The
+ *  Author shall not be liable in any event for incidental or consequential
+ *  damages in connection with, or arising out of, the furnishing, performance
+ *  or use of these programs.
+ *
+ */
 
-#define DEFAULT_RMT_2_GPIO     gpio_num_t::GPIO_NUM_12
-#define DEFAULT_RMT_3_GPIO     gpio_num_t::GPIO_NUM_14
-#define DEFAULT_RMT_4_GPIO     gpio_num_t::GPIO_NUM_16
-
-// SPI Output
-#define SUPPORT_SPI_OUTPUT
-#define DEFAULT_SPI_DATA_GPIO  gpio_num_t::GPIO_NUM_15
-#define DEFAULT_SPI_CLOCK_GPIO gpio_num_t::GPIO_NUM_25
-#define DEFAULT_SPI_DEVICE     VSPI_HOST
-
-#define DEFAULT_I2C_SDA        gpio_num_t::GPIO_NUM_21
-#define DEFAULT_I2C_SCL        gpio_num_t::GPIO_NUM_22
+// Output Manager
+// MAX 8 Serial port on ESP32
+const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
+{
+    {OM_PortId_t(0), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_2}},
+    {OM_PortId_t(0), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_2}},
+    {OM_PortId_t(1), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_4}},
+    {OM_PortId_t(1), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_4}},
+    {OM_PortId_t(2), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_12}},
+    {OM_PortId_t(2), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_12}},
+    {OM_PortId_t(3), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_14}},
+    {OM_PortId_t(3), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_14}},
+    {OM_PortId_t(4), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_16}},
+    {OM_PortId_t(4), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_16}},
+    {OM_PortId_t(5), OM_PortType_t::OM_SPI,    {gpio_num_t::GPIO_NUM_15, gpio_num_t::GPIO_NUM_25, gpio_num_t::GPIO_NUM_23}},
+    {OM_PortId_t(6), OM_PortType_t::OM_I2C,    {gpio_num_t::GPIO_NUM_21, gpio_num_t::GPIO_NUM_22}},
+};
 
 // File Manager
 #define SUPPORT_SD
@@ -42,17 +44,17 @@
 #define SD_CARD_CS_PIN          gpio_num_t::GPIO_NUM_5
 
 // Output Types
-// Not Finished - #define SUPPORT_OutputType_TLS3001
-#define SUPPORT_OutputType_APA102           // SPI
-#define SUPPORT_OutputType_DMX              // UART
-#define SUPPORT_OutputType_GECE             // UART
-#define SUPPORT_OutputType_GS8208           // UART / RMT
-#define SUPPORT_OutputType_Renard           // UART
-#define SUPPORT_OutputType_Serial           // UART
-#define SUPPORT_OutputType_TM1814           // UART / RMT
-#define SUPPORT_OutputType_UCS1903          // UART / RMT
-#define SUPPORT_OutputType_UCS8903          // UART / RMT
-#define SUPPORT_OutputType_WS2801           // SPI
-#define SUPPORT_OutputType_WS2811           // UART / RMT
-#define SUPPORT_OutputType_Relay            // GPIO
-#define SUPPORT_OutputType_Servo_PCA9685    // I2C (default pins)
+// Not Finished - #define SUPPORT_OutputProtocol_TLS3001
+#define SUPPORT_OutputProtocol_APA102           // OM_SPI
+#define SUPPORT_OutputProtocol_DMX              // OM_SERIAL
+#define SUPPORT_OutputProtocol_GECE             // OM_SERIAL
+#define SUPPORT_OutputProtocol_GS8208           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Renard           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Serial           // OM_SERIAL
+#define SUPPORT_OutputProtocol_TM1814           // OM_SERIAL
+#define SUPPORT_OutputProtocol_UCS1903          // OM_SERIAL
+#define SUPPORT_OutputProtocol_UCS8903          // OM_SERIAL
+#define SUPPORT_OutputProtocol_WS2801           // OM_SPI
+#define SUPPORT_OutputProtocol_WS2811           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Relay            // OM_RELAY
+#define SUPPORT_OutputProtocol_Servo_PCA9685    // OM_I2C

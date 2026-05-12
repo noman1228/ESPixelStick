@@ -2,31 +2,34 @@
 
 #define SUPPORT_ETHERNET
 #include <ETH.h>
-//Output Manager
-#define DEFAULT_RMT_0_GPIO      gpio_num_t::GPIO_NUM_2
-#define DEFAULT_RMT_1_GPIO      gpio_num_t::GPIO_NUM_4
-#define DEFAULT_RMT_2_GPIO      gpio_num_t::GPIO_NUM_5
-#define DEFAULT_RMT_3_GPIO      gpio_num_t::GPIO_NUM_16
 
-#define DEFAULT_RMT_4_GPIO      gpio_num_t::GPIO_NUM_0
-#define DEFAULT_RMT_5_GPIO      gpio_num_t::GPIO_NUM_12
-#define DEFAULT_RMT_6_GPIO      gpio_num_t::GPIO_NUM_3
-#define DEFAULT_RMT_7_GPIO      gpio_num_t::GPIO_NUM_1
+// Output Manager
+// MAX 8 Serial port on ESP32
+const OM_OutputPortDefinition_t OM_OutputPortDefinitions[] =
+{
+    {OM_PortId_t(0), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_2}},
+    {OM_PortId_t(0), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_2}},
+    {OM_PortId_t(1), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_4}},
+    {OM_PortId_t(1), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_4}},
+    {OM_PortId_t(2), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_5}},
+    {OM_PortId_t(2), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_5}},
+    {OM_PortId_t(3), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_16}},
+    {OM_PortId_t(3), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_16}},
+    {OM_PortId_t(4), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_0}},
+    {OM_PortId_t(4), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_0}},
+    {OM_PortId_t(5), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_12}},
+    {OM_PortId_t(5), OM_PortType_t::OM_RELAY,  {gpio_num_t::GPIO_NUM_12}},
+    {OM_PortId_t(6), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_3}},
+    {OM_PortId_t(7), OM_PortType_t::OM_SERIAL, {gpio_num_t::GPIO_NUM_1}},
+    {OM_PortId_t(8), OM_PortType_t::OM_I2C,    {gpio_num_t::GPIO_NUM_33, gpio_num_t::GPIO_NUM_32}},
+};
 
-#ifndef ESP_SCL_PIN 
-    #define ESP_SCL_PIN             gpio_num_t::GPIO_NUM_33
-#endif
-#ifndef ESP_SDA_PIN 
-    #define ESP_SDA_PIN             gpio_num_t::GPIO_NUM_32
-#endif
 // File Manager
 #define SUPPORT_SD
-#define SD_CARD_MISO_PIN         gpio_num_t::GPIO_NUM_34  // test
+#define SD_CARD_MISO_PIN         gpio_num_t::GPIO_NUM_34
 #define SD_CARD_MOSI_PIN         gpio_num_t::GPIO_NUM_13
 #define SD_CARD_CLK_PIN          gpio_num_t::GPIO_NUM_14
 #define SD_CARD_CS_PIN           gpio_num_t::GPIO_NUM_15
-
-
 
 #define DEFAULT_ETH_CLK_MODE           eth_clock_mode_t::ETH_CLOCK_GPIO17_OUT
 #define DEFAULT_ETH_POWER_PIN          gpio_num_t::GPIO_NUM_20
@@ -43,15 +46,15 @@
 #define DEFAULT_ETH_MDC_PIN            gpio_num_t::GPIO_NUM_23
 #define DEFAULT_ETH_MDIO_PIN           gpio_num_t::GPIO_NUM_18
 
-
-#define SUPPORT_OutputType_DMX            // UART
-#define SUPPORT_OutputType_GECE           // UART
-#define SUPPORT_OutputType_GS8208         // UART / RMT
-#define SUPPORT_OutputType_Renard         // UART
-#define SUPPORT_OutputType_Serial         // UART
-#define SUPPORT_OutputType_TM1814         // UART / RMT
-#define SUPPORT_OutputType_UCS1903        // UART / RMT
-#define SUPPORT_OutputType_UCS8903        // UART / RMT
-#define SUPPORT_OutputType_WS2811         // UART / RMT
-#define SUPPORT_OutputType_RELAY         // UART / RMT
-#define SUPPORT_OutputType_Servo_PCA9685
+// Output Types
+#define SUPPORT_OutputProtocol_DMX              // OM_SERIAL
+#define SUPPORT_OutputProtocol_GECE             // OM_SERIAL
+#define SUPPORT_OutputProtocol_GS8208           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Renard           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Serial           // OM_SERIAL
+#define SUPPORT_OutputProtocol_TM1814           // OM_SERIAL
+#define SUPPORT_OutputProtocol_UCS1903          // OM_SERIAL
+#define SUPPORT_OutputProtocol_UCS8903          // OM_SERIAL
+#define SUPPORT_OutputProtocol_WS2811           // OM_SERIAL
+#define SUPPORT_OutputProtocol_Relay            // OM_RELAY
+#define SUPPORT_OutputProtocol_Servo_PCA9685    // OM_I2C
